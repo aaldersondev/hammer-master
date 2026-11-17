@@ -492,9 +492,12 @@ impl Editeur {
                     ui.ctx().open_url(egui::OpenUrl::new_tab("https://developer.valvesoftware.com/wiki/Category:Hammer"));
                     ui.close();
                 }
-                let limites = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/limites_et_dimensions.md");
-                if ui.add_enabled(limites.is_file(), egui::Button::new(crate::langue::t("Limites et dimensions du moteur"))).clicked() {
-                    ui.ctx().open_url(egui::OpenUrl::new_tab(format!("file:///{}", limites.display().to_string().replace('\\', "/"))));
+                if ui.button(crate::langue::t("Limites et dimensions du moteur")).clicked() {
+                    // le document est dans l'exécutable : il s'ouvre aussi sans les sources (version publiée)
+                    let limites = std::env::temp_dir().join("hammer_master_limites_et_dimensions.md");
+                    if std::fs::write(&limites, include_str!("../../../../docs/limites_et_dimensions.md")).is_ok() {
+                        ui.ctx().open_url(egui::OpenUrl::new_tab(format!("file:///{}", limites.display().to_string().replace('\\', "/"))));
+                    }
                     ui.close();
                 }
                 ui.separator();
