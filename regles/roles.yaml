@@ -1,0 +1,83 @@
+# Ce qu'une pièce doit contenir pour être ce qu'elle dit être (zone `role:` de la spec ; valider.py).
+#
+# exige      : groupes de mots ; pour chaque groupe, au moins un objet de la pièce (modèle d'un prop, fichier d'une
+#              instance, nom d'un bloc ou d'une porte) doit contenir un des mots. Sinon : ROLE_INCOMPLET (erreur).
+# surface_max: au-delà (unités², air intérieur), ROLE_TROP_GRAND (avertissement) : quatre toilettes dans 630 × 890
+#              ne font pas des WC, quoi qu'on y ajoute. Couper la pièce ou lui donner un second usage.
+# objets_min : nombre minimal d'objets par tranche de 256 × 256 unités de sol (arrondi au-dessus). Sinon :
+#              PIECE_SOUS_MEUBLEE (avertissement).
+# vide       : la pièce est laissée vide exprès (logement que le joueur meuble, réserve, circulation).
+#
+# Origine : rp_megalopole, 11/11/2026. Treize salles « wc » de 630 × 890 ne contenaient que quatre toilettes en
+# rang : validées, compilées, livrées, vues par l'utilisateur.
+roles:
+  vide: {vide: true}
+  circulation: {vide: true}
+  wc:
+    exige:
+      - [toilet, wc, urinoir, urinal]
+      - [lavabo, sink, evier, vasque]
+      - [cabine, cloison, stall, porte_wc, porte]        # une toilette se ferme
+    surface_max: 147456        # 384 × 384
+    objets_min: 3
+  salle_de_bain:
+    exige:
+      - [toilet, wc]
+      - [lavabo, sink, vasque]
+      - [baignoire, bath, douche, shower]
+    surface_max: 147456
+    objets_min: 2
+  cuisine:
+    exige:
+      - [evier, sink]
+      - [frigo, fridge, refrigerator]
+      - [cuisiniere, stove, plaque, four, oven, microonde, microwave]
+    objets_min: 2
+  salon:
+    exige:
+      - [canape, sofa, couch, fauteuil, armchair]
+      - [table, tele, tv, etagere, shelf, bookcase]
+    objets_min: 2
+  chambre:
+    exige:
+      - [lit, bed, matelas, mattress]
+    objets_min: 1
+  bureau:
+    exige:
+      - [bureau, desk, table]
+      - [chaise, chair, fauteuil, siege]
+    objets_min: 2
+  reunion:
+    exige:
+      - [table]
+      - [chaise, chair, siege]
+    objets_min: 2
+  laboratoire:
+    exige:
+      - [paillasse, labo, lab, etabli, bench, table]
+      - [evier, sink, armoire, cabinet, etagere, shelf, console, moniteur]
+    objets_min: 2
+  stockage:
+    exige:
+      - [etagere, shelf, caisse, crate, carton, box, palette, pallet, fut, barrel, casier, locker, armoire, classeur]
+    objets_min: 2
+  vestiaire:
+    exige:
+      - [casier, locker]
+      - [banc, bench]
+    objets_min: 2
+  boutique:
+    exige:
+      - [comptoir, counter, caisse, guichet]
+      - [etagere, shelf, rayon, vitrine, presentoir, etal, armoire]
+    objets_min: 2
+  accueil:
+    exige:
+      - [comptoir, counter, guichet, bureau, desk]
+    objets_min: 1
+  cellule:
+    exige:
+      - [lit, bed, banc, bench]
+      - [toilet, wc]
+    surface_max: 65536
+    objets_min: 1

@@ -1,0 +1,6 @@
+{
+	"title": "Hammer Master - signalement en jeu",
+	"type": "tool",
+	"tags": ["build"],
+	"ignore": ["*.md", "tests/*"]
+}

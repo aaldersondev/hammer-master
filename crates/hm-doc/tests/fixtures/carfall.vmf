@@ -1,0 +1,218 @@
+versioninfo
+{
+	"editorversion" "400"
+	"editorbuild" "10493"
+	"mapversion" "7"
+	"formatversion" "100"
+	"prefab" "0"
+}
+visgroups
+{
+}
+viewsettings
+{
+	"bSnapToGrid" "1"
+	"bShowGrid" "1"
+	"bShowLogicalGrid" "0"
+	"nGridSpacing" "16"
+	"bShow3DGrid" "0"
+}
+world
+{
+	"id" "1"
+	"mapversion" "7"
+	"classname" "worldspawn"
+	"detailmaterial" "detail/detailsprites"
+	"detailvbsp" "detail.vbsp"
+	"maxpropscreenwidth" "-1"
+	"skyname" "sky_day01_01"
+}
+entity
+{
+	"id" "41"
+	"classname" "propper_model"
+	"autocenter" "0"
+	"concave" "1"
+	"disp_nowarp" "0"
+	"mass" "0.0"
+	"mat_nonormal" "0"
+	"materialpath" "models/props/mainlife_carfall"
+	"modelname" "props/mainlife_carfall"
+	"origin" "0 1403.47 503.42"
+	"physmodel" "mainlife_carfall"
+	"scale" "1.0"
+	"smoothangle" "45"
+	"smoothing" "1"
+	"snaptogrid" "0"
+	"sourcefolder" "c:/propsource"
+	"surfaceprop" "brick"
+	"targetname" "mainlife_carfall"
+	"weldvertices" ".01"
+	solid
+	{
+		"id" "35"
+		side
+		{
+			"id" "36"
+			"plane" "(-640 1145.07 9.16943) (-640 1721.07 1006.83) (640 1721.07 1006.83)"
+			"material" "CONCRETE/CONCRETEFLOOR001A"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -0.5 -0.866025 17.9078] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "35"
+			"plane" "(-640 1734.93 998.831) (-640 1158.93 1.16943) (640 1158.93 1.16943)"
+			"material" "CONCRETE/CONCRETEFLOOR001A"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -0.5 -0.866025 17.9078] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "34"
+			"plane" "(-640 1158.93 1.16943) (-640 1734.93 998.831) (-640 1721.07 1006.83)"
+			"material" "CONCRETE/CONCRETEFLOOR001A"
+			"uaxis" "[0 0.5 0.866025 -17.9078] 0.25"
+			"vaxis" "[0 0.866025 -0.5 -44.3059] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "33"
+			"plane" "(640 1734.93 998.831) (640 1158.93 1.16943) (640 1145.07 9.16943)"
+			"material" "CONCRETE/CONCRETEFLOOR001A"
+			"uaxis" "[0 0.5 0.866025 -17.9078] 0.25"
+			"vaxis" "[0 0.866025 -0.5 -44.3059] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "32"
+			"plane" "(-640 1734.93 998.831) (640 1734.93 998.831) (640 1721.07 1006.83)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0.866025 -0.5 -44.3059] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "31"
+			"plane" "(640 1158.93 1.16943) (-640 1158.93 1.16943) (-640 1145.07 9.16943)"
+			"material" "CONCRETE/CONCRETEFLOOR001A"
+			"uaxis" "[1 0 0 -17.9078] 0.25"
+			"vaxis" "[0 0.866025 -0.5 -44.3059] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
+		"id" "2"
+		side
+		{
+			"id" "42"
+			"plane" "(-640 1152 16) (640 1152 16) (640 1072 16)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "41"
+			"plane" "(-640 1072 0) (640 1072 0) (640 1152 0)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "40"
+			"plane" "(-640 1152 16) (-640 1072 16) (-640 1072 0)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "39"
+			"plane" "(640 1152 0) (640 1072 0) (640 1072 16)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "38"
+			"plane" "(640 1152 16) (-640 1152 16) (-640 1152 0)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "37"
+			"plane" "(640 1072 0) (-640 1072 0) (-640 1072 16)"
+			"material" "BRICK/BRICK_FLOOR_03"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 0]"
+	}
+}
+cameras
+{
+	"activecamera" "-1"
+}
+cordons
+{
+	"active" "0"
+}

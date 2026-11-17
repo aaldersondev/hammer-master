@@ -1,0 +1,53 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+# Lecteurs de formats : versions fixées à l'exact, contrôlées par le banc (crates/hm-assets/tests/banc_formats.rs).
+vformats = { version = "=0.1.0", features = ["lzma"] }
+source-mdl = "=0.6.1"
+source-vpk = "=0.6.1"
+glam = "0.30"
+wgpu = "30.0.1"
+pollster = "0.4"
+bytemuck = { version = "1", features = ["derive"] }
+rayon = "1"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+ab_glyph = "0.2"
+blake3 = "1"
+hm-vmf = { path = "crates/hm-vmf" }
+hm-geom = { path = "crates/hm-geom" }
+hm-assets = { path = "crates/hm-assets" }
+hm-scene = { path = "crates/hm-scene" }
+hm-edit = { path = "crates/hm-edit" }
+hm-render = { path = "crates/hm-render" }
+hm-espace = { path = "crates/hm-espace" }
+hm-tour = { path = "crates/hm-tour" }
+hm-signal = { path = "crates/hm-signal" }
+hm-regles = { path = "crates/hm-regles" }
+hm-model = { path = "crates/hm-model" }
+hm-doc = { path = "crates/hm-doc" }
+hm-fgd = { path = "crates/hm-fgd" }
+hm-compile = { path = "crates/hm-compile" }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+# vformats vérifie par debug_assert qu'un pixel flottant converti tient dans 0-255 : un NaN (une texture du jeu en a
+# depuis une mise à jour) le fait paniquer ; sans l'assertion, la conversion donne 0
+[profile.dev.package.vformats]
+debug-assertions = false
+
+[profile.release]
+debug = 1

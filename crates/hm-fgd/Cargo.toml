@@ -1,0 +1,9 @@
+[package]
+name = "hm-fgd"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Lecture des FGD (classes d'entités pour l'éditeur)"
+
+[dependencies]
+hm-assets.workspace = true

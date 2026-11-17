@@ -1,0 +1,32 @@
+# Essai du constructeur : une spec bien placée mais dont les éléments, les ouvertures et les entités sont faux.
+# Les deux générateurs doivent rendre les mêmes erreurs et les mêmes avertissements, et ne rien écrire.
+carte: essai_erreurs_elements
+murs: 16
+dalles: 16
+materiaux: {sol: concrete/concretefloor011a, mur: plaster/plasterwall017a, plafond: plaster/plasterwall051b}
+zones:
+  - {nom: a, type: piece, origine: [0, 0, 0], taille: [512, 512, 256], plinthe: true, decor: true}
+  - {nom: b, type: piece, contre: {zone: a, cote: est}, taille: [256, 256, 128]}
+  - {nom: cour, type: exterieur, contre: {zone: a, cote: sud, aligne: debut}, taille: [2048, 512, 448], decor: {pilastres: false}}
+ouvertures:
+  - {type: porte, entre: [a, b], largeur: 80, exception: "porte large voulue"}
+  - {type: fenetre, entre: [a, cour], decalage: 64}
+  - {type: porte, entre: [a, cour], decalage: 320, entite: portail}
+elements:
+  - {type: dalle, nom: palier, zone: a, rect: [0, 384, 512, 128], z: 96}
+  - {type: escalier, zone: a, depart: [64, 64], direction: haut, hauteur: 96}
+  - {type: escalier, zone: a, depart: [64, 64], direction: nord, hauteur: 100, marche: 8}
+  - {type: escalier, zone: a, depart: [200, 64], direction: nord, hauteur: 96, marche: 24, giron: 8, largeur: 48, garde_corps: [nord, est]}
+  - {type: rampe, zone: a, depart: [300, 300], direction: est, longueur: 32, hauteur: 64}
+  - {type: bloc, nom: trop_grand, zone: b, rect: [128, 128, 256, 64], hauteur: 32}
+  - {type: bloc, nom: hors_grille, zone: b, rect: [4, 4, 32, 32], hauteur: 32}
+  - {type: toboggan, zone: a}
+  - {type: instance, fichier: introuvable.vmf, zone: a, position: [64, 64]}
+  - {type: bloc, nom: devant_la_porte, zone: b, rect: [0, 96, 32, 64], hauteur: 32}
+entites:
+  - {classe: info_player_start, zone: b, position: [240, 64], nombre: 2}
+  - {classe: prop_static, zone: a, position: [64, 64], modele: models/nexiste/pas.mdl}
+  - {classe: prop_static, zone: zone_fantome, position: [0, 0, 0]}
+  # un bidon : compilé avec $staticprop, mais ses clés portent prop_data, et vbsp le retire d'un prop_static
+  - {classe: prop_static, zone: a, position: [128, 128], modele: models/props_c17/oildrum001.mdl}
+  - {classe: prop_dynamic, zone: a, position: [192, 128], modele: models/props_c17/oildrum001.mdl}

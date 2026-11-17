@@ -1,0 +1,13 @@
+[package]
+name = "hm-assets"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+vformats.workspace = true
+source-mdl.workspace = true
+source-vpk.workspace = true
+anyhow.workspace = true
+rayon.workspace = true
+bytemuck.workspace = true

@@ -1,0 +1,31 @@
+[package]
+name = "hm-mcp"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "hammer-master-mcp"
+path = "src/main.rs"
+
+[dependencies]
+rmcp = { version = "3.9", features = ["server", "transport-io", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std", "sync"] }
+base64 = "0.22"
+glam.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+hm-assets.workspace = true
+hm-scene.workspace = true
+hm-render.workspace = true
+hm-espace.workspace = true
+hm-tour.workspace = true
+hm-signal.workspace = true
+hm-regles.workspace = true
+hm-model.workspace = true
+hm-edit.workspace = true
+hm-doc.workspace = true
+hm-compile.workspace = true
+hm-fgd.workspace = true
+hm-vmf.workspace = true

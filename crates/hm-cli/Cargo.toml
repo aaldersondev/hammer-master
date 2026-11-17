@@ -1,0 +1,29 @@
+[package]
+name = "hm-cli"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "hm"
+path = "src/main.rs"
+
+[dependencies]
+glam.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+hm-vmf.workspace = true
+hm-geom.workspace = true
+hm-assets.workspace = true
+hm-scene.workspace = true
+hm-render.workspace = true
+hm-espace.workspace = true
+hm-tour.workspace = true
+hm-signal.workspace = true
+hm-regles.workspace = true
+hm-model.workspace = true
+hm-edit.workspace = true
+hm-doc.workspace = true
+hm-compile.workspace = true
+blake3.workspace = true

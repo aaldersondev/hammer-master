@@ -1,0 +1,245 @@
+# Registre des défauts connus de rp_megalopole : chaque défaut est rattaché à la règle qui l'attrape et au test qui
+# le prouve, ou dit pourquoi aucune règle ne l'attrape.
+#
+# couverture :
+#   "regle"       une règle le signale ; `regle` et `test` sont remplis
+#   "partielle"   une règle en attrape une partie, ou n'a pas de test sur ce cas précis
+#   "phase4"      c'est une règle de conception (ce qu'une pièce doit contenir, les dégagements) : modèle sémantique
+#   "hors_portee" l'outil ne peut pas le voir (lumière, ombres, visibilité calculées par le compilateur)
+#   "conception"  ce n'est pas un défaut de la map mais une demande de changement
+#   "aucune"      rien ne l'attrape encore ; `note` dit quelle règle il faudrait
+#
+# Le test crates/hm-regles/tests/registre.rs contrôle ce fichier : règles existantes, tests existants, et toute
+# règle du catalogue citée par au moins un test.
+
+# ---------------------------------------------------------------- les quatre défauts de référence (10/11/2026)
+
+[[entree]]
+id = "H1"
+origine = "vu en jeu le 11/11/2026 ; VMF du 10/11"
+texte = "l'auvent des stations aériennes flotte : une dalle de 12 d'épaisseur sans poteau"
+couverture = "regle"
+regle = "phys.flotte"
+test = "crates/hm-regles/tests/megalopole.rs::les_quatre_defauts_du_10_11_sont_signales_par_des_regles"
+
+[[entree]]
+id = "H2"
+origine = "vu en jeu le 11/11/2026 ; VMF du 10/11"
+texte = "des rails sortent de 436 du mur est de la gare, devant l'hôpital"
+couverture = "regle"
+regle = "phys.traverse"
+test = "crates/hm-regles/tests/megalopole.rs::les_quatre_defauts_du_10_11_sont_signales_par_des_regles"
+
+[[entree]]
+id = "H3"
+origine = "vu en jeu le 11/11/2026 ; VMF du 10/11"
+texte = "le viaduc du M1 est coupé net à trois bouts (Gare, Docks, Bas-Fonds)"
+couverture = "regle"
+regle = "phys.reseau_coupe"
+test = "crates/hm-regles/tests/megalopole.rs::les_quatre_defauts_du_10_11_sont_signales_par_des_regles"
+
+[[entree]]
+id = "H4"
+origine = "vu en jeu le 11/11/2026 ; VMF du 10/11"
+texte = "13 salles de WC sans cabines : les cuvettes sont alignées à découvert"
+couverture = "regle"
+regle = "phys.wc_sans_cloison"
+note = "depuis le lot B de la phase 4, les mêmes 13 pièces sortent aussi par sem.role_trop_grand : 630 × 888 pour un rôle « wc »"
+test = "crates/hm-regles/tests/megalopole.rs::les_quatre_defauts_du_10_11_sont_signales_par_des_regles"
+
+# ---------------------------------------------------------------- défauts historiques du projet
+
+[[entree]]
+id = "H5"
+origine = "plantage en jeu du 31/10/2026"
+texte = "plus de 192 areaportals : le jeu plante au chargement"
+couverture = "regle"
+regle = "budget.serre"
+test = "crates/hm-regles/tests/registre.rs::plus_de_192_areaportals"
+
+[[entree]]
+id = "H6"
+origine = "log de compilation du 12/11/2026"
+texte = "props statiques à 96 % de la limite du compilateur (15 801 sur 16 384)"
+couverture = "regle"
+regle = "budget.serre"
+test = "crates/hm-regles/tests/megalopole.rs::la_map_actuelle_n_a_plus_ces_quatre_defauts"
+
+[[entree]]
+id = "H7"
+origine = "revue du 03/11/2026 (point B7, resté ouvert)"
+texte = "des modèles de Counter-Strike: Source sont posés : les joueurs sans CS:S les voient-ils ?"
+couverture = "regle"
+regle = "asset.autre_jeu"
+test = "crates/hm-regles/tests/megalopole.rs::la_map_actuelle_n_a_plus_ces_quatre_defauts"
+note = "tranché le 13/11/2026 : les 9 modèles (202 poses) viennent de content_cstrike, livré avec Garry's Mod depuis juillet 2025 ; la règle ne se déclenche que pour une archive d'un autre dossier de jeu"
+
+[[entree]]
+id = "H8"
+origine = "lecture du tour du 13/11/2026"
+texte = "piles d'épaves du désert avec quelques unités de jour entre elles"
+couverture = "regle"
+regle = "phys.flotte"
+test = "crates/hm-regles/tests/registre.rs::les_epaves_empilees_sortent"
+
+[[entree]]
+id = "H9"
+origine = "lecture du tour du 13/11/2026"
+texte = "sommets à 99 % et indices d'eau à 97 % de leur limite"
+couverture = "partielle"
+regle = "budget.serre"
+test = "crates/hm-regles/tests/megalopole.rs::la_map_actuelle_n_a_plus_ces_quatre_defauts"
+note = "ces deux budgets ne se connaissent qu'après vbsp : l'alerte reprend le dernier log ou le vbsp lancé à part (hm vbsp)"
+
+[[entree]]
+id = "H10"
+origine = "compilations d'octobre 2026"
+texte = "fuite : une entité voit le vide, la map ne compile pas sa visibilité"
+couverture = "partielle"
+regle = "geo.fuite"
+test = "tests/vbsp_fuite.py"
+note = "trouvée par vbsp lancé à part, pas par une règle instantanée"
+
+[[entree]]
+id = "H11"
+origine = "lecture du tour du 13/11/2026"
+texte = "caisses enneigées en intérieur, marquage des conteneurs en miroir, parquet à échelle démesurée"
+couverture = "aucune"
+note = "défauts de texture : aucune règle ; ils se voient sur les planches du tour"
+
+[[entree]]
+id = "H12"
+origine = "lecture du tour du 13/11/2026"
+texte = "lampadaire au milieu d'une ruelle"
+couverture = "phase4"
+note = "règle d'aménagement : le mobilier urbain ne se pose pas dans l'axe d'un passage. Non écrite au lot B : il faut d'abord que le modèle déclare les passages"
+
+# ---------------------------------------------------------------- les 18 signalements faits en jeu (11 et 12/11/2026)
+
+[[entree]]
+id = "L01"
+origine = "signalement en jeu"
+texte = "il faut créer des portes de bureaux"
+couverture = "regle"
+regle = "sem.baie_sans_porte"
+test = "crates/hm-regles/tests/megalopole.rs::trois_signalements_du_11_11_retrouves_par_les_regles"
+note = "retrouvé sur le VMF du 11/11 au soir (bureaux de la tour Nacre, niveau 12 161) ; absent de la map actuelle"
+
+[[entree]]
+id = "L02"
+origine = "signalement en jeu"
+texte = "un toilette avec le vide derrière ?"
+couverture = "aucune"
+note = "le vide se voyait à travers un modèle (la trace du jeu touchait un modèle), pas à travers une face de solide : aucune règle ne l'attrape. La règle voisine geo.nodraw_visible, écrite pour lui, couvre les faces de solides en nodraw"
+
+[[entree]]
+id = "L03"
+origine = "signalement en jeu"
+texte = "H7 à retravailler"
+couverture = "conception"
+
+[[entree]]
+id = "L04"
+origine = "signalement en jeu"
+texte = "terrain de basket à refaire, vraies barrières"
+couverture = "conception"
+
+[[entree]]
+id = "L05"
+origine = "signalement en jeu"
+texte = "remplacer ce bâtiment par une discothèque"
+couverture = "conception"
+
+[[entree]]
+id = "L06"
+origine = "signalement en jeu"
+texte = "panneau qui dépasse"
+couverture = "regle"
+regle = "phys.porte_a_faux"
+test = "crates/hm-regles/tests/megalopole.rs::trois_signalements_du_11_11_retrouves_par_les_regles"
+note = "retrouvé sur le VMF du 11/11 au soir (enseigne du cyber café, adossée à 83 %) ; absent de la map actuelle"
+
+[[entree]]
+id = "L07"
+origine = "signalement en jeu"
+texte = "vitre devant l'ascenseur"
+couverture = "partielle"
+regle = "joueur.inaccessible"
+test = "crates/hm-regles/tests/cas.rs::joueur_piece_inaccessible_et_piege"
+note = "le joueur simulé voit qu'une cabine n'est pas atteignable ; le cas précis d'une vitre devant une porte n'a pas de test"
+
+[[entree]]
+id = "L08"
+origine = "signalement en jeu"
+texte = "on voit le vide dans le tunnel (areaportal)"
+couverture = "hors_portee"
+note = "défaut de visibilité : il dépend du calcul de vvis et de l'état des areaportals en jeu"
+
+[[entree]]
+id = "L09"
+origine = "signalement en jeu"
+texte = "toilette et baignoire trop proches"
+couverture = "regle"
+regle = "sem.degagement"
+test = "crates/hm-regles/tests/megalopole.rs::trois_signalements_du_11_11_retrouves_par_les_regles"
+note = "retrouvé sur le VMF du 11/11 au soir (cuvette et baignoire à 0 l'une de l'autre) ; absent de la map actuelle. Le seuil de 12 est un choix, pas une norme"
+
+[[entree]]
+id = "L10"
+origine = "signalement en jeu"
+texte = "bug d'ombres au niveau des HLM"
+couverture = "hors_portee"
+note = "l'outil n'a ni ombres ni lightmaps"
+
+[[entree]]
+id = "L11"
+origine = "signalement en jeu"
+texte = "vrais modèles dans le penthouse"
+couverture = "conception"
+
+[[entree]]
+id = "L12"
+origine = "signalement en jeu"
+texte = "chambre pas assez éclairée dans H7"
+couverture = "hors_portee"
+note = "éclairage : se juge en jeu ; une estimation par pièce est possible en phase 5"
+
+[[entree]]
+id = "L13"
+origine = "signalement en jeu"
+texte = "vrais modèles 3D dans les hauts appartements H7"
+couverture = "conception"
+
+[[entree]]
+id = "L14"
+origine = "signalement en jeu"
+texte = "props bloquant l'accès à la chambre"
+couverture = "partielle"
+regle = "joueur.inaccessible"
+test = "crates/hm-regles/tests/cas.rs::joueur_piece_inaccessible_et_piege"
+note = "le joueur simulé compte tout le mobilier solide ; le test construit n'a que des murs, faute de modèles"
+
+[[entree]]
+id = "L15"
+origine = "signalement en jeu"
+texte = "il faudrait faire un vrai bar avec des bouteilles"
+couverture = "conception"
+
+[[entree]]
+id = "L16"
+origine = "signalement en jeu"
+texte = "club à refaire, pièces et étages"
+couverture = "conception"
+
+[[entree]]
+id = "L17"
+origine = "signalement en jeu"
+texte = "à remplacer par un petit parc"
+couverture = "conception"
+
+[[entree]]
+id = "L18"
+origine = "signalement en jeu"
+texte = "trou aux cadres des portes de bureaux"
+couverture = "aucune"
+note = "un jour entre le cadre (un modèle) et le mur : même cas que L02, aucune règle ne l'attrape"

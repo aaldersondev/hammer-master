@@ -1,0 +1,763 @@
+# Whitelist des matériaux du skill gmod-map-maker.
+# Seuls ces matériaux (+ tools, + le "kit" déclaré dans la spec d'une map) passent valider.py.
+# Chaque entrée a été VUE sur une planche (textures_planche.py --whitelist) : jamais de nom de mémoire.
+# source : gmod / hl2 = chez tous les joueurs ; cstrike = livré dans sourceengine/ de l'install,
+# non garanti chez tous les joueurs (vérifier en jeu avec whereis, ou packer) ; projet = packé par compiler.py.
+version: 1
+echelle_defaut: 0.25
+
+# Blockout (phase 1) : le générateur remplace TOUS les matériaux par ceux-ci quand phase = blockout.
+blockout:
+  sol: dev/dev_measuregeneric01b
+  mur: dev/dev_measurewall01a
+  plafond: dev/dev_measuregeneric01b
+  facade: dev/dev_measurewall01d
+  sol_exterieur: dev/dev_measuregeneric01b
+  detail: dev/dev_measuregeneric01
+  escalier: dev/dev_measurestairs01a
+  verre: dev/dev_glassfrosted01a
+
+# Textures d'outils : toujours autorisées.
+tools:
+  - tools/toolsnodraw        # face jamais vue : scelle, coupe, ne se dessine pas
+  - tools/toolsskybox        # ciel (plafond et haut des murs d'un extérieur)
+  - tools/toolsskybox2d
+  - tools/toolsblack
+  - tools/toolsclip
+  - tools/toolsplayerclip
+  - tools/toolsinvisible
+  - tools/toolsinvisibleladder   # brosse func_ladder (bloc classe: func_ladder), ajouté le 06/11/2026
+  - tools/toolstrigger
+  - tools/toolsareaportal
+  - tools/toolshint
+  - tools/toolsskip
+  - tools/toolsorigin
+
+# Usages : 6 à 14 matériaux par usage, choisis sur planche (02/11/2026). Échelles mesurées sur la VTF
+# (période du motif) : à 0,25, une texture de 512 px couvre 128 unités. Briques HL2 : ~34 rangs par
+# texture, soit ~3,75 u par rang à 0,25 (taille réelle d'un rang de brique).
+# Un matériau présent dans deux usages garde la même échelle (generer.py indexe les échelles par nom).
+usages:
+  sol_interieur:
+    - nom: tile/tilefloor001a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "damier noir et beige, carreaux de 30 cm, légèrement patiné"
+      echelle: 0.25
+    - nom: tile/tilefloor011a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "grands carreaux crème de 60 cm à cabochons noirs aux angles, propre"
+      echelle: 0.25
+    - nom: tile/tilefloor012a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "carrelage gris clair de 30 cm à joints gris, quelques rayures fines"
+      echelle: 0.25
+    - nom: tile/tilefloor019a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "carrelage vert bouteille de 30 cm, joints sombres (hôpital, commissariat)"
+      echelle: 0.25
+    - nom: tile/tilefloor020a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "grandes dalles de marbre bleu-noir veiné, sombre et froid"
+      echelle: 0.125
+    - nom: tile/tilefloor021a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "grandes dalles de marbre gris-beige veiné, joints fins"
+      echelle: 0.125
+    - nom: tile/tilefloor009a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "petits carreaux blancs à joints gris (salle de bain), légères salissures"
+      echelle: 0.5
+    - nom: props/carpetfloor004a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "moquette beige-kaki unie à grain fin"
+      echelle: 0.25
+    - nom: wood/woodfloor002
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "parquet à lames étroites miel-ambre, chaud et propre"
+      echelle: 0.25
+    - nom: wood/woodfloor007a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "parquet brun foncé à lames fines, légèrement usé"
+      echelle: 0.5
+    - nom: de_chateau/floor02
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "parquet à bâtons rompus brun moyen, propre"
+      echelle: 0.25
+    - nom: carpet/offflrb
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "moquette de bureau bleu-gris unie"
+      echelle: 0.25
+    - nom: de_nuke/nukfloora
+      source: cstrike
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "sol lisse gris-beige clair (lino ou béton ciré), uni"
+      echelle: 0.5
+    - nom: de_train/train_officetile_01
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "dalles beiges de 30 cm à joints gris (bureaux)"
+      echelle: 0.25
+
+  mur_interieur:
+    - nom: plaster/plasterwall005a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "enduit jaune paille pâle uni, rares petits éclats"
+      echelle: 0.25
+    - nom: plaster/plasterwall008a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "enduit beige-kaki uni, légèrement nuancé"
+      echelle: 0.25
+    - nom: plaster/plasterwall017a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "enduit blanc cassé crème, propre"
+      echelle: 0.25
+    - nom: plaster/plasterwall022a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "enduit ocre moutarde soutenu, uni (couleur d'accent)"
+      echelle: 0.25
+    - nom: plaster/plasterwall032a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "enduit gris clair chaud, finement taché"
+      echelle: 0.25
+    - nom: plaster/plasterwall042a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "peinture vert sauge pâle unie (administration)"
+      echelle: 0.25
+    - nom: plaster/plasterwall051b
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "peinture blanche presque unie, propre"
+      echelle: 0.25
+    - nom: tile/tilewall006a
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "carrelage mural blanc de 20 cm à joints gris, propre (sanitaires, métro)"
+      echelle: 0.25
+    - nom: concrete/concretewall001a
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "béton lisse gris clair, légères marques de coffrage"
+      echelle: 0.25
+    - nom: concrete/concretewall041a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "parpaings peints en blanc, joints visibles, propre (garage, entrepôt)"
+      echelle: 0.25
+    - nom: concrete/concretewall075a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "béton banché gris clair lisse à trous de banche"
+      echelle: 0.25
+    - nom: concrete/concretewall037a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "béton peint vert-de-gris foncé, petits éclats clairs (couloir, commissariat)"
+      echelle: 0.25
+    - nom: wood/woodwall032a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "lambris à panneaux moulurés en bois miel, 64 u de haut par texture (bureau, tribunal)"
+      echelle: 0.25
+
+  plafond:
+    - nom: props/acousticceiling002a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "dalles de faux plafond de 60 cm blanc cassé, quelques auréoles légères"
+      echelle: 0.25
+    - nom: plaster/plasterwall051b
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "plafond peint en blanc, presque uni"
+      echelle: 0.25
+    - nom: concrete/concreteceiling003a
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "dalle de béton gris très clair à trous de banche, propre"
+      echelle: 0.25
+    - nom: concrete/concreteceiling001a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "béton gris bleuté nuancé, taches d'humidité diffuses (parking)"
+      echelle: 0.25
+    - nom: concrete/concreteceiling004a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "béton gris-vert sombre veiné (sous-sol)"
+      echelle: 0.25
+    - nom: wood/woodceiling003a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "lambris de bois peint en blanc à lames étroites"
+      echelle: 0.25
+    - nom: metal/metalceiling005a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "tôle grise à peinture blanchâtre écaillée (industriel)"
+      echelle: 0.25
+    - nom: plaster/plasterceiling002b
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "plafond à caissons pyramidaux beige de 60 cm, ancien et décoratif"
+      echelle: 0.25
+    - nom: tile/ceilingtilea
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "faux plafond blanc propre, dalles de 60×120 cm et profilés gris"
+      echelle: 0.25
+    - nom: de_nuke/nuke_ceiling_facility_01
+      source: cstrike
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "panneaux gris béton de 60 cm à joints, propres"
+      echelle: 0.25
+    - nom: plaster/milceil001
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "plâtre blanc cassé lisse, très légères marques"
+      echelle: 0.25
+    - nom: de_train/train_metalceiling_01
+      source: cstrike
+      styles: [cyberpunk, interieur]
+      aspect: "bac acier nervuré bleu-noir sombre"
+      echelle: 0.25
+
+  facade:
+    - nom: brick/brickwall003a
+      source: hl2
+      styles: [realiste]
+      aspect: "brique rouge-orangé régulière, joints clairs, propre"
+      echelle: 0.25
+    - nom: brick/brickwall053a
+      source: hl2
+      styles: [realiste]
+      aspect: "brique brun-rouge foncé régulière, légèrement patinée"
+      echelle: 0.25
+    - nom: brick/brickwall049a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "brique sombre gris-brun à joints foncés, urbaine"
+      echelle: 0.3
+    - nom: building_template/building_template002a
+      source: hl2
+      styles: [realiste]
+      aspect: "pierre de taille blanche en blocs réguliers, joints gris"
+      echelle: 0.5
+    - nom: building_template/building_template029a
+      source: hl2
+      styles: [realiste]
+      aspect: "pierre de taille beige-gris en assises, légèrement salie"
+      echelle: 0.25
+    - nom: building_template/building_template007a
+      source: hl2
+      styles: [realiste]
+      aspect: "enduit gris clair, quelques petites taches de rouille"
+      echelle: 0.5
+    - nom: building_template/building_template013a
+      source: hl2
+      styles: [realiste]
+      aspect: "enduit taupe uni, mat"
+      echelle: 0.5
+    - nom: building_template/building_template012a
+      source: hl2
+      styles: [realiste]
+      aspect: "enduit ocre orangé, fines fissures discrètes"
+      echelle: 0.5
+    - nom: building_template/building_template024a
+      source: hl2
+      styles: [realiste]
+      aspect: "enduit rouge brique (terracotta) uni"
+      echelle: 0.5
+    - nom: stone/stonewall013a
+      source: hl2
+      styles: [realiste]
+      aspect: "grands blocs de marbre blanc veiné (banque, mairie)"
+      echelle: 0.25
+    - nom: stone/stonewall021h
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "parement de pierre gris clair en bandes horizontales, moderne"
+      echelle: 0.5
+    - nom: concrete/concretewall064a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "béton banché gris clair en panneaux à trous de banche"
+      echelle: 0.5
+    - nom: concrete/concretewall065a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton brut gris foncé moucheté"
+      echelle: 0.25
+    - nom: cs_italy/marketwall02
+      source: cstrike
+      styles: [realiste]
+      aspect: "enduit jaune chaud méditerranéen, propre"
+      echelle: 0.5
+
+  toit:
+    - nom: props/tarpaperroof002a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "toit plat en papier goudronné gris-vert sombre, uni"
+      echelle: 0.5
+    - nom: props/rubberroof001a
+      source: hl2
+      styles: [realiste]
+      aspect: "bardeaux bitumés gris ardoise en rangs réguliers"
+      echelle: 0.25
+    - nom: building_template/roof_template001a
+      source: hl2
+      styles: [realiste]
+      aspect: "ardoises en losange gris anthracite (toit parisien)"
+      echelle: 0.5
+    - nom: tile/tileroof004a
+      source: hl2
+      styles: [realiste]
+      aspect: "tuiles plates rouge-orangé en rangs, légèrement patinées"
+      echelle: 0.25
+    - nom: tile/tileroof002a
+      source: hl2
+      styles: [realiste]
+      aspect: "tuiles plates brun-violet sombre"
+      echelle: 0.25
+    - nom: wood/shingles001
+      source: hl2
+      styles: [realiste]
+      aspect: "bardeaux de bois gris vieilli"
+      echelle: 0.25
+    - nom: metal/metalroof003a
+      source: hl2
+      styles: [realiste]
+      aspect: "zinc à joints debout vert-de-gris clair, petites taches"
+      echelle: 0.25
+    - nom: metal/metalroof004a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "tôle à joints debout rouge brique"
+      echelle: 0.25
+    - nom: metal/metalroof006a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "bac acier anthracite à joints debout"
+      echelle: 0.25
+    - nom: metal/metalroof002a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "bac acier nervuré bleu nuit sombre"
+      echelle: 0.25
+    - nom: metal/metalroof005a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "tôle galvanisée grise à joints, traces de rouille"
+      echelle: 0.25
+    - nom: tile/infroofb
+      source: cstrike
+      styles: [realiste]
+      aspect: "tuiles canal orange vif (style méditerranéen)"
+      echelle: 0.5
+    - nom: wood/milroof003
+      source: cstrike
+      styles: [realiste]
+      aspect: "bardeaux de bois clair (maison nord-américaine)"
+      echelle: 0.25
+
+  route:
+    - nom: concrete/concretefloor024a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "asphalte gris foncé à grain fin, uni"
+      echelle: 0.5
+    - nom: concrete/concretefloor026a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "enrobé gris moyen lisse, uni"
+      echelle: 0.5
+    - nom: concrete/concretefloor027a
+      source: hl2
+      styles: [realiste]
+      aspect: "asphalte gris à gravillons apparents, uni"
+      echelle: 0.5
+    - nom: concrete/concretefloor027b
+      source: hl2
+      styles: [realiste]
+      aspect: "asphalte gris avec ligne blanche continue au centre (bande de 256 px de large)"
+      echelle: 0.5
+    - nom: concrete/concretefloor033k
+      source: hl2
+      styles: [realiste]
+      aspect: "asphalte gris, ligne blanche discontinue au centre, fines fissures"
+      echelle: 0.5
+    - nom: concrete/concretefloor037a
+      source: hl2
+      styles: [realiste]
+      aspect: "chaussée à deux voies : lignes de rive blanches et axe discontinu, fines fissures"
+      echelle: 0.5
+    - nom: concrete/concretefloor033y
+      source: hl2
+      styles: [realiste]
+      aspect: "passage piéton à bandes blanches sur asphalte fissuré"
+      echelle: 0.5
+    - nom: concrete/concretefloor038a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "asphalte gris rapiécé, réseau de fissures, usé"
+      echelle: 0.5
+    - nom: gm_construct/construct_concrete_ground
+      source: gmod
+      styles: [realiste, cyberpunk]
+      aspect: "enrobé gris uni très propre, haute résolution (2048 px)"
+      echelle: 0.25
+    - nom: cs_assault/pavement001a
+      source: cstrike
+      styles: [realiste]
+      aspect: "asphalte gris clair propre, uni"
+      echelle: 0.5
+    - nom: cs_assault/pavement001
+      source: cstrike
+      styles: [realiste]
+      aspect: "asphalte gris avec axe jaune discontinu (style nord-américain)"
+      echelle: 0.5
+    - nom: de_nuke/nukfloorc
+      source: cstrike
+      styles: [realiste, cyberpunk]
+      aspect: "asphalte gris sombre propre (1024 px)"
+      echelle: 0.25
+
+  trottoir:
+    - nom: concrete/concretefloor016a
+      source: hl2
+      styles: [realiste]
+      aspect: "dalles de béton gris de 60 cm à joints, légèrement tachées"
+      echelle: 0.25
+    - nom: concrete/concretefloor023a
+      source: hl2
+      styles: [realiste]
+      aspect: "dalles de béton gris clair de 60 cm, propres"
+      echelle: 0.25
+    - nom: concrete/concretefloor028c
+      source: hl2
+      styles: [realiste]
+      aspect: "grandes dalles de trottoir grises à joints larges, taches de chewing-gum"
+      echelle: 0.25
+    - nom: concrete/concretefloor011a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "béton coulé gris clair moucheté, uni"
+      echelle: 0.5
+    - nom: concrete/concretefloor019a
+      source: hl2
+      styles: [realiste]
+      aspect: "petits pavés carrés gris rosé de 15 cm en grille"
+      echelle: 0.25
+    - nom: concrete/concretefloor034a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "béton gris à joint de dilatation, taches légères"
+      echelle: 0.25
+    - nom: gm_construct/construct_concrete_floor
+      source: gmod
+      styles: [realiste]
+      aspect: "dalles gravillonnées de 50 cm à joints, propres"
+      echelle: 0.5
+    - nom: gm_construct/construct_concrete_ground_bright
+      source: gmod
+      styles: [realiste, cyberpunk]
+      aspect: "béton gris clair uni, haute résolution (2048 px)"
+      echelle: 0.25
+    - nom: concrete/curba
+      source: cstrike
+      styles: [realiste]
+      aspect: "face de bordure de trottoir en béton gris, bas sali (bande 512×64)"
+      echelle: 0.25
+
+  sol_exterieur:
+    - nom: nature/grassfloor002a
+      source: gmod
+      styles: [realiste]
+      aspect: "herbe verte rase, quelques touches de terre"
+      echelle: 0.5
+    - nom: nature/grassfloor003a
+      source: gmod
+      styles: [realiste]
+      aspect: "herbe sèche jaune paille clairsemée"
+      echelle: 0.5
+    - nom: nature/forest_grass_01
+      source: gmod
+      styles: [realiste]
+      aspect: "herbe vert olive dense et uniforme"
+      echelle: 0.5
+    - nom: nature/construct_grass
+      source: gmod
+      styles: [realiste]
+      aspect: "pelouse verte à taches plus sombres"
+      echelle: 0.5
+    - nom: nature/dirtfloor006a
+      source: hl2
+      styles: [realiste]
+      aspect: "terre brune mêlée d'herbe verte"
+      echelle: 0.5
+    - nom: nature/dirtfloor008a
+      source: hl2
+      styles: [realiste]
+      aspect: "terre battue claire gravillonnée"
+      echelle: 0.5
+    - nom: nature/gravelfloor002a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "gravier ou ballast gris foncé serré"
+      echelle: 0.25
+    - nom: nature/gravelfloor004a
+      source: gmod
+      styles: [realiste]
+      aspect: "gravier fin beige-gris"
+      echelle: 0.25
+    - nom: stone/cobble08a
+      source: hl2
+      styles: [realiste]
+      aspect: "pavés gris-vert irréguliers à joints sombres"
+      echelle: 0.15
+    - nom: stone/stonefloor006a
+      source: hl2
+      styles: [realiste]
+      aspect: "pavés gris-brun en rangs serrés"
+      echelle: 0.25
+    - nom: stone/stonefloor011a
+      source: hl2
+      styles: [realiste]
+      aspect: "pavés gris posés en losanges"
+      echelle: 0.2
+    - nom: cs_italy/cobble02
+      source: cstrike
+      styles: [realiste, cyberpunk]
+      aspect: "pavés carrés gris foncé réguliers, propres"
+      echelle: 0.25
+    - nom: cs_italy/cobble06
+      source: cstrike
+      styles: [realiste]
+      aspect: "dalles de granit gris allongées, appareil irrégulier"
+      echelle: 0.25
+
+  plinthe_cadre:
+    - nom: wood/woodstair002c
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "bois brun foncé uni à fil fin (main courante, plinthe)"
+      echelle: 0.25
+    - nom: wood/woodstair002a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "marche en bois brun à nez de marche marqué"
+      echelle: 0.25
+    - nom: wood/woodshelf002a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "surface gris-blanc mate légèrement marbrée (bois peint : chambranle, plinthe)"
+      echelle: 0.25
+    - nom: stone/stonestair001a
+      source: hl2
+      styles: [realiste]
+      aspect: "pierre grise granuleuse unie (seuil, marche, dessus de bordure)"
+      echelle: 0.25
+    - nom: concrete/concretestair002a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "marche en béton gris à bandes antidérapantes noires"
+      echelle: 0.25
+    - nom: tile/tilestair001a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "marche carrelée claire à bandes antidérapantes noires"
+      echelle: 0.25
+    - nom: metal/metalstair001a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "marche en métal gris à bandes antidérapantes"
+      echelle: 0.25
+    - nom: metal/metalbeam001a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "poutre métallique grise rivetée, rouille et coulures"
+      echelle: 0.25
+    - nom: de_piranesi/pi_wood3
+      source: cstrike
+      styles: [realiste, interieur]
+      aspect: "bois vernis acajou à moulure (cadre de porte, boiserie)"
+      echelle: 0.25
+    - nom: de_nuke/nukibeama
+      source: cstrike
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "profilé métal gris clair peint, arête inférieure soulignée"
+      echelle: 0.25
+    - nom: metal/drtrimc
+      source: cstrike
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "montant de cadre en métal gris clair à rainures (bande 64×512)"
+      echelle: 0.25
+
+  metal:
+    - nom: metal/metalwall001a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "bardage nervuré gris clair, propre"
+      echelle: 0.25
+    - nom: metal/metalwall042a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "tôle ondulée bleu acier"
+      echelle: 0.25
+    - nom: metal/metalwall021a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "tôle ondulée brun-rouge rouillée, régulière"
+      echelle: 0.25
+    - nom: metal/metalwall070a
+      source: hl2
+      styles: [realiste]
+      aspect: "tôle ondulée crème jaune pâle, propre (hangar)"
+      echelle: 0.25
+    - nom: metal/metalwall076a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "panneaux de métal bleu nuit sombre, légèrement tachés"
+      echelle: 0.25
+    - nom: metal/metalwall045a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "plaques d'acier gris à pointes de diamant"
+      echelle: 0.25
+    - nom: metal/metalwall005b
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "grandes plaques d'acier gris foncé jointives"
+      echelle: 0.25
+    - nom: metal/metalpipe006a
+      source: hl2
+      styles: [cyberpunk, interieur]
+      aspect: "panneaux de métal blancs rivetés, propres"
+      echelle: 0.25
+    - nom: metal/metalfloor001a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "tôle larmée brun-gris en grandes plaques"
+      echelle: 0.25
+    - nom: metal/metalfloor007a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "tôle à picots antidérapante gris moyen"
+      echelle: 0.25
+    - nom: metal/metalgrate011a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "caillebotis d'acier ajouré (alphatest), pour passerelles"
+      echelle: 0.25
+    - nom: metal/metalgrate013a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "grillage soudé à mailles carrées, ajouré (alphatest)"
+      echelle: 0.25
+    - nom: metal/metalrail003a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "garde-corps tubulaire, main courante et lisses, ajouré (512×128)"
+      echelle: 0.375
+    - nom: metal/metalhull009b
+      source: cstrike
+      styles: [realiste, cyberpunk]
+      aspect: "bardage métallique blanc à joints debout, propre"
+      echelle: 0.25
+
+  verre:
+    - nom: glass/glasswindowbreak070a
+      source: hl2
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "vitre claire gris-vert translucide, unie"
+      echelle: 0.25
+    - nom: glass/glasswindow007a
+      source: hl2
+      styles: [realiste, interieur]
+      aspect: "verre armé gris translucide, petites taches"
+      echelle: 0.25
+    - nom: glass/glasswindow070c
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "vitrage teinté bleu-vert très sombre, opaque et réfléchissant (tours)"
+      echelle: 0.25
+    - nom: glass/glasswindow041a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "verrière à petits carreaux translucides gris-vert, montants fins"
+      echelle: 0.25
+    - nom: glass/glasswindow028d
+      source: hl2
+      styles: [realiste]
+      aspect: "châssis d'atelier opaque à carreaux gris, montants métalliques"
+      echelle: 0.5
+    - nom: glass/offwndwb
+      source: cstrike
+      styles: [realiste, cyberpunk, interieur]
+      aspect: "verre de bureau bleu nuit translucide, reflets doux"
+      echelle: 0.25
+    - nom: glass/offwndwa
+      source: cstrike
+      styles: [realiste, cyberpunk]
+      aspect: "façade vitrée opaque de bureaux à montants (fenêtres répétées)"
+      echelle: 0.5
+
+  eau_beton_sale:
+    - nom: concrete/concretewall054a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton à coulures de rouille brun-orangé"
+      echelle: 0.25
+    - nom: concrete/concretewall055b
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton gris-vert sombre, taches et salissures"
+      echelle: 0.25
+    - nom: concrete/concretewall065b
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton sombre à longues coulures verticales"
+      echelle: 0.25
+    - nom: concrete/concretewall073a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton noirâtre très sale, éclats clairs"
+      echelle: 0.25
+    - nom: concrete/concretefloor028a
+      source: hl2
+      styles: [realiste, cyberpunk]
+      aspect: "dalle de béton grise tachée, fines fissures"
+      echelle: 0.25
+    - nom: concrete/concretefloor012a
+      source: hl2
+      styles: [cyberpunk]
+      aspect: "béton gris foncé rugueux, taches sombres"
+      echelle: 0.25
+    - nom: de_train/train_cement_floor_01
+      source: cstrike
+      styles: [realiste, cyberpunk]
+      aspect: "sol de béton gris nuancé, usé mais régulier"
+      echelle: 0.25
+    - nom: de_nuke/nukfloorb
+      source: cstrike
+      styles: [cyberpunk, interieur]
+      aspect: "sol industriel gris-vert taché, uni"
+      echelle: 0.5

@@ -1,0 +1,9 @@
+/target/
+**/target/
+.hammer-master/
+*.bsp
+*.jpg.tmp
+essais/
+demo/**/*.jpg
+bin/
+_compile/

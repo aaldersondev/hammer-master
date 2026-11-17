@@ -1,0 +1,12 @@
+[package]
+name = "hm-geom"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+glam.workspace = true
+hm-vmf.workspace = true
+
+[dev-dependencies]
+hm-vmf.workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "hm-espace"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+glam.workspace = true
+rayon.workspace = true
+hm-scene.workspace = true

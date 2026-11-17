@@ -1,0 +1,16 @@
+[package]
+name = "hm-render"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+glam.workspace = true
+anyhow.workspace = true
+wgpu.workspace = true
+pollster.workspace = true
+bytemuck.workspace = true
+image.workspace = true
+ab_glyph.workspace = true
+hm-assets.workspace = true
+hm-scene.workspace = true

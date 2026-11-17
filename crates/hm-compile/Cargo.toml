@@ -1,0 +1,15 @@
+[package]
+name = "hm-compile"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Compiler une map (vbsp, vvis, vrad), journal, fuite, lancement du jeu"
+
+[dependencies]
+hm-assets.workspace = true
+hm-vmf.workspace = true
+image.workspace = true
+
+[dev-dependencies]
+hm-doc.workspace = true
+glam.workspace = true
