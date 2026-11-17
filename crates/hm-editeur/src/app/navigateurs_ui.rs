@@ -59,7 +59,7 @@ impl Editeur {
             let _ = c.kill();
         }
         let Some(f) = self.vfs.read(&format!("sound/{rel}")) else {
-            self.erreur = Some(format!("sound/{rel} introuvable dans les fichiers du jeu"));
+            self.erreur = Some(tr!("sound/{rel} introuvable dans les fichiers du jeu", "sound/{rel} not found in the game files"));
             return;
         };
         let ext = rel.rsplit('.').next().unwrap_or("wav");
@@ -81,7 +81,7 @@ impl Editeur {
         }
         match c.spawn() {
             Ok(x) => self.navigateurs.lecteur = Some(x),
-            Err(e) => self.erreur = Some(format!("lecture du son impossible : {e}")),
+            Err(e) => self.erreur = Some(tr!("lecture du son impossible : {e}", "cannot play the sound: {e}")),
         }
     }
 
@@ -89,7 +89,7 @@ impl Editeur {
     fn poser_cle(&mut self, cle: &str, valeur: &str) {
         let Ok((_, ents, _)) = hm_doc::resoudre(self.session.doc(), &self.session.selection) else { return };
         if ents.is_empty() {
-            self.statut = format!("aucune entité sélectionnée pour {cle} = {valeur}");
+            self.statut = tr!("aucune entité sélectionnée pour {cle} = {valeur}", "no entity selected for {cle} = {valeur}");
             return;
         }
         let commandes = ents.iter().map(|e| Commande::Cles { entite: *e, cles: vec![(cle.to_string(), Some(valeur.to_string()))] }).collect();
@@ -108,9 +108,9 @@ impl Editeur {
             let f = n.filtre_sons.to_lowercase();
             let mots: Vec<&str> = f.split_whitespace().collect();
             let vus: Vec<usize> = (0..liste.len()).filter(|i| mots.iter().all(|m| liste[*i].0.to_lowercase().contains(m))).collect();
-            super::barres::fenetre(ctx, "Navigateur de sons").open(&mut ouvert).resizable(true).default_size([480.0, 460.0]).show(ctx, |ui| {
+            super::barres::fenetre(ctx, crate::langue::t("Navigateur de sons")).open(&mut ouvert).resizable(true).default_size([480.0, 460.0]).show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label("Chercher");
+                    ui.label(crate::langue::t("Chercher"));
                     ui.add(egui::TextEdit::singleline(&mut n.filtre_sons).hint_text("weapon pistol, door…").desired_width(220.0));
                     ui.label(format!("{} / {}", vus.len(), liste.len()));
                 });
@@ -130,16 +130,16 @@ impl Editeur {
                 ui.separator();
                 ui.horizontal(|ui| {
                     let c = n.choisi_son;
-                    if ui.add_enabled(c.map_or(false, |i| liste[i].1.is_some()), egui::Button::new("Écouter")).clicked() {
+                    if ui.add_enabled(c.map_or(false, |i| liste[i].1.is_some()), egui::Button::new(crate::langue::t("Écouter"))).clicked() {
                         action = c.map(|i| (0, i));
                     }
-                    if ui.button("Arrêter").clicked() {
+                    if ui.button(crate::langue::t("Arrêter")).clicked() {
                         action = Some((2, 0));
                     }
                     ui.separator();
-                    ui.label("clé");
+                    ui.label(crate::langue::t("clé"));
                     ui.add(egui::TextEdit::singleline(&mut n.cle_son).desired_width(80.0));
-                    if ui.add_enabled(c.is_some(), egui::Button::new("Poser sur la sélection")).clicked() {
+                    if ui.add_enabled(c.is_some(), egui::Button::new(crate::langue::t("Poser sur la sélection"))).clicked() {
                         action = c.map(|i| (1, i));
                     }
                 });
@@ -174,9 +174,9 @@ impl Editeur {
             let f = n.filtre_particules.to_lowercase();
             let mots: Vec<&str> = f.split_whitespace().collect();
             let vus: Vec<usize> = (0..liste.len()).filter(|i| mots.iter().all(|m| liste[*i].0.to_lowercase().contains(m) || liste[*i].1.to_lowercase().contains(m))).collect();
-            super::barres::fenetre(ctx, "Navigateur de particules").open(&mut ouvert).resizable(true).default_size([480.0, 460.0]).show(ctx, |ui| {
+            super::barres::fenetre(ctx, crate::langue::t("Navigateur de particules")).open(&mut ouvert).resizable(true).default_size([480.0, 460.0]).show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label("Chercher");
+                    ui.label(crate::langue::t("Chercher"));
                     ui.add(egui::TextEdit::singleline(&mut n.filtre_particules).hint_text("fire, smoke, explosion…").desired_width(220.0));
                     ui.label(format!("{} / {}", vus.len(), liste.len()));
                 });
@@ -185,7 +185,7 @@ impl Editeur {
                 egui::ScrollArea::vertical().max_height(ui.available_height() - 40.0).auto_shrink(false).show_rows(ui, h, vus.len(), |ui, rangs| {
                     for &i in &vus[rangs] {
                         let (nom, fichier) = &liste[i];
-                        let r = ui.selectable_label(n.choisi_particule == Some(i), format!("{nom}   ({})", fichier.trim_start_matches("particles/")));
+                        let r = ui.selectable_label(n.choisi_particule == Some(i), tr!("{nom}   ({})", "{nom}   ({})", fichier.trim_start_matches("particles/")));
                         if r.clicked() {
                             n.choisi_particule = Some(i);
                         }
@@ -195,7 +195,7 @@ impl Editeur {
                     }
                 });
                 ui.separator();
-                if ui.add_enabled(n.choisi_particule.is_some(), egui::Button::new("Poser sur la sélection (effect_name)")).clicked() {
+                if ui.add_enabled(n.choisi_particule.is_some(), egui::Button::new(crate::langue::t("Poser sur la sélection (effect_name)"))).clicked() {
                     poser = n.choisi_particule.map(|i| liste[i].0.clone());
                 }
             });

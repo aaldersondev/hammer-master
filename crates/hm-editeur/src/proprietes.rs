@@ -49,14 +49,14 @@ impl Proprietes {
             }
         };
         ui.horizontal(|ui| {
-            ui.strong(if monde { "Monde (worldspawn)".to_string() } else if ents.len() > 1 { format!("{} entités", ents.len()) } else { format!("Entité n° {}", ents[0].id) });
+            ui.strong(if monde { crate::langue::t("Monde (worldspawn)").to_string() } else if ents.len() > 1 { tr!("{} entités", "{} entities", ents.len()) } else { tr!("Entité n° {}", "Entity #{}", ents[0].id) });
             if classe_nom.is_empty() {
-                ui.label("(classes différentes)");
+                ui.label(crate::langue::t("(classes différentes)"));
             }
         });
         if !monde {
             ui.horizontal(|ui| {
-                ui.label("Classe");
+                ui.label(crate::langue::t("Classe"));
                 let mut c = self.tampons.get(&(cle_tampon, "classname".into())).cloned().unwrap_or_else(|| classe_nom.clone());
                 let r = ui.add(egui::TextEdit::singleline(&mut c).desired_width(200.0));
                 if r.changed() {
@@ -101,7 +101,7 @@ impl Proprietes {
                 ui.add(egui::Label::new(egui::RichText::new(c.description.replace("\\n", "\n")).small().weak()).wrap());
             }
             None if !classe_nom.is_empty() => {
-                ui.colored_label(egui::Color32::from_rgb(255, 170, 80), format!("« {classe_nom} » n'est dans aucun FGD chargé"));
+                ui.colored_label(egui::Color32::from_rgb(255, 170, 80), tr!("« {classe_nom} » n'est dans aucun FGD chargé", "\"{classe_nom}\" is in no loaded FGD"));
             }
             _ => {}
         }
@@ -117,7 +117,7 @@ impl Proprietes {
                         }
                         let actuel = valeur(&ents, &p.nom);
                         let rep = ui.label(if p.libelle.is_empty() { p.nom.clone() } else { p.libelle.clone() });
-                        let aide = format!("{} ({})\n{}{}", p.nom, p.genre, p.description.replace("\\n", "\n"), p.defaut.as_ref().map(|d| format!("\npar défaut : {d}")).unwrap_or_default());
+                        let aide = format!("{} ({})\n{}{}", p.nom, p.genre, p.description.replace("\\n", "\n"), p.defaut.as_ref().map(|d| tr!("\npar défaut : {d}", "\ndefault: {d}")).unwrap_or_default());
                         rep.on_hover_text(aide);
                         self.champ(ui, p, actuel, cle_tampon, faces, &mut |k, v| poser(&mut out, k, v));
                         ui.end_row();
@@ -145,7 +145,7 @@ impl Proprietes {
                             poser(&mut out, &k, Some(t));
                             self.tampons.remove(&cle);
                         }
-                        if ui.small_button("x").on_hover_text("retirer la clé").clicked() {
+                        if ui.small_button("x").on_hover_text(crate::langue::t("retirer la clé")).clicked() {
                             poser(&mut out, &k, None);
                         }
                     });
@@ -154,7 +154,7 @@ impl Proprietes {
             });
             if let Some(s) = ents[0].sorties.as_ref().filter(|s| !s.is_empty()) {
                 ui.separator();
-                ui.strong(format!("Sorties ({})", s.len()));
+                ui.strong(tr!("Sorties ({})", "Outputs ({})", s.len()));
                 for (k, v) in s {
                     ui.label(egui::RichText::new(format!("{k} > {}", v.replace('\u{1b}', ","))).monospace().small());
                 }
@@ -162,9 +162,9 @@ impl Proprietes {
         });
         ui.separator();
         ui.horizontal(|ui| {
-            ui.add(egui::TextEdit::singleline(&mut self.nouvelle_cle.0).hint_text("clé").desired_width(90.0));
-            ui.add(egui::TextEdit::singleline(&mut self.nouvelle_cle.1).hint_text("valeur").desired_width(130.0));
-            if ui.button("Ajouter").clicked() && !self.nouvelle_cle.0.trim().is_empty() {
+            ui.add(egui::TextEdit::singleline(&mut self.nouvelle_cle.0).hint_text(crate::langue::t("clé")).desired_width(90.0));
+            ui.add(egui::TextEdit::singleline(&mut self.nouvelle_cle.1).hint_text(crate::langue::t("valeur")).desired_width(130.0));
+            if ui.button(crate::langue::t("Ajouter")).clicked() && !self.nouvelle_cle.0.trim().is_empty() {
                 let (k, v) = std::mem::take(&mut self.nouvelle_cle);
                 poser(&mut out, k.trim(), Some(v));
             }
@@ -179,7 +179,7 @@ impl Proprietes {
         let affiche = if actuel.is_empty() && !differentes { p.defaut.clone().unwrap_or_default() } else { actuel.clone() };
         match p.genre.as_str() {
             "choices" if !p.choix.is_empty() => {
-                let libelle = p.choix.iter().find(|c| c.valeur == affiche).map(|c| c.libelle.clone()).unwrap_or_else(|| if differentes { "(différentes)".into() } else { affiche.clone() });
+                let libelle = p.choix.iter().find(|c| c.valeur == affiche).map(|c| c.libelle.clone()).unwrap_or_else(|| if differentes { crate::langue::t("(différentes)").into() } else { affiche.clone() });
                 // libellé court : la liste ne doit pas élargir le panneau
                 let court: String = if libelle.chars().count() > 26 { libelle.chars().take(25).collect::<String>() + "…" } else { libelle };
                 egui::ComboBox::from_id_salt(("choix", &p.nom)).selected_text(court).width(190.0).show_ui(ui, |ui| {
@@ -192,7 +192,7 @@ impl Proprietes {
             }
             "boolean" => {
                 let mut b = affiche.trim() == "1";
-                if ui.checkbox(&mut b, if differentes { "(différentes)" } else { "" }).changed() {
+                if ui.checkbox(&mut b, if differentes { crate::langue::t("(différentes)") } else { "" }).changed() {
                     poser(&p.nom, Some(if b { "1".into() } else { "0".into() }));
                 }
             }
@@ -233,7 +233,7 @@ impl Proprietes {
             "sidelist" => {
                 ui.horizontal(|ui| {
                     self.texte(ui, p, &affiche, &actuel, cle_tampon, 120.0, poser);
-                    if ui.add_enabled(!faces.is_empty(), egui::Button::new(format!("faces choisies ({})", faces.len()))).on_hover_text("choisir les faces à l'outil texture (Ctrl+clic pour en ajouter), l'entité restant sélectionnée").clicked() {
+                    if ui.add_enabled(!faces.is_empty(), egui::Button::new(tr!("faces choisies ({})", "chosen faces ({})", faces.len()))).on_hover_text(crate::langue::t("choisir les faces à l'outil texture (Ctrl+clic pour en ajouter), l'entité restant sélectionnée")).clicked() {
                         poser(&p.nom, Some(faces.iter().map(|f| f.to_string()).collect::<Vec<_>>().join(" ")));
                     }
                 });

@@ -36,18 +36,19 @@ impl Editeur {
             mots.iter().all(|m| s.contains(m))
         };
         let mut v: Vec<(Choix, String)> = Vec::new();
-        let mut actions: Vec<&(&'static str, &str, &[&str])> = ACTIONS.iter().filter(|(id, nom, _)| va(&format!("{nom} {id}"))).collect();
+        let mut actions: Vec<&(&'static str, &str, &[&str])> = ACTIONS.iter().filter(|(id, nom, _)| va(&format!("{} {id}", crate::langue::t(nom)))).collect();
         // les récentes d'abord, dans leur ordre
         actions.sort_by_key(|(id, _, _)| self.palette.recents.iter().position(|r| r == id).unwrap_or(usize::MAX));
         for (id, nom, _) in actions {
+            let nom = crate::langue::t(nom);
             let touche = self.rc.texte(id);
-            v.push((Choix::Action(id), if touche.is_empty() { nom.to_string() } else { format!("{nom}   ({touche})") }));
+            v.push((Choix::Action(id), if touche.is_empty() { nom.to_string() } else { tr!("{nom}   ({touche})", "{nom}   ({touche})") }));
         }
         if !mots.is_empty() {
             for e in self.session.doc().entites() {
                 let nom = e.get("targetname").unwrap_or("");
                 if va(&format!("{nom} {}", e.classe())) {
-                    v.push((Choix::Entite(e.id), format!("entité : {}{}", e.classe(), if nom.is_empty() { format!(" n° {}", e.id) } else { format!(" « {nom} »") })));
+                    v.push((Choix::Entite(e.id), tr!("entité : {}{}", "entity: {}{}", e.classe(), if nom.is_empty() { format!(" n° {}", e.id) } else { tr!(" « {nom} »", " \"{nom}\"") })));
                 }
                 if v.len() > 200 {
                     break;
@@ -70,8 +71,8 @@ impl Editeur {
             self.palette.choisi = self.palette.choisi.saturating_sub(1);
         }
         let mut lancer = None;
-        egui::Window::new("Palette de commandes").title_bar(false).resizable(false).anchor(egui::Align2::CENTER_TOP, [0.0, 60.0]).fixed_size([560.0, 0.0]).show(ctx, |ui| {
-            let r = ui.add(egui::TextEdit::singleline(&mut self.palette.texte).hint_text("commande, ou nom / classe d'une entité de la map").desired_width(f32::INFINITY));
+        egui::Window::new(crate::langue::t("Palette de commandes")).title_bar(false).resizable(false).anchor(egui::Align2::CENTER_TOP, [0.0, 60.0]).fixed_size([560.0, 0.0]).show(ctx, |ui| {
+            let r = ui.add(egui::TextEdit::singleline(&mut self.palette.texte).hint_text(crate::langue::t("commande, ou nom / classe d'une entité de la map")).desired_width(f32::INFINITY));
             r.request_focus();
             if r.changed() {
                 self.palette.choisi = 0;
@@ -88,7 +89,7 @@ impl Editeur {
                     }
                 }
                 if res.is_empty() {
-                    ui.weak("rien ne correspond");
+                    ui.weak(crate::langue::t("rien ne correspond"));
                 }
             });
         });

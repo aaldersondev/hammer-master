@@ -75,11 +75,11 @@ impl Editeur {
     pub(super) fn masquage_en_visgroup(&mut self) {
         let objets: Vec<Ref> = self.filtres.masques.iter().copied().collect();
         if objets.is_empty() {
-            self.statut = "rien de masqué (H)".into();
+            self.statut = crate::langue::t("rien de masqué (H)").into();
             return;
         }
         let n = self.session.doc().visgroups().len() + 1;
-        self.executer(Commande::CreerVisgroup { nom: format!("masqués {n}"), objets, cache: true });
+        self.executer(Commande::CreerVisgroup { nom: tr!("masqués {n}", "hidden {n}"), objets, cache: true });
         self.reafficher();
     }
 
@@ -89,7 +89,7 @@ impl Editeur {
         let sel = self.session.selection.clone();
         let vgs = self.session.doc().visgroups();
         ui.add_enabled_ui(!sel.is_empty() && !vgs.is_empty(), |ui| {
-            ui.menu_button("Déplacer la sélection vers le visgroup", |ui| {
+            ui.menu_button(crate::langue::t("Déplacer la sélection vers le visgroup"), |ui| {
                 for vg in &vgs {
                     if ui.button(&vg.nom).clicked() {
                         let membres = self.session.doc().membres_visgroups();
@@ -102,7 +102,7 @@ impl Editeur {
                             })
                             .collect();
                         commandes.push(Commande::AjouterAuVisgroup { visgroup: vg.id, objets: sel.clone() });
-                        self.executer(Commande::Lot { nom: format!("déplacer la sélection vers « {} »", vg.nom), commandes });
+                        self.executer(Commande::Lot { nom: tr!("déplacer la sélection vers « {} »", "move the selection to \"{}\"", vg.nom), commandes });
                         ui.close();
                     }
                 }

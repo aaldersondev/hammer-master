@@ -175,21 +175,21 @@ impl Editeur {
         }
         let Some(r) = &self.direct.resultat else {
             if self.direct.en_cours {
-                ui.weak("validation…");
+                ui.weak(crate::langue::t("validation…"));
                 ui.separator();
             }
             return;
         };
         let (e, a) = (r.problemes.iter().filter(|p| p.grave >= 2).count(), r.problemes.iter().filter(|p| p.grave == 1).count());
         let couleur = if e > 0 { egui::Color32::from_rgb(255, 120, 100) } else if a > 0 { egui::Color32::from_rgb(240, 200, 90) } else { ui.visuals().weak_text_color() };
-        let texte = format!("{e} erreur(s), {a} avertissement(s){}", if self.direct.en_cours { " …" } else { "" });
-        let clic = ui.add(egui::Label::new(egui::RichText::new(texte).color(couleur)).sense(egui::Sense::click())).on_hover_text(format!("validation en direct ({:.1} s) : cliquer pour la liste", r.duree)).clicked();
+        let texte = tr!("{e} erreur(s), {a} avertissement(s){}", "{e} error(s), {a} warning(s){}", if self.direct.en_cours { " …" } else { "" });
+        let clic = ui.add(egui::Label::new(egui::RichText::new(texte).color(couleur)).sense(egui::Sense::click())).on_hover_text(tr!("validation en direct ({:.1} s) : cliquer pour la liste", "live validation ({:.1} s): click for the list", r.duree)).clicked();
         if let Some(b) = &r.budgets {
             let plein = b.lignes.iter().filter_map(|l| l.limite.filter(|m| *m > 0).map(|m| (l.valeur as f64 / m as f64, &l.nom))).max_by(|x, y| x.0.total_cmp(&y.0));
             ui.separator();
             match plein {
-                Some((f, nom)) => ui.label(format!("budget le plus plein : {nom} {:.0} %", f * 100.0)),
-                None => ui.weak("budgets : limites après une compilation complète"),
+                Some((f, nom)) => ui.label(tr!("budget le plus plein : {nom} {:.0} %", "fullest budget: {nom} {:.0} %", f * 100.0)),
+                None => ui.weak(crate::langue::t("budgets : limites après une compilation complète")),
             };
         }
         ui.separator();

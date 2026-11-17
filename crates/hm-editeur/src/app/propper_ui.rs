@@ -40,13 +40,13 @@ impl Editeur {
         let p = match propper::preparer(self.session.doc(), &sel, &self.vfs, &self.propper.options) {
             Ok(p) => p,
             Err(e) => {
-                self.propper.journal = vec![format!("refusé : {e}")];
+                self.propper.journal = vec![tr!("refusé : {e}", "refused: {e}")];
                 return;
             }
         };
         let jeu = self.gameinfo.parent().map(PathBuf::from).unwrap_or_default();
         let sources = self.session.chemin().and_then(|c| c.parent()).map(PathBuf::from).unwrap_or_else(std::env::temp_dir).join("modelsrc").join(&p.nom);
-        self.propper.journal = vec![format!("{} triangles, {} pièce(s) de collision, {} face(s) enfouie(s) retirée(s)", p.triangles, p.pieces, p.faces_enfouies), format!("sources : {}", sources.display()), "compilation…".into()];
+        self.propper.journal = vec![tr!("{} triangles, {} pièce(s) de collision, {} face(s) enfouie(s) retirée(s)", "{} triangles, {} collision piece(s), {} buried face(s) removed", p.triangles, p.pieces, p.faces_enfouies), tr!("sources : {}", "sources: {}", sources.display()), crate::langue::t("compilation…").into()];
         let (tx, rx) = mpsc::channel();
         let origine = p.origine.to_array();
         // seulement ce qui est passé dans le modèle : pas une lumière ni un trigger sélectionnés avec les brosses
@@ -69,7 +69,7 @@ impl Editeur {
                     match r {
                         Ok(journal) => {
                             self.propper.journal.extend(journal.lines().filter(|l| l.contains("convex") || l.contains("WARNING")).map(String::from));
-                            self.propper.journal.push(format!("compilé : {modele}"));
+                            self.propper.journal.push(tr!("compilé : {modele}", "compiled: {modele}"));
                             // déjà affiché : les modèles de la vue sont rechargés
                             if self.propper.compiles.contains(&modele) {
                                 if let Some(g) = &mut self.gfx {
@@ -83,9 +83,9 @@ impl Editeur {
                             self.version_geo = None;
                             if self.propper.remplacer {
                                 let cles = vec![("model".to_string(), modele.clone())];
-                                self.executer(Commande::Lot { nom: format!("propper : {modele}"), commandes: vec![Commande::Supprimer { objets: sel }, Commande::CreerEntite { classe: "prop_static".into(), origine, cles }] });
+                                self.executer(Commande::Lot { nom: tr!("propper : {modele}", "propper: {modele}"), commandes: vec![Commande::Supprimer { objets: sel }, Commande::CreerEntite { classe: "prop_static".into(), origine, cles }] });
                             } else {
-                                self.statut = format!("compilé : {modele}");
+                                self.statut = tr!("compilé : {modele}", "compiled: {modele}");
                             }
                         }
                         Err(e) => self.propper.journal.extend(e.lines().map(String::from)),
@@ -103,27 +103,27 @@ impl Editeur {
         let n = self.session.selection.len();
         let occupe = self.propper.en_cours.is_some();
         let s = &mut self.propper;
-        super::barres::fenetre(ctx, "Propper++ : la sélection en modèle").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+        super::barres::fenetre(ctx, crate::langue::t("Propper++ : la sélection en modèle")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
             egui::Grid::new("propper").num_columns(2).show(ui, |ui| {
-                ui.label("Modèle (sous models/)");
+                ui.label(crate::langue::t("Modèle (sous models/)"));
                 ui.add(egui::TextEdit::singleline(&mut s.options.modele).desired_width(260.0));
                 ui.end_row();
-                ui.label("Matière (surfaceprop)");
+                ui.label(crate::langue::t("Matière (surfaceprop)"));
                 egui::ComboBox::from_id_salt("surfaceprop").selected_text(&s.options.surfaceprop).show_ui(ui, |ui| {
                     for m in ["concrete", "brick", "metal", "solidmetal", "wood", "wood_solid", "plastic", "glass", "tile", "rock", "dirt", "default"] {
                         ui.selectable_value(&mut s.options.surfaceprop, m.to_string(), m);
                     }
                 });
                 ui.end_row();
-                ui.label("Masse");
+                ui.label(crate::langue::t("Masse"));
                 ui.add(egui::DragValue::new(&mut s.options.masse).range(1.0..=50000.0).speed(10.0));
                 ui.end_row();
             });
-            ui.checkbox(&mut s.options.collision, "Collision (une pièce convexe par brosse)");
-            ui.checkbox(&mut s.remplacer, "Remplacer les brosses par le prop_static");
-            ui.weak("les faces en texture d'outil (nodraw, clip…) ne se dessinent pas ; leurs brosses comptent pour la collision");
-            ui.weak("le modèle et ses matériaux vont dans le dossier du jeu (models/, materials/models/) ; studiomdl 32 bits");
-            if ui.add_enabled(n > 0 && !occupe, egui::Button::new(if occupe { "compilation…" } else { "Construire et compiler" })).clicked() {
+            ui.checkbox(&mut s.options.collision, crate::langue::t("Collision (une pièce convexe par brosse)"));
+            ui.checkbox(&mut s.remplacer, crate::langue::t("Remplacer les brosses par le prop_static"));
+            ui.weak(crate::langue::t("les faces en texture d'outil (nodraw, clip…) ne se dessinent pas ; leurs brosses comptent pour la collision"));
+            ui.weak(crate::langue::t("le modèle et ses matériaux vont dans le dossier du jeu (models/, materials/models/) ; studiomdl 32 bits"));
+            if ui.add_enabled(n > 0 && !occupe, egui::Button::new(if occupe { crate::langue::t("compilation…") } else { crate::langue::t("Construire et compiler") })).clicked() {
                 lancer = true;
             }
             if !s.journal.is_empty() {

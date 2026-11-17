@@ -29,7 +29,8 @@ that it adds what a large map needs: a game-accurate renderer, continuous checki
 - **The real game files**: models, materials and textures are read from the folders and VPK archives of Garry's Mod
   and its addons, the same way the engine does it.
 
-> The user interface is currently in French.
+> The user interface is available in English and French: **Tools → Options → Langue / Language**. On first launch it
+> follows the Windows display language. Some messages from the map checks and the command history are still in French.
 
 ## Features
 

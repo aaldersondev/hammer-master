@@ -3,9 +3,17 @@
 //!     hammer-master.exe [carte.vmf] [--script gestes.txt]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+/// `format!` en deux langues : `tr!("français {x}", "english {x}", args…)` ; les deux gabarits sont vérifiés à la compilation.
+macro_rules! tr {
+    ($fr:literal, $en:literal $(, $($a:tt)*)?) => {
+        if $crate::langue::anglais() { format!($en $(, $($a)*)?) } else { format!($fr $(, $($a)*)?) }
+    };
+}
+
 mod app;
 mod gestes;
 mod icones;
+mod langue;
 mod modeles;
 mod options;
 mod proprietes;

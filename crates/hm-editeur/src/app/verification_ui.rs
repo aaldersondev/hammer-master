@@ -21,7 +21,7 @@ impl Editeur {
         let t = std::time::Instant::now();
         let log = self.log_compile();
         let (v, b, e, _) = verification::tout(self.session.doc(), &self.fgd, &self.vfs, self.session.chemin(), log.as_deref(), false);
-        self.statut = format!("vérification : {} problème(s) en {:.1} s", v.len(), t.elapsed().as_secs_f32());
+        self.statut = tr!("vérification : {} problème(s) en {:.1} s", "check: {} problem(s) in {:.1} s", v.len(), t.elapsed().as_secs_f32());
         self.montrer_verification(v, b, e);
         self.montrer_onglet(Onglet::Verification);
     }
@@ -72,16 +72,16 @@ impl Editeur {
 
     pub(super) fn panneau_verification(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui.button(format!("Vérifier ({})", self.rc.texte("Map_Check_For_Problems"))).clicked() {
+            if ui.button(tr!("Vérifier ({})", "Check ({})", self.rc.texte("Map_Check_For_Problems"))).clicked() {
                 self.verifier_map();
             }
-            ui.checkbox(&mut self.verification.visibles, "Parties visibles seulement");
+            ui.checkbox(&mut self.verification.visibles, crate::langue::t("Parties visibles seulement"));
         });
         if let Some(e) = &self.verification.erreur {
             ui.colored_label(egui::Color32::from_rgb(255, 130, 100), e);
         }
         let Some(liste) = self.verification.liste.clone() else {
-            ui.weak("pas encore vérifiée");
+            ui.weak(crate::langue::t("pas encore vérifiée"));
             return;
         };
         // un objet caché n'est pas dans les formes des vues
@@ -90,7 +90,7 @@ impl Editeur {
             Some(r) => self.boite_objet(r).is_some(),
         };
         let montres: Vec<usize> = (0..liste.len()).filter(|i| !self.verification.visibles || vus(&liste[*i])).collect();
-        ui.label(format!("{} problème(s){}", montres.len(), if montres.len() < liste.len() { format!(" visibles sur {}", liste.len()) } else { String::new() }));
+        ui.label(tr!("{} problème(s){}", "{} problem(s){}", montres.len(), if montres.len() < liste.len() { tr!(" visibles sur {}", " visible out of {}", liste.len()) } else { String::new() }));
         let mut aller = None;
         let place_budgets = if self.verification.budgets.is_some() { 190.0 } else { 0.0 };
         egui::ScrollArea::vertical().id_salt("verification").max_height(ui.available_height() - 40.0 - place_budgets).auto_shrink(false).show(ui, |ui| {
@@ -117,11 +117,11 @@ impl Editeur {
         let choisi = self.verification.choisi.and_then(|i| liste.get(i).map(|p| (i, p.clone())));
         ui.horizontal(|ui| {
             let objet = choisi.as_ref().map_or(false, |(_, p)| p.objet.is_some() || p.boite.is_some());
-            if ui.add_enabled(objet, egui::Button::new("Aller à")).clicked() {
+            if ui.add_enabled(objet, egui::Button::new(crate::langue::t("Aller à"))).clicked() {
                 self.aller_au_probleme(choisi.as_ref().unwrap().0);
             }
             let corr = choisi.as_ref().and_then(|(i, p)| p.correction.clone().map(|c| (*i, c)));
-            if ui.add_enabled(corr.is_some(), egui::Button::new("Corriger")).clicked() {
+            if ui.add_enabled(corr.is_some(), egui::Button::new(crate::langue::t("Corriger"))).clicked() {
                 let (i, c) = corr.unwrap();
                 self.executer(c);
                 if let Some(l) = &mut self.verification.liste {
@@ -130,10 +130,10 @@ impl Editeur {
                 self.verification.choisi = None;
             }
             let genre = choisi.as_ref().filter(|(_, p)| p.correction.is_some()).map(|(_, p)| p.genre.clone());
-            if ui.add_enabled(genre.is_some(), egui::Button::new("Tout corriger (ce type)")).clicked() {
+            if ui.add_enabled(genre.is_some(), egui::Button::new(crate::langue::t("Tout corriger (ce type)"))).clicked() {
                 let g = genre.unwrap();
                 let commandes: Vec<Commande> = liste.iter().filter(|p| p.genre == g).filter_map(|p| p.correction.clone()).collect();
-                self.executer(Commande::Lot { nom: format!("corriger : {g}"), commandes });
+                self.executer(Commande::Lot { nom: tr!("corriger : {g}", "fix: {g}"), commandes });
                 if let Some(l) = &mut self.verification.liste {
                     l.retain(|p| p.genre != g || p.correction.is_none());
                 }
@@ -142,7 +142,7 @@ impl Editeur {
         });
         if let Some(b) = &self.verification.budgets {
             ui.separator();
-            ui.strong(format!("Budgets{}", if b.log.is_some() { "" } else { " (limites après une compilation complète)" }));
+            ui.strong(format!("Budgets{}", if b.log.is_some() { "" } else { crate::langue::t(" (limites après une compilation complète)") }));
             egui::ScrollArea::vertical().id_salt("budgets").max_height(160.0).show(ui, |ui| {
                 egui::Grid::new("budgets").striped(true).num_columns(3).show(ui, |ui| {
                     for l in &b.lignes {
@@ -152,7 +152,7 @@ impl Editeur {
                             Some(m) => {
                                 let f = l.valeur as f64 / m as f64;
                                 let c = if f > 1.0 { egui::Color32::from_rgb(255, 120, 100) } else if f >= 0.9 { egui::Color32::from_rgb(240, 200, 90) } else { ui.visuals().text_color() };
-                                ui.colored_label(c, format!("{:.0} % de {m}", f * 100.0));
+                                ui.colored_label(c, tr!("{:.0} % de {m}", "{:.0} % of {m}", f * 100.0));
                             }
                             None => {
                                 ui.weak("—");

@@ -78,7 +78,7 @@ impl Editeur {
         if self.outil != Outil::Sommets {
             if !self.sommets.solides.is_empty() {
                 if self.sommets.solides.iter().any(|s| !s.en_attente.is_empty()) {
-                    self.statut = "outil sommets quitté : la face coupée et non pliée est abandonnée".into();
+                    self.statut = crate::langue::t("outil sommets quitté : la face coupée et non pliée est abandonnée").into();
                 }
                 self.sommets = Default::default();
             }
@@ -120,12 +120,11 @@ impl Editeur {
             };
             self.sommets.choisis.clear();
         }
-        self.statut = format!(
-            "sommets : {}",
+        self.statut = tr!("sommets : {}", "vertices: {}",
             match self.sommets.mode {
-                ModeSommets::Tous => "sommets et arêtes",
-                ModeSommets::Sommets => "sommets seuls",
-                ModeSommets::Aretes => "arêtes seules",
+                ModeSommets::Tous => crate::langue::t("sommets et arêtes"),
+                ModeSommets::Sommets => crate::langue::t("sommets seuls"),
+                ModeSommets::Aretes => crate::langue::t("arêtes seules"),
             }
         );
     }
@@ -235,7 +234,7 @@ impl Editeur {
     pub(super) fn echelle_sommets(&mut self, k: f64) {
         let tous: Vec<DVec3> = self.sommets.choisis.iter().map(|(x, p)| self.sommets.position(*x, *p)).collect();
         if tous.is_empty() {
-            self.statut = "aucun sommet choisi (outil sommets)".into();
+            self.statut = crate::langue::t("aucun sommet choisi (outil sommets)").into();
             return;
         }
         let c = tous.iter().fold(DVec3::ZERO, |a, p| a + *p) / tous.len() as f64;
@@ -250,7 +249,7 @@ impl Editeur {
                 cmds.push(Commande::ModifierSommets { solide: s.id, operations });
             }
         }
-        self.executer(Commande::Lot { nom: format!("sommets à l'échelle ×{k}"), commandes: cmds });
+        self.executer(Commande::Lot { nom: tr!("sommets à l'échelle ×{k}", "vertices scaled ×{k}"), commandes: cmds });
     }
 
     fn deplacer_sommets(&mut self, delta: DVec3) {
@@ -267,12 +266,12 @@ impl Editeur {
         let c = match cmds.len() {
             0 => return,
             1 => cmds.pop().unwrap(),
-            _ => Commande::Lot { nom: "modifier des sommets".into(), commandes: cmds },
+            _ => Commande::Lot { nom: crate::langue::t("modifier des sommets").into(), commandes: cmds },
         };
         let nom = c.nom();
         match self.session.executer(c) {
             Ok(_) => {
-                self.statut = format!("fait : {nom}");
+                self.statut = tr!("fait : {nom}", "done: {nom}");
                 // les maillages sont refaits depuis le document ; les points choisis suivent leur déplacement
                 let decales: Vec<(u64, DVec3)> = self.sommets.choisis.iter().map(|(k, p)| (self.sommets.solides[*k].id, self.sommets.position(*k, *p) + delta)).collect();
                 for s in &mut self.sommets.solides {
@@ -288,7 +287,7 @@ impl Editeur {
                     .filter_map(|(id, pos)| poignees.iter().find(|(k, p)| self.sommets.solides[*k].id == *id && (self.sommets.position(*k, *p) - *pos).length() < 0.05).copied())
                     .collect();
             }
-            Err(e) => self.erreur = Some(format!("sommets refusés : {e}")),
+            Err(e) => self.erreur = Some(tr!("sommets refusés : {e}", "vertices refused: {e}")),
         }
     }
 
@@ -300,7 +299,7 @@ impl Editeur {
         }
         let c = &self.sommets.choisis;
         if c.len() != 2 || c[0].0 != c[1].0 {
-            self.statut = "couper une face : choisir deux points (sommets ou milieux d'arêtes) d'une même face".into();
+            self.statut = crate::langue::t("couper une face : choisir deux points (sommets ou milieux d'arêtes) d'une même face").into();
             return;
         }
         let k = c[0].0;
@@ -315,9 +314,9 @@ impl Editeur {
                 // les deux points restent choisis (ils sont devenus des sommets)
                 let poignees = self.sommets.poignees();
                 self.sommets.choisis = [pa, pb].iter().filter_map(|p| poignees.iter().find(|(x, q)| *x == k && matches!(q, Poignee::Sommet(_)) && (self.sommets.position(*x, *q) - *p).length() < 0.05).copied()).collect();
-                self.statut = "face coupée : déplacer les points de la coupe pour la plier (écrite au déplacement)".into();
+                self.statut = crate::langue::t("face coupée : déplacer les points de la coupe pour la plier (écrite au déplacement)").into();
             }
-            Err(e) => self.erreur = Some(format!("couper la face : {e}")),
+            Err(e) => self.erreur = Some(tr!("couper la face : {e}", "split the face: {e}")),
         }
     }
 

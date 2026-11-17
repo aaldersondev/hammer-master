@@ -90,12 +90,12 @@ impl Editeur {
     pub(super) fn panneau_remarques(&mut self, ui: &mut egui::Ui) {
         self.remarques_a_jour(false);
         ui.horizontal(|ui| {
-            if ui.button("Relire").on_hover_text("après de nouvelles remarques en jeu").clicked() {
+            if ui.button(crate::langue::t("Relire")).on_hover_text(crate::langue::t("après de nouvelles remarques en jeu")).clicked() {
                 self.remarques_a_jour(true);
             }
             match &self.remarques.lues {
-                Some((nom, l, _)) => ui.label(format!("{} remarque(s) pour {nom}", l.len())),
-                None => ui.weak("enregistrer la map : les remarques se rangent par nom de map"),
+                Some((nom, l, _)) => ui.label(tr!("{} remarque(s) pour {nom}", "{} remark(s) for {nom}", l.len())),
+                None => ui.weak(crate::langue::t("enregistrer la map : les remarques se rangent par nom de map")),
             };
         });
         if let Some(e) = &self.remarques.erreur {
@@ -125,10 +125,10 @@ impl Editeur {
         }
         let Some(i) = self.remarques.choisie else { return };
         ui.horizontal(|ui| {
-            if ui.button("Aller (vue du joueur)").clicked() {
+            if ui.button(crate::langue::t("Aller (vue du joueur)")).clicked() {
                 self.aller_a_remarque(i);
             }
-            for (etat, libelle) in [("corrige", "Corrigée"), ("ecarte", "Écartée"), ("ouvert", "Rouvrir")] {
+            for (etat, libelle) in [("corrige", crate::langue::t("Corrigée")), ("ecarte", crate::langue::t("Écartée")), ("ouvert", crate::langue::t("Rouvrir"))] {
                 if ui.button(libelle).clicked() {
                     if let (Some(suivi), Some((_, l, etats))) = (self.suivi(), &mut self.remarques.lues) {
                         let r = etats.fixer(&l[i], etat, "", &hm_signal::maintenant()).and_then(|_| etats.enregistrer(&suivi));
@@ -145,11 +145,11 @@ impl Editeur {
             self.remarques.image = s.capture.as_ref().and_then(|p| image::open(p).ok()).map(|img| {
                 let rgba = img.to_rgba8();
                 let ci = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], &rgba);
-                (i, ui.ctx().load_texture(format!("remarque {i}"), ci, Default::default()))
+                (i, ui.ctx().load_texture(tr!("remarque {i}", "remark {i}"), ci, Default::default()))
             });
         }
         ui.label(egui::RichText::new(&s.texte).strong());
-        ui.weak(format!("visé : {} ({:.0}, {:.0}, {:.0})", if s.texture.is_empty() { "?" } else { &s.texture }, s.vise[0], s.vise[1], s.vise[2]));
+        ui.weak(tr!("visé : {} ({:.0}, {:.0}, {:.0})", "aimed at: {} ({:.0}, {:.0}, {:.0})", if s.texture.is_empty() { "?" } else { &s.texture }, s.vise[0], s.vise[1], s.vise[2]));
         if let Some((_, t)) = &self.remarques.image {
             let w = ui.available_width();
             let sz = t.size_vec2();

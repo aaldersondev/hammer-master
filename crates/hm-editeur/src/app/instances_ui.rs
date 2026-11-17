@@ -12,22 +12,22 @@ impl Editeur {
     pub(super) fn creer_instance(&mut self) {
         let sel = self.session.selection.clone();
         let Some(dossier) = self.session.chemin().and_then(Path::parent).map(Path::to_path_buf) else {
-            self.erreur = Some("enregistrer la map d'abord : le fichier d'une instance est relatif à celui de la map".into());
+            self.erreur = Some(crate::langue::t("enregistrer la map d'abord : le fichier d'une instance est relatif à celui de la map").into());
             return;
         };
         let Some((lo, hi)) = hm_doc::boite_de(self.session.doc(), &sel) else { return };
         let vmf = match hm_doc::presse::prefabriquer(self.session.doc(), &sel) {
             Ok(v) => v,
             Err(e) => {
-                self.erreur = Some(format!("instance : {e}"));
+                self.erreur = Some(tr!("instance : {e}", "instance: {e}"));
                 return;
             }
         };
         let defaut = dossier.join("instances");
         let _ = std::fs::create_dir_all(&defaut);
-        let Some(p) = rfd::FileDialog::new().add_filter("Map Hammer", &["vmf"]).set_directory(&defaut).set_file_name("instance.vmf").save_file() else { return };
+        let Some(p) = rfd::FileDialog::new().add_filter(crate::langue::t("Map Hammer"), &["vmf"]).set_directory(&defaut).set_file_name("instance.vmf").save_file() else { return };
         let Ok(relatif) = p.strip_prefix(&dossier) else {
-            self.erreur = Some(format!("le fichier d'instance doit être sous le dossier de la map ({})", dossier.display()));
+            self.erreur = Some(tr!("le fichier d'instance doit être sous le dossier de la map ({})", "the instance file must be under the map's folder ({})", dossier.display()));
             return;
         };
         if let Err(e) = std::fs::write(&p, vmf) {
@@ -38,7 +38,7 @@ impl Editeur {
         let origine = [(lo.x + hi.x) / 2.0, (lo.y + hi.y) / 2.0, lo.z];
         let cles = vec![("file".to_string(), file.clone())];
         self.instances.borrow_mut().clear();
-        self.executer(Commande::Lot { nom: format!("instance depuis la sélection ({file})"), commandes: vec![Commande::Supprimer { objets: sel }, Commande::CreerEntite { classe: "func_instance".into(), origine, cles }] });
+        self.executer(Commande::Lot { nom: tr!("instance depuis la sélection ({file})", "instance from selection ({file})"), commandes: vec![Commande::Supprimer { objets: sel }, Commande::CreerEntite { classe: "func_instance".into(), origine, cles }] });
     }
 
     /// Fond les `func_instance` désignées (toutes si `toutes`) dans la map, en une étape.
@@ -50,7 +50,7 @@ impl Editeur {
             self.session.selection.iter().filter_map(|r| if let Ref::Entite(e) = r { Some(*e) } else { None }).filter(|e| doc.entite(*e).map_or(false, |x| x.classe().eq_ignore_ascii_case("func_instance"))).collect()
         };
         if ids.is_empty() {
-            self.statut = "aucune func_instance".into();
+            self.statut = crate::langue::t("aucune func_instance").into();
             return;
         }
         let dossier: Option<PathBuf> = self.session.chemin().and_then(Path::parent).map(Path::to_path_buf);
@@ -60,11 +60,11 @@ impl Editeur {
             match dossier.as_ref().map(|d| d.join(&fichier)).and_then(|p| std::fs::read_to_string(p).ok()) {
                 Some(vmf) => commandes.push(Commande::FondreInstance { entite: *id, vmf }),
                 None => {
-                    self.erreur = Some(format!("instance n° {id} : fichier « {fichier} » introuvable à côté de la map"));
+                    self.erreur = Some(tr!("instance n° {id} : fichier « {fichier} » introuvable à côté de la map", "instance #{id}: file \"{fichier}\" not found next to the map"));
                     return;
                 }
             }
         }
-        self.executer(Commande::Lot { nom: format!("fondre {} instance(s)", commandes.len()), commandes });
+        self.executer(Commande::Lot { nom: tr!("fondre {} instance(s)", "collapse {} instance(s)", commandes.len()), commandes });
     }
 }

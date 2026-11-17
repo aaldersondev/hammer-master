@@ -13,7 +13,7 @@ impl Editeur {
             let c = ctx.clone();
             match pont::ecouter(move || c.request_repaint()) {
                 Ok(e) => self.pont = Some(e),
-                Err(e) => self.statut = format!("lien avec Claude (MCP) impossible : {e}"),
+                Err(e) => self.statut = tr!("lien avec Claude (MCP) impossible : {e}", "link with Claude (MCP) failed: {e}"),
             }
         }
         // jamais au milieu d'un geste : la demande attend qu'il soit fini
@@ -37,7 +37,7 @@ impl Editeur {
                 let nom = commande.nom();
                 match self.session.executer(commande) {
                     Ok(x) => {
-                        self.statut = format!("Claude : {nom}{}", if x.message.is_empty() { String::new() } else { format!(" ({})", x.message) });
+                        self.statut = tr!("Claude : {nom}{}", "Claude: {nom}{}", if x.message.is_empty() { String::new() } else { format!(" ({})", x.message) });
                         if !x.crees.is_empty() {
                             self.session.selection = x.crees.clone();
                         }
@@ -54,9 +54,9 @@ impl Editeur {
                     }
                 }
                 if r.faits.is_empty() {
-                    r.erreur = Some(format!("rien à {}", if retablir { "rétablir" } else { "annuler" }));
+                    r.erreur = Some(tr!("rien à {}", "nothing to {}", if retablir { crate::langue::t("rétablir") } else { crate::langue::t("annuler") }));
                 } else {
-                    self.statut = format!("Claude : {} {}", if retablir { "rétabli" } else { "annulé" }, r.faits.join(", "));
+                    self.statut = tr!("Claude : {} {}", "Claude: {} {}", if retablir { crate::langue::t("rétabli") } else { crate::langue::t("annulé") }, r.faits.join(", "));
                 }
             }
             Demande::Historique => {
@@ -66,7 +66,7 @@ impl Editeur {
             }
             Demande::Enregistrer { chemin } => match self.session.enregistrer(chemin.as_deref()) {
                 Ok(p) => {
-                    self.statut = format!("Claude : enregistré {}", p.display());
+                    self.statut = tr!("Claude : enregistré {}", "Claude: saved {}", p.display());
                     self.nom_d_apres(&p);
                     r.faits = vec![p.display().to_string()];
                 }
@@ -74,26 +74,26 @@ impl Editeur {
             },
             Demande::Compiler { mode, zone, copier, embarquer, lancer_jeu, partielle } => {
                 if self.compil.is_some() {
-                    r.erreur = Some("une compilation est déjà en cours dans la fenêtre".into());
+                    r.erreur = Some(crate::langue::t("une compilation est déjà en cours dans la fenêtre").into());
                 } else if self.outils.is_none() {
-                    r.erreur = Some("Garry's Mod introuvable : pas de vbsp, vvis, vrad".into());
+                    r.erreur = Some(crate::langue::t("Garry's Mod introuvable : pas de vbsp, vvis, vrad").into());
                 } else {
                     match hm_compile::Mode::lire(&mode) {
                         Some(m) => {
                             (self.mode_compile, self.copier_bsp, self.embarquer, self.lancer_jeu, self.compil_partielle) = (m, copier, embarquer, lancer_jeu, partielle);
                             self.zone_compil = zone.map(|[lo, hi]| (DVec3::from(lo), DVec3::from(hi)));
                             self.derniere_compil = None;
-                            self.statut = format!("Claude : compilation {}", m.nom());
+                            self.statut = tr!("Claude : compilation {}", "Claude: compile {}", m.nom());
                             self.demarrer_compilation();
                         }
-                        None => r.erreur = Some(format!("mode inconnu « {mode} » : geometrie, rapide, normale ou finale")),
+                        None => r.erreur = Some(tr!("mode inconnu « {mode} » : geometrie, rapide, normale ou finale", "unknown mode \"{mode}\": geometrie, rapide, normale or finale")),
                     }
                 }
             }
             Demande::Montrer { objets } => {
                 let boites: Vec<(DVec3, DVec3)> = objets.iter().filter_map(|o| self.boite_objet(*o)).collect();
                 if boites.is_empty() {
-                    r.erreur = Some("aucun de ces objets n'existe dans la map de la fenêtre".into());
+                    r.erreur = Some(crate::langue::t("aucun de ces objets n'existe dans la map de la fenêtre").into());
                 } else {
                     let lo = boites.iter().fold(DVec3::INFINITY, |a, b| a.min(b.0));
                     let hi = boites.iter().fold(DVec3::NEG_INFINITY, |a, b| a.max(b.1));

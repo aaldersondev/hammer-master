@@ -18,10 +18,10 @@ pub enum Genre {
 impl Genre {
     pub fn nom(self) -> &'static str {
         match self {
-            Genre::Camera3D => "3D texturée",
-            Genre::Dessus => "Dessus (X/Y)",
-            Genre::Face => "Face (Y/Z)",
-            Genre::Cote => "Côté (X/Z)",
+            Genre::Camera3D => crate::langue::t("3D texturée"),
+            Genre::Dessus => crate::langue::t("Dessus (X/Y)"),
+            Genre::Face => crate::langue::t("Face (Y/Z)"),
+            Genre::Cote => crate::langue::t("Côté (X/Z)"),
         }
     }
 

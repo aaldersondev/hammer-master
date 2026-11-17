@@ -47,7 +47,7 @@ impl Editeur {
         let mut v = Vec::new();
         if let Some((m, ..)) = &self.modele_entite {
             let g = self.grille as f64;
-            v.push(TypeSemis { nom: format!("modèle choisi ({})", m.rsplit('/').next().unwrap_or(m)), base: vec![("classname".into(), "prop_static".into())], grille: [g, g], cas: vec![(1.0, vec![("model".into(), m.clone())])] });
+            v.push(TypeSemis { nom: tr!("modèle choisi ({})", "chosen model ({})", m.rsplit('/').next().unwrap_or(m)), base: vec![("classname".into(), "prop_static".into())], grille: [g, g], cas: vec![(1.0, vec![("model".into(), m.clone())])] });
         }
         v.extend(self.semis.types.clone().unwrap_or_default());
         v
@@ -56,26 +56,26 @@ impl Editeur {
     pub(super) fn reglages_semis(&mut self, ui: &mut egui::Ui) {
         let types = self.types_semis();
         if types.is_empty() {
-            ui.weak("aucun type : choisir un modèle dans l'onglet Modèles, ou des types dans hammerplusplus/scripts/sprinkle");
+            ui.weak(crate::langue::t("aucun type : choisir un modèle dans l'onglet Modèles, ou des types dans hammerplusplus/scripts/sprinkle"));
             return;
         }
         let s = &mut self.semis;
         s.choisi = s.choisi.min(types.len() - 1);
-        ui.label("Type");
+        ui.label(crate::langue::t("Type"));
         egui::ComboBox::from_id_salt("type_semis").width(220.0).selected_text(&types[s.choisi].nom).show_ui(ui, |ui| {
             for (k, t) in types.iter().enumerate() {
                 ui.selectable_value(&mut s.choisi, k, &t.nom);
             }
         });
-        ui.label(format!("grille {} × {}", types[s.choisi].grille[0], types[s.choisi].grille[1]));
-        ui.label("rayon");
+        ui.label(tr!("grille {} × {}", "grid {} × {}", types[s.choisi].grille[0], types[s.choisi].grille[1]));
+        ui.label(crate::langue::t("rayon"));
         ui.add(egui::DragValue::new(&mut s.pinceau.rayon).range(16.0..=4096.0).speed(4.0));
-        ui.checkbox(&mut s.pinceau.lacet_hasard, "lacet au hasard");
-        ui.checkbox(&mut s.pinceau.ecart, "écart dans la case");
-        ui.checkbox(&mut s.pinceau.aligner, "aligné sur la surface");
-        ui.radio_value(&mut s.retirer, false, "semer");
-        ui.radio_value(&mut s.retirer, true, "retirer");
-        ui.label(egui::RichText::new("3D : glisser ; Ctrl inverse").small().weak());
+        ui.checkbox(&mut s.pinceau.lacet_hasard, crate::langue::t("lacet au hasard"));
+        ui.checkbox(&mut s.pinceau.ecart, crate::langue::t("écart dans la case"));
+        ui.checkbox(&mut s.pinceau.aligner, crate::langue::t("aligné sur la surface"));
+        ui.radio_value(&mut s.retirer, false, crate::langue::t("semer"));
+        ui.radio_value(&mut s.retirer, true, crate::langue::t("retirer"));
+        ui.label(egui::RichText::new(crate::langue::t("3D : glisser ; Ctrl inverse")).small().weak());
     }
 
     pub(super) fn gestes_semis(&mut self, i: usize, rep: &egui::Response, ctx: &egui::Context) {
@@ -95,7 +95,7 @@ impl Editeur {
                     semis::retirer(self.session.doc(), t, c, self.semis.pinceau.rayon)
                 } else {
                     let v = semis::semer(self.session.doc(), t, c, self.semis.pinceau, self.semis.graine);
-                    (!v.is_empty()).then(|| Commande::Lot { nom: format!("semer « {} »", t.nom), commandes: v })
+                    (!v.is_empty()).then(|| Commande::Lot { nom: tr!("semer « {} »", "sprinkle \"{}\"", t.nom), commandes: v })
                 };
                 if let Some(cmd) = commande {
                     // semer ne change pas la sélection
@@ -103,8 +103,8 @@ impl Editeur {
                     let r = self.session.executer_continu(cmd, "semis");
                     self.session.selection = sel;
                     match r {
-                        Ok(_) => self.statut = format!("{} : {} entité(s)", if retirer { "retiré" } else { "semé" }, self.session.doc().nombre_objets().1),
-                        Err(e) => self.erreur = Some(format!("semis : {e}")),
+                        Ok(_) => self.statut = tr!("{} : {} entité(s)", "{}: {} entity(ies)", if retirer { crate::langue::t("retiré") } else { crate::langue::t("semé") }, self.session.doc().nombre_objets().1),
+                        Err(e) => self.erreur = Some(tr!("semis : {e}", "sprinkle: {e}")),
                     }
                 }
             }

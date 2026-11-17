@@ -38,22 +38,22 @@ impl Editeur {
     /// La section Displacement de l'outil texture (sur les faces choisies).
     pub(super) fn section_disp(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            ui.strong("Displacement");
+            ui.strong(crate::langue::t("Displacement"));
             egui::ComboBox::from_id_salt("puissance_disp").width(40.0).selected_text(self.sculpture.puissance.to_string()).show_ui(ui, |ui| {
                 for p in 2..=4 {
                     ui.selectable_value(&mut self.sculpture.puissance, p, format!("{p} ({0}×{0})", (1 << p) + 1));
                 }
             });
             let n = self.faces.len();
-            if ui.add_enabled(n > 0, egui::Button::new("Créer")).on_hover_text("faces à quatre côtés seulement").clicked() {
+            if ui.add_enabled(n > 0, egui::Button::new(crate::langue::t("Créer"))).on_hover_text(crate::langue::t("faces à quatre côtés seulement")).clicked() {
                 let faces = self.faces.clone();
                 self.executer(Commande::CreerDisp { faces, puissance: self.sculpture.puissance });
             }
             let avec: Vec<hm_doc::RefFace> = self.faces.iter().copied().filter(|rf| self.session.doc().solide(rf.solide).and_then(|s| s.faces.iter().find(|f| f.id == rf.face)).map_or(false, |f| f.disp.is_some())).collect();
-            if ui.add_enabled(!avec.is_empty(), egui::Button::new("Détruire")).clicked() {
+            if ui.add_enabled(!avec.is_empty(), egui::Button::new(crate::langue::t("Détruire"))).clicked() {
                 self.executer(Commande::DetruireDisp { faces: avec.clone() });
             }
-            if ui.add_enabled(avec.len() >= 2, egui::Button::new("Coudre")).on_hover_text("les bords communs prennent leur position moyenne").clicked() {
+            if ui.add_enabled(avec.len() >= 2, egui::Button::new(crate::langue::t("Coudre"))).on_hover_text(crate::langue::t("les bords communs prennent leur position moyenne")).clicked() {
                 self.executer(Commande::CoudreDisp { faces: avec });
             }
         });
@@ -62,28 +62,28 @@ impl Editeur {
     /// Les réglages du pinceau, sous les outils à gauche.
     pub(super) fn reglages_sculpture(&mut self, ui: &mut egui::Ui) {
         let r = &mut self.sculpture;
-        for (m, n) in [(ModeSculpture::Relever, "relever"), (ModeSculpture::Lisser, "lisser"), (ModeSculpture::Alpha, "alpha")] {
+        for (m, n) in [(ModeSculpture::Relever, crate::langue::t("relever")), (ModeSculpture::Lisser, crate::langue::t("lisser")), (ModeSculpture::Alpha, "alpha")] {
             ui.radio_value(&mut r.mode, m, n);
         }
-        ui.label(egui::RichText::new("rayon").small());
+        ui.label(egui::RichText::new(crate::langue::t("rayon")).small());
         ui.add(egui::DragValue::new(&mut r.rayon).range(8.0..=2048.0).speed(2.0));
         match r.mode {
             ModeSculpture::Relever => {
-                ui.label(egui::RichText::new("hauteur/coup").small());
+                ui.label(egui::RichText::new(crate::langue::t("hauteur/coup")).small());
                 ui.add(egui::DragValue::new(&mut r.hauteur).range(0.1..=128.0).speed(0.2));
             }
             ModeSculpture::Lisser => {
-                ui.label(egui::RichText::new("force").small());
+                ui.label(egui::RichText::new(crate::langue::t("force")).small());
                 ui.add(egui::DragValue::new(&mut r.force).range(0.01..=1.0).speed(0.01));
             }
             ModeSculpture::Alpha => {
-                ui.label(egui::RichText::new("alpha visé").small());
+                ui.label(egui::RichText::new(crate::langue::t("alpha visé")).small());
                 ui.add(egui::DragValue::new(&mut r.alpha).range(0.0..=255.0).speed(1.0));
-                ui.label(egui::RichText::new("force").small());
+                ui.label(egui::RichText::new(crate::langue::t("force")).small());
                 ui.add(egui::DragValue::new(&mut r.force).range(0.01..=1.0).speed(0.01));
             }
         }
-        ui.label(egui::RichText::new("3D : gauche applique, Ctrl+gauche inverse").small().weak());
+        ui.label(egui::RichText::new(crate::langue::t("3D : gauche applique, Ctrl+gauche inverse")).small().weak());
     }
 
     /// Dans la vue 3D avec l'outil Sculpter : vise sous le curseur, peint en glissant.
@@ -113,8 +113,8 @@ impl Editeur {
         };
         let c = Commande::PeindreDisp { faces: None, centre: centre.to_array(), rayon: r.rayon, pinceau };
         match self.session.executer_continu(c, "sculpter") {
-            Ok(r) => self.statut = format!("sculpter : {}", r.message),
-            Err(e) => self.erreur = Some(format!("sculpture refusée : {e}")),
+            Ok(r) => self.statut = tr!("sculpter : {}", "sculpt: {}", r.message),
+            Err(e) => self.erreur = Some(tr!("sculpture refusée : {e}", "sculpt refused: {e}")),
         }
         if rep.drag_stopped() {
             self.session.couper_continu();

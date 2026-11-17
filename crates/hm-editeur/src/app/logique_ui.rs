@@ -64,7 +64,7 @@ fn graphe(doc: &hm_doc::Document) -> (Vec<Noeud>, Vec<(u64, u64, String)>) {
             let c = col[&e.id];
             let r = par_colonne.entry(c).or_insert(0);
             *r += 1;
-            Noeud { id: e.id, titre: e.nom_donne().unwrap_or("(sans nom)").to_string(), classe: e.classe().to_string(), colonne: c, rang: *r - 1 }
+            Noeud { id: e.id, titre: e.nom_donne().unwrap_or(crate::langue::t("(sans nom)")).to_string(), classe: e.classe().to_string(), colonne: c, rang: *r - 1 }
         })
         .collect();
     (noeuds, liens)
@@ -79,8 +79,8 @@ impl Editeur {
         let sel: Vec<u64> = self.session.selection.iter().filter_map(|r| if let Ref::Entite(e) = r { Some(*e) } else { None }).collect();
         let (mut ouvert, mut aller) = (true, None::<u64>);
         let l = &mut self.logique;
-        super::barres::fenetre(ctx, "Vue logique").open(&mut ouvert).resizable(true).default_size([760.0, 480.0]).show(ctx, |ui| {
-            ui.label(format!("{} entité(s), {} lien(s) — glisser : déplacer, molette : zoomer, clic : sélectionner", noeuds.len(), liens.len()));
+        super::barres::fenetre(ctx, crate::langue::t("Vue logique")).open(&mut ouvert).resizable(true).default_size([760.0, 480.0]).show(ctx, |ui| {
+            ui.label(tr!("{} entité(s), {} lien(s) — glisser : déplacer, molette : zoomer, clic : sélectionner", "{} entity(ies), {} link(s) — drag: move, scroll: zoom, click: select", noeuds.len(), liens.len()));
             let (rect, rep) = ui.allocate_exact_size(ui.available_size(), Sense::click_and_drag());
             if rep.dragged() {
                 l.decalage += rep.drag_delta();

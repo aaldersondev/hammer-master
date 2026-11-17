@@ -188,19 +188,19 @@ impl Navigateur {
         self.recevoir(gameinfo);
         let mut choix = None;
         ui.horizontal(|ui| {
-            ui.label("Chercher");
+            ui.label(crate::langue::t("Chercher"));
             ui.add(egui::TextEdit::singleline(&mut self.filtre).hint_text("brick, concrete, tools/…").desired_width(f32::INFINITY));
         });
         ui.horizontal(|ui| {
-            ui.checkbox(&mut self.sans_modeles, "sans les dossiers exclus").on_hover_text(format!("exclus (Outils → Options) : {}", self.exclus.join(", ")));
-            ui.checkbox(&mut self.seulement_favoris, "favoris");
+            ui.checkbox(&mut self.sans_modeles, crate::langue::t("sans les dossiers exclus")).on_hover_text(tr!("exclus (Outils → Options) : {}", "excluded (Tools → Options): {}", self.exclus.join(", ")));
+            ui.checkbox(&mut self.seulement_favoris, crate::langue::t("favoris"));
         });
-        ui.label(format!("courante : {courant}"));
+        ui.label(tr!("courante : {courant}", "current: {courant}"));
         // ligne toujours présente : la grille ne bouge pas quand la première texture devient récente
         ui.horizontal(|ui| {
-            ui.label("récentes :");
+            ui.label(crate::langue::t("récentes :"));
             if self.recents.is_empty() {
-                ui.weak("aucune");
+                ui.weak(crate::langue::t("aucune"));
             }
             for r in self.recents.clone().iter().take(5) {
                 if ui.small_button(r.rsplit('/').next().unwrap_or(r)).on_hover_text(r).clicked() {
@@ -211,7 +211,7 @@ impl Navigateur {
         ui.separator();
         let Some(tous) = &self.tous else {
             ui.spinner();
-            ui.label("liste des matériaux en cours…");
+            ui.label(crate::langue::t("liste des matériaux en cours…"));
             ui.ctx().request_repaint();
             return choix;
         };
@@ -222,7 +222,7 @@ impl Navigateur {
             .filter(|m| !self.seulement_favoris || self.favoris.contains(*m))
             .filter(|m| mots.iter().all(|w| m.contains(w.as_str())))
             .collect();
-        ui.label(format!("{} matériau(x)", liste.len()));
+        ui.label(tr!("{} matériau(x)", "{} material(s)", liste.len()));
         let largeur = ui.available_width();
         let cote = 84.0;
         let par_ligne = ((largeur / (cote + 6.0)).floor() as usize).max(1);
@@ -263,7 +263,7 @@ impl Navigateur {
                             }
                             let nom = m.rsplit('/').next().unwrap_or(m);
                             let taille = v.map(|(_, t)| format!(" ({}×{})", t[0], t[1])).unwrap_or_default();
-                            let rep = rep.on_hover_text(format!("{m}{taille}\ndouble clic : appliquer à la sélection ; clic droit : favori"));
+                            let rep = rep.on_hover_text(tr!("{m}{taille}\ndouble clic : appliquer à la sélection ; clic droit : favori", "{m}{taille}\ndouble click: apply to the selection; right click: favorite"));
                             if rep.double_clicked() {
                                 choix = Some(Choix::Appliquer(m.clone()));
                             } else if rep.clicked() {
@@ -292,42 +292,42 @@ impl Navigateur {
         self.recevoir(gameinfo);
         let mut choix = None;
         let mut ouverte = true;
-        egui::Window::new("Navigateur de textures").open(&mut ouverte).default_size([920.0, 640.0]).resizable(true).show(ctx, |ui| {
+        egui::Window::new(crate::langue::t("Navigateur de textures")).open(&mut ouverte).default_size([920.0, 640.0]).resizable(true).show(ctx, |ui| {
             let f = &mut self.fenetre;
             ui.horizontal(|ui| {
-                ui.label("Taille");
+                ui.label(crate::langue::t("Taille"));
                 egui::ComboBox::from_id_salt("taille_vignettes").width(80.0).selected_text(format!("{0}×{0}", f.cote as u32)).show_ui(ui, |ui| {
                     for t in [64.0, 128.0, 256.0, 512.0] {
                         ui.selectable_value(&mut f.cote, t, format!("{0}×{0}", t as u32));
                     }
                 });
-                ui.label("Filtre");
+                ui.label(crate::langue::t("Filtre"));
                 ui.add(egui::TextEdit::singleline(&mut self.filtre).hint_text("grass, brick…").desired_width(180.0));
-                ui.label("Mots-clés");
+                ui.label(crate::langue::t("Mots-clés"));
                 ui.add(egui::TextEdit::singleline(&mut f.mots_cles).desired_width(120.0));
-                ui.checkbox(&mut f.employes, "Seulement celles de la map");
-                ui.checkbox(&mut self.sans_modeles, "Sans les dossiers exclus");
+                ui.checkbox(&mut f.employes, crate::langue::t("Seulement celles de la map"));
+                ui.checkbox(&mut self.sans_modeles, crate::langue::t("Sans les dossiers exclus"));
             });
             ui.horizontal(|ui| {
-                for (v, n) in [(&mut f.opaques, "Opaques"), (&mut f.translucides, "Translucides"), (&mut f.autoeclaires, "Autoéclairées"), (&mut f.envmask, "Masque d'envmap"), (&mut f.erreurs, "Introuvables"), (&mut f.alpha, "Alpha (damier)")] {
+                for (v, n) in [(&mut f.opaques, crate::langue::t("Opaques")), (&mut f.translucides, crate::langue::t("Translucides")), (&mut f.autoeclaires, crate::langue::t("Autoéclairées")), (&mut f.envmask, crate::langue::t("Masque d'envmap")), (&mut f.erreurs, crate::langue::t("Introuvables")), (&mut f.alpha, crate::langue::t("Alpha (damier)"))] {
                     ui.checkbox(v, n);
                 }
                 ui.separator();
-                if ui.button("Marquer").on_hover_text("sélectionne les objets qui emploient la texture courante").clicked() {
+                if ui.button(crate::langue::t("Marquer")).on_hover_text(crate::langue::t("sélectionne les objets qui emploient la texture courante")).clicked() {
                     choix = Some(Choix::Marquer(courant.to_string()));
                 }
-                if ui.button("Remplacer…").clicked() {
+                if ui.button(crate::langue::t("Remplacer…")).clicked() {
                     choix = Some(Choix::Remplacer(courant.to_string()));
                 }
-                if ui.button("Source").on_hover_text("le VMT de la texture courante").clicked() {
+                if ui.button(crate::langue::t("Source")).on_hover_text(crate::langue::t("le VMT de la texture courante")).clicked() {
                     choix = Some(Choix::Source(courant.to_string()));
                 }
-                if ui.button("Recharger").on_hover_text("relit la liste et les fichiers des matériaux").clicked() {
+                if ui.button(crate::langue::t("Recharger")).on_hover_text(crate::langue::t("relit la liste et les fichiers des matériaux")).clicked() {
                     choix = Some(Choix::Recharger);
                 }
             });
             let taille = self.vignettes.get(&courant.to_ascii_lowercase()).copied().flatten().map(|(_, t)| format!("  {}×{}", t[0], t[1])).unwrap_or_default();
-            ui.label(format!("courante : {courant}{taille}{}", if self.infos.is_none() { "   (propriétés des matériaux en cours de lecture : filtres pas encore actifs)" } else { "" }));
+            ui.label(tr!("courante : {courant}{taille}{}", "current: {courant}{taille}{}", if self.infos.is_none() { crate::langue::t("   (propriétés des matériaux en cours de lecture : filtres pas encore actifs)") } else { "" }));
             ui.separator();
             let Some(tous) = &self.tous else {
                 ui.spinner();
@@ -349,7 +349,7 @@ impl Navigateur {
                 })
                 .cloned()
                 .collect();
-            ui.label(format!("{} matériau(x)", liste.len()));
+            ui.label(tr!("{} matériau(x)", "{} material(s)", liste.len()));
             let cote = f.cote.min(ui.available_width() - 20.0).max(48.0);
             let alpha = f.alpha;
             let par_ligne = ((ui.available_width() / (cote + 6.0)).floor() as usize).max(1);
@@ -399,7 +399,7 @@ impl Navigateur {
                                     p.rect_stroke(rect, 0.0, egui::Stroke::new(2.0, egui::Color32::from_rgb(255, 200, 60)), egui::StrokeKind::Inside);
                                 }
                                 let taille = v.map(|(_, t)| format!(" ({}×{})", t[0], t[1])).unwrap_or_default();
-                                let rep = rep.on_hover_text(format!("{m}{taille}\nclic : texture courante ; double clic : appliquer à la sélection ; clic droit : favori"));
+                                let rep = rep.on_hover_text(tr!("{m}{taille}\nclic : texture courante ; double clic : appliquer à la sélection ; clic droit : favori", "{m}{taille}\nclick: current texture; double click: apply to the selection; right click: favorite"));
                                 if rep.double_clicked() {
                                     choix = Some(Choix::Appliquer(m.clone()));
                                 } else if rep.clicked() {

@@ -44,7 +44,7 @@ pub(super) fn fenetre<'a>(ctx: &egui::Context, titre: &'a str) -> egui::Window<'
 }
 
 fn nom(id: &str) -> &'static str {
-    ACTIONS.iter().find(|(a, ..)| *a == id).map_or("?", |(_, n, _)| n)
+    ACTIONS.iter().find(|(a, ..)| *a == id).map_or("?", |(_, n, _)| crate::langue::t(n))
 }
 
 const ONGLETS: [(Onglet, char, &str); 8] = [
@@ -180,11 +180,11 @@ impl Editeur {
                 }
                 for &(icone, secours, id) in *groupe {
                     if id == GRILLE_TAILLE {
-                        ui.add_sized([30.0, 30.0], egui::Label::new(format!("{}", self.grille))).on_hover_text("taille de la grille ([ et ])");
+                        ui.add_sized([30.0, 30.0], egui::Label::new(format!("{}", self.grille))).on_hover_text(crate::langue::t("taille de la grille ([ et ])"));
                         continue;
                     }
                     let icone = if id == "Tools_Toggle_Texture_Lock" && !self.verrou_texture { ic::VERROU_OUVERT } else { icone };
-                    if ic::bouton(ui, icone, secours, self.bascule(id).unwrap_or(false), self.possible(id), &self.aide(id)).clicked() {
+                    if ic::bouton(ui, icone, crate::langue::t(secours), self.bascule(id).unwrap_or(false), self.possible(id), &self.aide(id)).clicked() {
                         self.declencher(ui.ctx(), id);
                     }
                 }
@@ -236,7 +236,7 @@ impl Editeur {
     pub(super) fn onglets(&mut self, ui: &mut Ui) {
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing.x = 2.0;
-            for (o, icone, n) in ONGLETS {
+            for (o, icone, n) in ONGLETS.map(|(o, i, n)| (o, i, crate::langue::t(n))) {
                 if ic::bouton(ui, icone, n, self.onglet == o, true, n).clicked() {
                     if self.onglet == o {
                         self.panneau_reduit = true;
@@ -249,18 +249,18 @@ impl Editeur {
             }
         });
         if let Some((_, _, n)) = ONGLETS.iter().find(|(o, ..)| *o == self.onglet) {
-            ui.label(egui::RichText::new(*n).strong());
+            ui.label(egui::RichText::new(crate::langue::t(n)).strong());
         }
     }
 
     /// Le panneau de droite réduit : les onglets en colonne ; un clic l'ouvre sur l'onglet choisi.
     pub(super) fn onglets_reduits(&mut self, ui: &mut Ui) {
         ui.vertical_centered(|ui| {
-            if ic::bouton(ui, ic::AGRANDIR_PANNEAU, "«", false, true, "Rouvrir le panneau de droite").clicked() {
+            if ic::bouton(ui, ic::AGRANDIR_PANNEAU, "«", false, true, crate::langue::t("Rouvrir le panneau de droite")).clicked() {
                 self.panneau_reduit = false;
             }
             ui.separator();
-            for (o, icone, n) in ONGLETS {
+            for (o, icone, n) in ONGLETS.map(|(o, i, n)| (o, i, crate::langue::t(n))) {
                 if ic::bouton(ui, icone, n, self.onglet == o, true, n).clicked() {
                     self.montrer_onglet(o);
                 }
@@ -276,13 +276,13 @@ impl Editeur {
 
     pub(super) fn menus(&mut self, ui: &mut Ui) {
         egui::MenuBar::new().ui(ui, |ui| {
-            ui.menu_button("Fichier", |ui| {
+            ui.menu_button(crate::langue::t("Fichier"), |ui| {
                 self.entree(ui, "File_New");
                 self.entree(ui, "File_Open");
-                ui.menu_button("Fichiers récents", |ui| {
+                ui.menu_button(crate::langue::t("Fichiers récents"), |ui| {
                     let recents = crate::recents::lire();
                     if recents.is_empty() {
-                        ui.weak("aucun");
+                        ui.weak(crate::langue::t("aucun"));
                     }
                     for p in recents {
                         if ui.button(p.display().to_string()).clicked() {
@@ -300,18 +300,18 @@ impl Editeur {
                 ui.separator();
                 self.entree(ui, "File_Run_Map");
                 ui.separator();
-                if ui.button("Quitter").clicked() {
+                if ui.button(crate::langue::t("Quitter")).clicked() {
                     ui.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
-            ui.menu_button("Édition", |ui| {
+            ui.menu_button(crate::langue::t("Édition"), |ui| {
                 let h = self.session.historique();
                 let (fait, annule) = (h.faits().last().map(|c| c.nom.clone()), h.annules().last().map(|c| c.nom.clone()));
-                if ui.add_enabled(fait.is_some(), egui::Button::new(format!("Annuler {}", fait.unwrap_or_default())).shortcut_text(self.rc.texte("Edit_Undo"))).clicked() {
+                if ui.add_enabled(fait.is_some(), egui::Button::new(tr!("Annuler {}", "Undo {}", fait.unwrap_or_default())).shortcut_text(self.rc.texte("Edit_Undo"))).clicked() {
                     self.declencher(ui.ctx(), "Edit_Undo");
                     ui.close();
                 }
-                if ui.add_enabled(annule.is_some(), egui::Button::new(format!("Rétablir {}", annule.unwrap_or_default())).shortcut_text(self.rc.texte("Edit_Redo"))).clicked() {
+                if ui.add_enabled(annule.is_some(), egui::Button::new(tr!("Rétablir {}", "Redo {}", annule.unwrap_or_default())).shortcut_text(self.rc.texte("Edit_Redo"))).clicked() {
                     self.declencher(ui.ctx(), "Edit_Redo");
                     ui.close();
                 }
@@ -328,10 +328,10 @@ impl Editeur {
                     self.entree(ui, id);
                 }
             });
-            ui.menu_button("Carte", |ui| {
+            ui.menu_button(crate::langue::t("Carte"), |ui| {
                 self.entree(ui, "Map_Snap_To_Grid");
                 self.entree(ui, "View_Toggle_Grid");
-                ui.menu_button(format!("Taille de la grille ({})", self.grille), |ui| {
+                ui.menu_button(tr!("Taille de la grille ({})", "Grid size ({})", self.grille), |ui| {
                     self.entree(ui, "Map_Grid_Lower");
                     self.entree(ui, "Map_Grid_Higher");
                     ui.separator();
@@ -343,8 +343,8 @@ impl Editeur {
                         }
                     }
                 });
-                ui.menu_button("Unités des cotes", |ui| {
-                    for (k, n) in ["Unités", "Mètres (1 unité = 1 pouce)", "Pieds et pouces"].iter().enumerate() {
+                ui.menu_button(crate::langue::t("Unités des cotes"), |ui| {
+                    for (k, n) in [crate::langue::t("Unités"), crate::langue::t("Mètres (1 unité = 1 pouce)"), crate::langue::t("Pieds et pouces")].iter().enumerate() {
                         if ui.add(egui::Button::selectable(self.carte.unites == k as u8, *n)).clicked() {
                             self.carte.unites = k as u8;
                             ui.close();
@@ -367,17 +367,17 @@ impl Editeur {
                 self.entree(ui, "Map_Properties");
                 ui.separator();
                 let c = self.session.doc().cordons();
-                if ui.add_enabled(!self.session.selection.is_empty(), egui::Button::new("Cordon depuis la sélection")).on_hover_text("le cordon choisi dans l'onglet Visgroups › Cordon prend la boîte de la sélection").clicked() {
+                if ui.add_enabled(!self.session.selection.is_empty(), egui::Button::new(crate::langue::t("Cordon depuis la sélection"))).on_hover_text(crate::langue::t("le cordon choisi dans l'onglet Visgroups › Cordon prend la boîte de la sélection")).clicked() {
                     self.cordon_depuis_selection();
                     ui.close();
                 }
                 let mut actif = c.actif;
-                if ui.add_enabled(!c.liste.is_empty(), egui::Checkbox::new(&mut actif, "Cordon actif")).changed() {
+                if ui.add_enabled(!c.liste.is_empty(), egui::Checkbox::new(&mut actif, crate::langue::t("Cordon actif"))).changed() {
                     self.executer(Commande::Cordons { actif, liste: c.liste });
                 }
             });
-            ui.menu_button("Affichage", |ui| {
-                ui.menu_button("Vue active", |ui| {
+            ui.menu_button(crate::langue::t("Affichage"), |ui| {
+                ui.menu_button(crate::langue::t("Vue active"), |ui| {
                     for id in ["View_3D_Wireframe", "View_3D_Polygon", "View_3D_Textured", "View_3D_Textured_Shaded", "View_3D_Lighting_Preview"] {
                         self.entree(ui, id);
                     }
@@ -398,7 +398,7 @@ impl Editeur {
                     self.entree(ui, id);
                 }
                 self.menu_deplacer_vers_visgroup(ui);
-                if ui.button("Visgroups…").clicked() {
+                if ui.button(crate::langue::t("Visgroups…")).clicked() {
                     self.montrer_onglet(Onglet::Visgroups);
                     ui.close();
                 }
@@ -410,13 +410,13 @@ impl Editeur {
                 self.entree(ui, "View_Live_Validation");
                 self.entree(ui, "View_Walkable_Layer");
             });
-            ui.menu_button("Outils", |ui| {
+            ui.menu_button(crate::langue::t("Outils"), |ui| {
                 for id in ["Tools_Carve", "Tools_Merge"] {
                     self.entree(ui, id);
                 }
                 ui.horizontal(|ui| {
                     self.entree(ui, "Tools_Make_Hollow");
-                    ui.label("murs de");
+                    ui.label(crate::langue::t("murs de"));
                     ui.add(egui::DragValue::new(&mut self.epaisseur_murs).range(1.0..=512.0).speed(1.0));
                 });
                 ui.separator();
@@ -437,12 +437,12 @@ impl Editeur {
                 for id in ["Tools_Transform", "Tools_Vertex_Scale", "Tools_Snap_Selected_To_Grid", "Tools_Snap_Selected_To_Grid_Individually"] {
                     self.entree(ui, id);
                 }
-                ui.menu_button("Aligner", |ui| {
+                ui.menu_button(crate::langue::t("Aligner"), |ui| {
                     for id in ["Tools_Align_Left", "Tools_Align_Right", "Tools_Align_Top", "Tools_Align_Bottom"] {
                         self.entree(ui, id);
                     }
                 });
-                ui.menu_button("Miroir", |ui| {
+                ui.menu_button(crate::langue::t("Miroir"), |ui| {
                     for id in ["Edit_Flip_Horizontal", "Edit_Flip_Vertical"] {
                         self.entree(ui, id);
                     }
@@ -451,15 +451,15 @@ impl Editeur {
                     self.entree(ui, id);
                 }
                 ui.add_enabled_ui(!self.session.selection.is_empty(), |ui| {
-                    ui.menu_button("Couleur des objets", |ui| {
+                    ui.menu_button(crate::langue::t("Couleur des objets"), |ui| {
                         ui.horizontal(|ui| {
                             egui::color_picker::color_edit_button_srgb(ui, &mut self.couleur_objets);
-                            if ui.button("Au hasard").clicked() {
+                            if ui.button(crate::langue::t("Au hasard")).clicked() {
                                 let h = (self.session.version() as u64 ^ 0x9E37_79B9).wrapping_mul(0x2545_F491_4F6C_DD1D);
                                 self.couleur_objets = [(h >> 8) as u8 | 48, (h >> 24) as u8 | 48, (h >> 40) as u8 | 48];
                             }
                         });
-                        if ui.button("Appliquer à la sélection").clicked() {
+                        if ui.button(crate::langue::t("Appliquer à la sélection")).clicked() {
                             let objets = self.session.selection.clone();
                             self.executer(Commande::CouleurEditeur { objets, couleur: self.couleur_objets });
                             self.version_geo = None;
@@ -475,30 +475,30 @@ impl Editeur {
                     self.entree(ui, id);
                 }
             });
-            ui.menu_button("Instances", |ui| {
+            ui.menu_button(crate::langue::t("Instances"), |ui| {
                 for id in ["Tools_Create_Instance_From_Selection", "Instancing_Collapse_Selection", "Instancing_Collapse_All"] {
                     self.entree(ui, id);
                 }
             });
-            ui.menu_button("Compiler", |ui| {
+            ui.menu_button(crate::langue::t("Compiler"), |ui| {
                 self.entree(ui, "File_Run_Map");
                 self.entree(ui, "Compile_Zone");
             });
-            ui.menu_button("Aide", |ui| {
+            ui.menu_button(crate::langue::t("Aide"), |ui| {
                 self.entree(ui, "Tools_Keybinds");
                 self.entree(ui, "Palette_Commandes");
                 ui.separator();
-                if ui.button("Documentation de Hammer (wiki Valve)").clicked() {
+                if ui.button(crate::langue::t("Documentation de Hammer (wiki Valve)")).clicked() {
                     ui.ctx().open_url(egui::OpenUrl::new_tab("https://developer.valvesoftware.com/wiki/Category:Hammer"));
                     ui.close();
                 }
                 let limites = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/limites_et_dimensions.md");
-                if ui.add_enabled(limites.is_file(), egui::Button::new("Limites et dimensions du moteur")).clicked() {
+                if ui.add_enabled(limites.is_file(), egui::Button::new(crate::langue::t("Limites et dimensions du moteur"))).clicked() {
                     ui.ctx().open_url(egui::OpenUrl::new_tab(format!("file:///{}", limites.display().to_string().replace('\\', "/"))));
                     ui.close();
                 }
                 ui.separator();
-                if ui.button("À propos de Hammer Master").clicked() {
+                if ui.button(crate::langue::t("À propos de Hammer Master")).clicked() {
                     self.dialogues.a_propos = true;
                     ui.close();
                 }
@@ -538,7 +538,7 @@ impl Editeur {
         if p("File_Export_DXF") {
             if let Some(f) = rfd::FileDialog::new().add_filter("DXF", &["dxf"]).set_file_name(format!("{}.dxf", self.nom_compile)).save_file() {
                 match std::fs::write(&f, hm_edit::dxf::dxf(self.session.doc())) {
-                    Ok(()) => self.statut = format!("exporté en DXF : {}", f.display()),
+                    Ok(()) => self.statut = tr!("exporté en DXF : {}", "exported as DXF: {}", f.display()),
                     Err(e) => self.erreur = Some(format!("{} : {e}", f.display())),
                 }
             }
@@ -560,13 +560,13 @@ impl Editeur {
         }
         if p("Tools_Snap_Selected_To_Grid_Individually") {
             let c = disposition::caler_chacun(self.session.doc(), &sel, self.grille as f64, self.verrou_texture);
-            self.executer_ou(c, "déjà sur la grille");
+            self.executer_ou(c, crate::langue::t("déjà sur la grille"));
         }
         let (a, b, _) = self.vues[self.active].genre.axes();
         for (id, vertical, vers_max) in [("Tools_Align_Left", false, false), ("Tools_Align_Right", false, true), ("Tools_Align_Top", true, true), ("Tools_Align_Bottom", true, false)] {
             if p(id) {
                 let c = disposition::aligner(self.session.doc(), &sel, if vertical { b } else { a }, vers_max, self.verrou_texture);
-                self.executer_ou(c, "déjà alignés");
+                self.executer_ou(c, crate::langue::t("déjà alignés"));
             }
         }
         for (id, aligner, plafond) in [("Tools_Move_To_Floor", false, false), ("Tools_Move_To_Floor_Align", true, false), ("Tools_Move_To_Ceiling", false, true), ("Tools_Move_To_Ceiling_Align", true, true)] {
@@ -579,9 +579,9 @@ impl Editeur {
             // (les solides et les groupes ; une entité déjà là reste telle quelle)
             let commandes: Vec<Commande> = sel.iter().filter(|r| !matches!(r, Ref::Entite(_))).map(|r| Commande::LierAEntite { objets: vec![*r], classe: "func_detail".into() }).collect();
             if commandes.is_empty() {
-                self.statut = "aucun solide ni groupe sélectionné".into();
+                self.statut = crate::langue::t("aucun solide ni groupe sélectionné").into();
             } else {
-                self.executer(Commande::Lot { nom: format!("lier {} objet(s) chacun à une entité", commandes.len()), commandes });
+                self.executer(Commande::Lot { nom: tr!("lier {} objet(s) chacun à une entité", "tie {} object(s) each to an entity", commandes.len()), commandes });
                 self.montrer_onglet(Onglet::Proprietes);
             }
         }
@@ -641,17 +641,17 @@ impl Editeur {
         }
         if p("Tools_Toggle_Gizmo_Orientation") {
             self.gizmo_local = !self.gizmo_local;
-            self.statut = format!("manipulateur 3D : repère {}", if self.gizmo_local { "de l'entité" } else { "du monde" });
+            self.statut = tr!("manipulateur 3D : repère {}", "3D gizmo: {} axes", if self.gizmo_local { crate::langue::t("de l'entité") } else { crate::langue::t("du monde") });
         }
         if p("Tools_Toggle_Pivot") {
             self.pivot_origine = !self.pivot_origine;
-            self.statut = format!("rotation autour {}", if self.pivot_origine { "de l'origine de l'entité" } else { "du milieu de la sélection" });
+            self.statut = tr!("rotation autour {}", "rotation around {}", if self.pivot_origine { crate::langue::t("de l'origine de l'entité") } else { crate::langue::t("du milieu de la sélection") });
         }
         if p("Tools_Vertex_Scale") {
             if self.outil == Outil::Sommets && !self.sommets.choisis.is_empty() {
                 self.dialogues.echelle_sommets = Some(1.0);
             } else {
-                self.statut = "choisir des sommets avec l'outil sommets (Maj+V) d'abord".into();
+                self.statut = crate::langue::t("choisir des sommets avec l'outil sommets (Maj+V) d'abord").into();
             }
         }
         if p("Tools_Propper_HM") && !sel.is_empty() {
@@ -677,7 +677,7 @@ impl Editeur {
                     self.agrandie = Some(n);
                 }
                 self.active = n;
-                self.statut = format!("vue active : {}", if self.vues[n].genre == Genre::Camera3D { "3D" } else { self.vues[n].genre.nom() });
+                self.statut = tr!("vue active : {}", "active view: {}", if self.vues[n].genre == Genre::Camera3D { "3D" } else { self.vues[n].genre.nom() });
             }
         }
         if p("View_2D_Logical") {
@@ -703,7 +703,7 @@ impl Editeur {
         if p("View_Fog_Preview") {
             self.apercu_brouillard = !self.apercu_brouillard;
             if self.apercu_brouillard && self.brouillard_de_la_map().is_none() {
-                self.statut = "aucun env_fog_controller avec fogenable dans la map".into();
+                self.statut = crate::langue::t("aucun env_fog_controller avec fogenable dans la map").into();
             }
         }
         if p("View3D_Toggle_Statistics") {
@@ -712,7 +712,7 @@ impl Editeur {
         for (id, k) in [("View3D_Render_Distance_Closer", 1.0 / 1.5), ("View3D_Render_Distance_Further", 1.5)] {
             if p(id) {
                 self.options.distance = (self.options.distance * k).clamp(1000.0, 200000.0);
-                self.statut = format!("distance de rendu : {:.0}", self.options.distance);
+                self.statut = tr!("distance de rendu : {:.0}", "render distance: {:.0}", self.options.distance);
             }
         }
         for (id, k, toutes) in [("View2D_Zoom_In", 1.5, false), ("View2D_Zoom_Out", 1.0 / 1.5, false), ("View2D_Zoom_In_All", 1.5, true), ("View2D_Zoom_Out_All", 1.0 / 1.5, true)] {
@@ -783,11 +783,11 @@ impl Editeur {
             if let Some(f) = self.fichier_de_compilation("lin") {
                 match hm_compile::lire_fuite(&f) {
                     Some(points) => {
-                        self.statut = format!("fuite : {} points ({})", points.len(), f.display());
+                        self.statut = tr!("fuite : {} points ({})", "leak: {} points ({})", points.len(), f.display());
                         self.fuite = Some(points);
                         self.version_geo = None;
                     }
-                    None => self.erreur = Some(format!("fichier de fuite illisible : {}", f.display())),
+                    None => self.erreur = Some(tr!("fichier de fuite illisible : {}", "unreadable leak file: {}", f.display())),
                 }
             }
         }
@@ -799,11 +799,11 @@ impl Editeur {
             if let Some(f) = self.fichier_de_compilation("prt") {
                 match hm_compile::lire_portails(&f) {
                     Some(portails) => {
-                        self.statut = format!("{} portails ({})", portails.len(), f.display());
+                        self.statut = tr!("{} portails ({})", "{} portals ({})", portails.len(), f.display());
                         self.portails = Some(portails);
                         self.portails_visibles = true;
                     }
-                    None => self.erreur = Some(format!("fichier de portails illisible : {}", f.display())),
+                    None => self.erreur = Some(tr!("fichier de portails illisible : {}", "unreadable portal file: {}", f.display())),
                 }
             }
         }
@@ -824,20 +824,20 @@ impl Editeur {
             commandes.push(Commande::Cles { entite: id, cles: vec![("origin".into(), Some(format!("{} {} {}", c.x, c.y, c.z)))] });
         }
         match commandes.len() {
-            0 => self.statut = "aucune entité à brosses avec une origine dans la sélection".into(),
-            n => self.executer(Commande::Lot { nom: format!("centrer {n} origine(s)"), commandes }),
+            0 => self.statut = crate::langue::t("aucune entité à brosses avec une origine dans la sélection").into(),
+            n => self.executer(Commande::Lot { nom: tr!("centrer {n} origine(s)", "center {n} origin(s)"), commandes }),
         }
     }
 
     /// « Export… » : une copie de la map (ou de la sélection, coordonnées gardées) dans un autre fichier, sans changer
     /// celui de la map ouverte ; `vers` : refaire le dernier export (« Export Again », Alt+B).
     fn exporter(&mut self, vers: Option<PathBuf>, selection: bool) {
-        let Some(f) = vers.or_else(|| rfd::FileDialog::new().add_filter("Map Hammer", &["vmf"]).set_file_name(format!("{}_export.vmf", self.nom_compile)).save_file()) else { return };
+        let Some(f) = vers.or_else(|| rfd::FileDialog::new().add_filter(crate::langue::t("Map Hammer"), &["vmf"]).set_file_name(format!("{}_export.vmf", self.nom_compile)).save_file()) else { return };
         let octets = if selection {
             match hm_doc::presse::copier(self.session.doc(), &self.session.selection) {
                 Ok(t) => t.into_bytes(),
                 Err(e) => {
-                    self.erreur = Some(format!("export : {e}"));
+                    self.erreur = Some(tr!("export : {e}", "export: {e}"));
                     return;
                 }
             }
@@ -846,7 +846,7 @@ impl Editeur {
         };
         match hm_doc::session::ecrire_sur(&f, &octets) {
             Ok(()) => {
-                self.statut = format!("exporté{} : {}", if selection { " (sélection)" } else { "" }, f.display());
+                self.statut = tr!("exporté{} : {}", "exported{}: {}", if selection { crate::langue::t(" (sélection)") } else { "" }, f.display());
                 self.dernier_export = Some((f, selection));
             }
             Err(e) => self.erreur = Some(e),
@@ -867,7 +867,7 @@ impl Editeur {
     fn pipette(&mut self, ctx: &egui::Context) {
         let Some(p) = ctx.pointer_hover_pos() else { return };
         let Some(i) = self.vues.iter().position(|v| v.genre == Genre::Camera3D && v.rect.contains(p)) else {
-            self.statut = "pipette : survoler la vue 3D".into();
+            self.statut = crate::langue::t("pipette : survoler la vue 3D").into();
             return;
         };
         let (Some(g), Some((c, _))) = (&self.gfx, &self.vues[i].cibles) else { return };
@@ -884,16 +884,16 @@ impl Editeur {
                 if let Some(v) = e.get(k) {
                     // la 4e valeur (luminosité de _light) est gardée
                     let reste: Vec<&str> = v.split_whitespace().skip(3).collect();
-                    let nv = if reste.is_empty() { rgb.clone() } else { format!("{rgb} {}", reste.join(" ")) };
+                    let nv = if reste.is_empty() { rgb.clone() } else { tr!("{rgb} {}", "{rgb} {}", reste.join(" ")) };
                     commandes.push(Commande::Cles { entite: id, cles: vec![(k.to_string(), Some(nv))] });
                 }
             }
         }
         if commandes.is_empty() {
             ctx.copy_text(rgb.clone());
-            self.statut = format!("pipette : {rgb} (copiée ; aucune entité sélectionnée n'a de couleur)");
+            self.statut = tr!("pipette : {rgb} (copiée ; aucune entité sélectionnée n'a de couleur)", "eyedropper: {rgb} (copied; no selected entity has a color)");
         } else {
-            self.executer(Commande::Lot { nom: format!("pipette : {rgb}"), commandes });
+            self.executer(Commande::Lot { nom: tr!("pipette : {rgb}", "eyedropper: {rgb}"), commandes });
         }
     }
 
@@ -915,7 +915,7 @@ impl Editeur {
                 }
             }
         }
-        self.statut = format!("sélection : {} objet(s)", choix.len());
+        self.statut = tr!("sélection : {} objet(s)", "selection: {} object(s)", choix.len());
         self.session.selection = choix;
     }
 
@@ -935,7 +935,7 @@ impl Editeur {
             hm_doc::boite_de(&frag, &tous)
         });
         let Some((lo, hi)) = taille else {
-            self.erreur = Some("le presse-papiers ne contient pas d'objets de map".into());
+            self.erreur = Some(crate::langue::t("le presse-papiers ne contient pas d'objets de map").into());
             return;
         };
         self.dialogues.coller = Some(CollerSpecial { vmf, taille: (hi - lo).to_array(), copies: 1, decalage: [0.0; 3], rotation: [0.0; 3], grouper: false, uniques: false, prefixe: String::new() });
@@ -945,13 +945,13 @@ impl Editeur {
     pub(super) fn dialogues_menus(&mut self, ctx: &egui::Context) {
         if let Some(mut k) = self.dialogues.echelle_sommets.take() {
             let (mut ouvert, mut faire) = (true, false);
-            fenetre(ctx, "Sommets à l'échelle").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Sommets à l'échelle")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label("facteur");
+                    ui.label(crate::langue::t("facteur"));
                     ui.add(egui::DragValue::new(&mut k).speed(0.01).range(0.01..=100.0));
                 });
-                ui.weak("autour du centre des sommets choisis");
-                faire = ui.button("Appliquer").clicked();
+                ui.weak(crate::langue::t("autour du centre des sommets choisis"));
+                faire = ui.button(crate::langue::t("Appliquer")).clicked();
             });
             if faire {
                 self.echelle_sommets(k);
@@ -961,47 +961,47 @@ impl Editeur {
         }
         if self.dialogues.a_propos {
             let mut ouvert = true;
-            fenetre(ctx, "À propos").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("À propos")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 ui.heading("Hammer Master");
-                ui.label(format!("version {}", env!("CARGO_PKG_VERSION")));
-                ui.label("Éditeur de maps Source / Garry's Mod : les VMF de Hammer et Hammer++, lus et écrits sans perte.");
-                ui.weak(format!("jeu : {}", self.gameinfo.display()));
-                ui.weak(format!("raccourcis : {}", self.rc.source));
+                ui.label(tr!("version {}", "version {}", env!("CARGO_PKG_VERSION")));
+                ui.label(crate::langue::t("Éditeur de maps Source / Garry's Mod : les VMF de Hammer et Hammer++, lus et écrits sans perte."));
+                ui.weak(tr!("jeu : {}", "game: {}", self.gameinfo.display()));
+                ui.weak(tr!("raccourcis : {}", "shortcuts: {}", self.rc.source));
             });
             self.dialogues.a_propos = ouvert;
         }
         if let Some(mut c) = self.dialogues.coller.take() {
             let (mut ouvert, mut faire) = (true, false);
-            fenetre(ctx, "Coller spécial").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Coller spécial")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label("Nombre de copies");
+                    ui.label(crate::langue::t("Nombre de copies"));
                     ui.add(egui::DragValue::new(&mut c.copies).range(1..=1000));
                 });
-                ui.label("Décalage (cumulé)").on_hover_text("chaque copie est décalée de cette valeur de plus que la précédente ; « < » prend la taille du contenu");
+                ui.label(crate::langue::t("Décalage (cumulé)")).on_hover_text(crate::langue::t("chaque copie est décalée de cette valeur de plus que la précédente ; « < » prend la taille du contenu"));
                 ui.horizontal(|ui| {
                     for i in 0..3 {
                         ui.label(["X", "Y", "Z"][i]);
                         ui.add(egui::DragValue::new(&mut c.decalage[i]).speed(1.0));
-                        if ui.small_button("<").on_hover_text(format!("taille du contenu : {}", c.taille[i])).clicked() {
+                        if ui.small_button("<").on_hover_text(tr!("taille du contenu : {}", "contents size: {}", c.taille[i])).clicked() {
                             c.decalage[i] = c.taille[i];
                         }
                     }
                 });
-                ui.label("Rotation (cumulée, degrés)");
+                ui.label(crate::langue::t("Rotation (cumulée, degrés)"));
                 ui.horizontal(|ui| {
                     for i in 0..3 {
                         ui.label(["X", "Y", "Z"][i]);
                         ui.add(egui::DragValue::new(&mut c.rotation[i]).speed(1.0));
                     }
                 });
-                ui.checkbox(&mut c.grouper, "Grouper les copies");
-                ui.checkbox(&mut c.uniques, "Noms d'entités uniques");
+                ui.checkbox(&mut c.grouper, crate::langue::t("Grouper les copies"));
+                ui.checkbox(&mut c.uniques, crate::langue::t("Noms d'entités uniques"));
                 ui.horizontal(|ui| {
-                    ui.label("Préfixe des noms");
+                    ui.label(crate::langue::t("Préfixe des noms"));
                     ui.add(egui::TextEdit::singleline(&mut c.prefixe).desired_width(120.0));
                 });
-                ui.weak("à partir de l'original (« Start at center of original » de Hammer) ; les sorties entre copies suivent les noms");
-                faire = ui.button("Coller").clicked();
+                ui.weak(crate::langue::t("à partir de l'original (« Start at center of original » de Hammer) ; les sorties entre copies suivent les noms"));
+                faire = ui.button(crate::langue::t("Coller")).clicked();
             });
             if faire {
                 self.executer(Commande::CollerSpecial { vmf: c.vmf, copies: c.copies, decalage: c.decalage, rotation: c.rotation, grouper: c.grouper, prefixe: c.prefixe, noms_uniques: c.uniques });
@@ -1011,10 +1011,10 @@ impl Editeur {
         }
         if let Some((mut mode, mut v)) = self.dialogues.transformer.take() {
             let (mut ouvert, mut faire) = (true, false);
-            fenetre(ctx, "Transformer").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Transformer")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 let avant = mode;
                 ui.horizontal(|ui| {
-                    for (k, n) in ["Tourner", "Échelle", "Déplacer"].iter().enumerate() {
+                    for (k, n) in [crate::langue::t("Tourner"), crate::langue::t("Échelle"), crate::langue::t("Déplacer")].iter().enumerate() {
                         ui.radio_value(&mut mode, k, *n);
                     }
                 });
@@ -1027,14 +1027,14 @@ impl Editeur {
                         ui.add(egui::DragValue::new(x).speed(if mode == 1 { 0.01 } else { 1.0 }).max_decimals(3));
                     }
                 });
-                ui.weak(["degrés autour des axes du monde, X puis Y puis Z, sens direct, autour du centre de la sélection", "facteurs par axe, autour du centre de la sélection", "unités"][mode]);
-                faire = ui.button("Appliquer").clicked();
+                ui.weak([crate::langue::t("degrés autour des axes du monde, X puis Y puis Z, sens direct, autour du centre de la sélection"), crate::langue::t("facteurs par axe, autour du centre de la sélection"), crate::langue::t("unités")][mode]);
+                faire = ui.button(crate::langue::t("Appliquer")).clicked();
             });
             if faire {
                 let t = [Transformation::Tourner(v), Transformation::Echelle(v), Transformation::Deplacer(v)][mode];
                 let sel = self.session.selection.clone();
                 match disposition::transformer(self.session.doc(), &sel, t, self.verrou_texture) {
-                    Ok(c) => self.executer_ou(c, "rien à transformer"),
+                    Ok(c) => self.executer_ou(c, crate::langue::t("rien à transformer")),
                     Err(e) => self.erreur = Some(e),
                 }
             }
@@ -1044,14 +1044,14 @@ impl Editeur {
         }
         if let Some(mut c) = self.dialogues.coordonnees.take() {
             let (mut ouvert, mut aller) = (true, false);
-            fenetre(ctx, "Aller aux coordonnées").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Aller aux coordonnées")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     for (i, x) in c.iter_mut().enumerate() {
                         ui.label(["X", "Y", "Z"][i]);
                         ui.add(egui::DragValue::new(x).speed(8.0));
                     }
                 });
-                aller = ui.button("Aller").clicked();
+                aller = ui.button(crate::langue::t("Aller")).clicked();
             });
             if aller {
                 let p = glam::DVec3::from(c);
@@ -1063,21 +1063,21 @@ impl Editeur {
         }
         if let Some(mut t) = self.dialogues.brosse.take() {
             let (mut ouvert, mut aller) = (true, false);
-            fenetre(ctx, "Aller au numéro de brosse").resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Aller au numéro de brosse")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
                 ui.horizontal(|ui| {
                     ui.label("n°");
                     let r = ui.add(egui::TextEdit::singleline(&mut t).desired_width(90.0));
                     r.request_focus();
-                    aller = ui.button("Aller").clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)));
+                    aller = ui.button(crate::langue::t("Aller")).clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)));
                 });
             });
             if aller {
                 match t.trim().parse::<u64>().ok().filter(|id| self.session.doc().solide(*id).is_some()) {
                     Some(id) => {
                         self.aller_a(Ref::Solide(id), None);
-                        self.statut = format!("brosse n° {id}");
+                        self.statut = tr!("brosse n° {id}", "brush #{id}");
                     }
-                    None => self.erreur = Some(format!("aucune brosse n° {}", t.trim())),
+                    None => self.erreur = Some(tr!("aucune brosse n° {}", "no brush #{}", t.trim())),
                 }
             }
             if ouvert && !aller {
@@ -1086,9 +1086,9 @@ impl Editeur {
         }
         if let Some(i) = &self.dialogues.infos {
             let mut ouvert = true;
-            fenetre(ctx, "Informations sur la map").open(&mut ouvert).default_width(360.0).show(ctx, |ui| {
+            fenetre(ctx, crate::langue::t("Informations sur la map")).open(&mut ouvert).default_width(360.0).show(ctx, |ui| {
                 egui::Grid::new("infos_map").num_columns(2).show(ui, |ui| {
-                    for (n, v) in [("Solides", i.solides), ("Faces", i.faces), ("Displacements", i.displacements), ("Entités ponctuelles", i.entites_ponctuelles), ("Entités à brosses", i.entites_a_brosses), ("Matériaux distincts", i.materiaux.len())] {
+                    for (n, v) in [(crate::langue::t("Solides"), i.solides), (crate::langue::t("Faces"), i.faces), (crate::langue::t("Displacements"), i.displacements), (crate::langue::t("Entités ponctuelles"), i.entites_ponctuelles), (crate::langue::t("Entités à brosses"), i.entites_a_brosses), (crate::langue::t("Matériaux distincts"), i.materiaux.len())] {
                         ui.label(n);
                         ui.label(v.to_string());
                         ui.end_row();
@@ -1114,67 +1114,75 @@ impl Editeur {
         }
         let mut ouvert = true;
         let mut o = self.options.clone();
-        fenetre(ctx, "Options").resizable(false).open(&mut ouvert).show(ctx, |ui| {
-            ui.strong("Vue 3D");
+        fenetre(ctx, crate::langue::t("Options")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label("Langue / Language");
+                egui::ComboBox::from_id_salt("langue").selected_text(if o.anglais { "English" } else { "Français" }).show_ui(ui, |ui| {
+                    ui.selectable_value(&mut o.anglais, false, "Français");
+                    ui.selectable_value(&mut o.anglais, true, "English");
+                });
+            });
+            ui.separator();
+            ui.strong(crate::langue::t("Vue 3D"));
             egui::Grid::new("options_3d").num_columns(2).show(ui, |ui| {
-                ui.label("Champ de vision");
+                ui.label(crate::langue::t("Champ de vision"));
                 ui.add(egui::Slider::new(&mut o.fov, 30.0..=150.0).suffix("°"));
                 ui.end_row();
-                ui.label("Vitesse");
+                ui.label(crate::langue::t("Vitesse"));
                 ui.add(egui::Slider::new(&mut o.vitesse, 50.0..=10000.0).logarithmic(true).suffix(" u/s"));
                 ui.end_row();
-                ui.label("Vitesse avec Maj");
+                ui.label(crate::langue::t("Vitesse avec Maj"));
                 ui.add(egui::Slider::new(&mut o.vitesse_rapide, 50.0..=20000.0).logarithmic(true).suffix(" u/s"));
                 ui.end_row();
-                ui.label("Sensibilité de la souris");
+                ui.label(crate::langue::t("Sensibilité de la souris"));
                 ui.add(egui::Slider::new(&mut o.sensibilite, 0.02..=2.0).logarithmic(true));
                 ui.end_row();
                 ui.label("");
-                ui.checkbox(&mut o.inverser_y, "Inverser l'axe vertical de la souris");
+                ui.checkbox(&mut o.inverser_y, crate::langue::t("Inverser l'axe vertical de la souris"));
                 ui.end_row();
-                ui.label("Distance de rendu");
+                ui.label(crate::langue::t("Distance de rendu"));
                 ui.add(egui::Slider::new(&mut o.distance, 1000.0..=200000.0).logarithmic(true).suffix(" u"));
                 ui.end_row();
-                ui.label("Distance des modèles");
-                ui.add(egui::Slider::new(&mut o.distance_modeles, 0.0..=50000.0).suffix(" u")).on_hover_text("0 : sans limite");
+                ui.label(crate::langue::t("Distance des modèles"));
+                ui.add(egui::Slider::new(&mut o.distance_modeles, 0.0..=50000.0).suffix(" u")).on_hover_text(crate::langue::t("0 : sans limite"));
                 ui.end_row();
                 ui.label("");
-                ui.checkbox(&mut o.filtrer_textures, "Textures lissées (sinon pixels nets)");
+                ui.checkbox(&mut o.filtrer_textures, crate::langue::t("Textures lissées (sinon pixels nets)"));
                 ui.end_row();
             });
             ui.separator();
-            ui.strong("Vues 2D");
-            ui.checkbox(&mut o.surligner_64, "Lignes de 64 unités plus claires");
+            ui.strong(crate::langue::t("Vues 2D"));
+            ui.checkbox(&mut o.surligner_64, crate::langue::t("Lignes de 64 unités plus claires"));
             ui.horizontal(|ui| {
-                ui.label("Une ligne sur");
+                ui.label(crate::langue::t("Une ligne sur"));
                 ui.add(egui::DragValue::new(&mut o.surligner_n).range(0..=64));
-                ui.label("plus claire (0 : aucune)");
+                ui.label(crate::langue::t("plus claire (0 : aucune)"));
             });
-            ui.checkbox(&mut o.cacher_petite_grille, "Cacher la grille de moins de 4 pixels");
-            ui.checkbox(&mut o.fleches, "Les flèches déplacent la sélection");
-            ui.checkbox(&mut o.grille_pointillee, "Grille en pointillés");
+            ui.checkbox(&mut o.cacher_petite_grille, crate::langue::t("Cacher la grille de moins de 4 pixels"));
+            ui.checkbox(&mut o.fleches, crate::langue::t("Les flèches déplacent la sélection"));
+            ui.checkbox(&mut o.grille_pointillee, crate::langue::t("Grille en pointillés"));
             ui.separator();
-            ui.strong("Matériaux");
+            ui.strong(crate::langue::t("Matériaux"));
             // le texte tel que tapé (virgule finale comprise) : on le nettoie à la lecture du fichier et au filtrage
             let mut t = o.exclus.join(",");
             ui.horizontal(|ui| {
-                ui.label("Dossiers exclus du navigateur");
+                ui.label(crate::langue::t("Dossiers exclus du navigateur"));
                 if ui.add(egui::TextEdit::singleline(&mut t).desired_width(220.0)).changed() {
                     o.exclus = t.split(',').map(String::from).collect();
                 }
             });
             ui.separator();
-            ui.strong("Sauvegarde automatique");
+            ui.strong(crate::langue::t("Sauvegarde automatique"));
             ui.horizontal(|ui| {
-                ui.label("Copie de récupération toutes les");
+                ui.label(crate::langue::t("Copie de récupération toutes les"));
                 ui.add(egui::DragValue::new(&mut o.sauvegarde_min).range(1..=60));
                 ui.label("min");
             });
-            ui.weak("tant que la map a des modifications non enregistrées");
+            ui.weak(crate::langue::t("tant que la map a des modifications non enregistrées"));
             ui.separator();
-            ui.strong("Jeu");
-            ui.label(format!("gameinfo : {}", self.gameinfo.display()));
-            ui.weak("les exécutables de compilation se choisissent dans la fenêtre de compilation (F9)");
+            ui.strong(crate::langue::t("Jeu"));
+            ui.label(tr!("gameinfo : {}", "gameinfo: {}", self.gameinfo.display()));
+            ui.weak(crate::langue::t("les exécutables de compilation se choisissent dans la fenêtre de compilation (F9)"));
         });
         if o.filtrer_textures != self.options.filtrer_textures {
             // l'échantillonneur change : les matériaux sont à refaire (rechargés au prochain affichage)
@@ -1187,6 +1195,7 @@ impl Editeur {
             self.version_geo = None;
         }
         if o != self.options {
+            crate::langue::choisir(o.anglais);
             self.recup.intervalle = std::time::Duration::from_secs(60 * o.sauvegarde_min as u64);
             self.navigateur.exclus = o.exclus.clone();
             self.options = o;
@@ -1195,7 +1204,7 @@ impl Editeur {
         if self.options_a_enregistrer && !ctx.input(|i| i.pointer.any_down()) {
             self.options_a_enregistrer = false;
             if let Err(e) = self.options.enregistrer() {
-                self.erreur = Some(format!("options non enregistrées : {e}"));
+                self.erreur = Some(tr!("options non enregistrées : {e}", "options not saved: {e}"));
             }
         }
         self.options_ouvertes = ouvert;
@@ -1205,10 +1214,10 @@ impl Editeur {
     pub(super) fn etat_selection(&self) -> Option<String> {
         match self.session.selection.as_slice() {
             [] => None,
-            [Ref::Solide(id)] => Some(format!("brosse n° {id}")),
-            [Ref::Entite(id)] => Some(format!("entité n° {id}")),
-            [Ref::Groupe(id)] => Some(format!("groupe n° {id}")),
-            s => Some(format!("{} objets sélectionnés", s.len())),
+            [Ref::Solide(id)] => Some(tr!("brosse n° {id}", "brush #{id}")),
+            [Ref::Entite(id)] => Some(tr!("entité n° {id}", "entity #{id}")),
+            [Ref::Groupe(id)] => Some(tr!("groupe n° {id}", "group #{id}")),
+            s => Some(tr!("{} objets sélectionnés", "{} objects selected", s.len())),
         }
     }
 }

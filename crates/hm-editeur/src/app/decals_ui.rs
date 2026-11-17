@@ -24,7 +24,7 @@ impl Editeur {
         let (o, d) = self.rayon_vue(i, p);
         let visibles: std::collections::HashSet<u64> = self.geo.as_ref().map(|g| g.formes.iter().filter_map(|f| f.designe.solide).collect()).unwrap_or_default();
         let Some(imp) = hm_doc::geo::rayon(self.session.doc(), o, d, &|s| !visibles.contains(&s)) else {
-            self.statut = "aucune surface sous le curseur".into();
+            self.statut = crate::langue::t("aucune surface sous le curseur").into();
             return;
         };
         let materiau = self.materiau.clone();

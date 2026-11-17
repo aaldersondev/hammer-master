@@ -74,26 +74,26 @@ impl Editeur {
         }
         let c = self.eclairage.cache.as_ref()?;
         let n = c.1.len();
-        let mut t = format!("éclairage : {n} lumière(s)");
+        let mut t = tr!("éclairage : {n} lumière(s)", "lighting: {n} light(s)");
         if n > MAX_LUMIERES {
-            t += &format!(", les {MAX_LUMIERES} plus proches");
+            t += &tr!(", les {MAX_LUMIERES} plus proches", ", the {MAX_LUMIERES} closest");
         }
         if self.eclairage.ombres && n > 0 {
-            t += &format!(", ombres pour {}", n.min(MAX_OMBRES));
+            t += &tr!(", ombres pour {}", ", shadows for {}", n.min(MAX_OMBRES));
         }
         if c.2.is_some() {
-            t += ", soleil";
+            t += crate::langue::t(", soleil");
         }
         Some(t)
     }
 
     pub(super) fn menu_eclairage(&mut self, ui: &mut egui::Ui) {
-        ui.checkbox(&mut self.eclairage.actif, format!("Éclairage de la map (aperçu)\t{}", self.rc.texte("View_Lighting_Preview")))
-            .on_hover_text("les lumières de la map et leurs ombres, comme vrad les calcule, sans les rebonds");
+        ui.checkbox(&mut self.eclairage.actif, tr!("Éclairage de la map (aperçu)\t{}", "Map lighting (preview)\t{}", self.rc.texte("View_Lighting_Preview")))
+            .on_hover_text(crate::langue::t("les lumières de la map et leurs ombres, comme vrad les calcule, sans les rebonds"));
         ui.add_enabled_ui(self.eclairage.actif, |ui| {
-            ui.checkbox(&mut self.eclairage.ombres, "Ombres");
+            ui.checkbox(&mut self.eclairage.ombres, crate::langue::t("Ombres"));
             ui.horizontal(|ui| {
-                ui.label("Rebonds (lumière ajoutée)");
+                ui.label(crate::langue::t("Rebonds (lumière ajoutée)"));
                 ui.add(egui::Slider::new(&mut self.eclairage.ajout, 0.0..=0.3).fixed_decimals(2));
             });
         });

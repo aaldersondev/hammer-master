@@ -26,13 +26,13 @@ impl FormeBloc {
 
     pub fn nom(self) -> &'static str {
         match self {
-            FormeBloc::Bloc => "bloc",
-            FormeBloc::Cylindre => "cylindre",
-            FormeBloc::Pointe => "pointe",
-            FormeBloc::Sphere => "sphère",
-            FormeBloc::Coin => "coin",
-            FormeBloc::Arche => "arche",
-            FormeBloc::Escalier => "escalier",
+            FormeBloc::Bloc => crate::langue::t("bloc"),
+            FormeBloc::Cylindre => crate::langue::t("cylindre"),
+            FormeBloc::Pointe => crate::langue::t("pointe"),
+            FormeBloc::Sphere => crate::langue::t("sphère"),
+            FormeBloc::Coin => crate::langue::t("coin"),
+            FormeBloc::Arche => crate::langue::t("arche"),
+            FormeBloc::Escalier => crate::langue::t("escalier"),
         }
     }
 }
@@ -78,9 +78,9 @@ impl ReglagesBrosses {
 
     pub fn nom_garder(&self) -> &'static str {
         match self.garder {
-            Garder::LesDeux => "les deux côtés",
-            Garder::Devant => "devant (côté gauche de la ligne)",
-            Garder::Derriere => "derrière (côté droit de la ligne)",
+            Garder::LesDeux => crate::langue::t("les deux côtés"),
+            Garder::Devant => crate::langue::t("devant (côté gauche de la ligne)"),
+            Garder::Derriere => crate::langue::t("derrière (côté droit de la ligne)"),
         }
     }
 }
@@ -165,7 +165,7 @@ impl Editeur {
                 if (b - a).length() < 1e-3 {
                     self.brosses.decoupe = None;
                 } else {
-                    self.statut = format!("découpe : on garde {} — Maj+X pour changer, Entrée pour couper, Échap pour abandonner", self.brosses.nom_garder());
+                    self.statut = tr!("découpe : on garde {} — Maj+X pour changer, Entrée pour couper, Échap pour abandonner", "clip: keeping {} — Shift+X to change, Enter to cut, Esc to abandon", self.brosses.nom_garder());
                 }
             }
         }
@@ -182,14 +182,14 @@ impl Editeur {
                 Garder::Derriere => Garder::LesDeux,
             };
         }
-        self.statut = format!("découpe : on garde {}", self.brosses.nom_garder());
+        self.statut = tr!("découpe : on garde {}", "clip: keeping {}", self.brosses.nom_garder());
     }
 
     /// Entrée avec l'outil de découpe : la sélection est coupée.
     pub(super) fn valider_decoupe(&mut self) {
         let Some(plan) = self.plan_decoupe() else { return };
         if self.session.selection.is_empty() {
-            self.statut = "découpe : rien de sélectionné".into();
+            self.statut = crate::langue::t("découpe : rien de sélectionné").into();
             return;
         }
         let objets = self.session.selection.clone();
@@ -218,7 +218,7 @@ impl Editeur {
     /// Ctrl+Maj+C : creuse les solides que touche la sélection.
     pub(super) fn creuser(&mut self) {
         if self.session.selection.is_empty() {
-            self.statut = "creuser : sélectionner le solide qui creuse".into();
+            self.statut = crate::langue::t("creuser : sélectionner le solide qui creuse").into();
             return;
         }
         let outils = self.session.selection.clone();
@@ -238,7 +238,7 @@ impl Editeur {
                 sel.push(r);
             }
         }
-        self.statut = if inv.is_empty() { "aucun solide invalide".into() } else { format!("{} solide(s) invalide(s) sélectionné(s) : vbsp les rejette", inv.len()) };
+        self.statut = if inv.is_empty() { crate::langue::t("aucun solide invalide").into() } else { tr!("{} solide(s) invalide(s) sélectionné(s) : vbsp les rejette", "{} invalid solid(s) selected: vbsp rejects them", inv.len()) };
         self.session.selection = sel;
     }
 
@@ -287,7 +287,7 @@ impl Editeur {
         let r = &mut self.brosses;
         match self.outil {
             Outil::Bloc => {
-                ui.label("Forme");
+                ui.label(crate::langue::t("Forme"));
                 egui::ComboBox::from_id_salt("forme_bloc").width(70.0).selected_text(r.forme.nom()).show_ui(ui, |ui| {
                     for f in FormeBloc::TOUTES {
                         ui.selectable_value(&mut r.forme, f, f.nom());
@@ -299,13 +299,13 @@ impl Editeur {
                 };
                 match r.forme {
                     FormeBloc::Cylindre | FormeBloc::Pointe | FormeBloc::Sphere => {
-                        ui.label(egui::RichText::new("côtés").small());
+                        ui.label(egui::RichText::new(crate::langue::t("côtés")).small());
                         ui.add(egui::DragValue::new(&mut r.cotes).range(3..=64));
                     }
                     FormeBloc::Escalier => {
-                        ui.label(egui::RichText::new("marches").small());
+                        ui.label(egui::RichText::new(crate::langue::t("marches")).small());
                         ui.add(egui::DragValue::new(&mut r.marches).range(1..=256));
-                        ui.label(egui::RichText::new("monte vers").small());
+                        ui.label(egui::RichText::new(crate::langue::t("monte vers")).small());
                         egui::ComboBox::from_id_salt("sens_escalier").width(70.0).selected_text(["+X", "+Y", "−X", "−Y"][r.sens as usize % 4]).show_ui(ui, |ui| {
                             for (k, n) in ["+X", "+Y", "−X", "−Y"].iter().enumerate() {
                                 ui.selectable_value(&mut r.sens, k as u8, *n);
@@ -313,25 +313,25 @@ impl Editeur {
                         });
                     }
                     FormeBloc::Arche => {
-                        ui.label(egui::RichText::new("côtés").small());
+                        ui.label(egui::RichText::new(crate::langue::t("côtés")).small());
                         ui.add(egui::DragValue::new(&mut r.arche.cotes).range(3..=100));
-                        champ(ui, "arc °", &mut r.arche.arc, 8.0, 360.0);
-                        champ(ui, "départ °", &mut r.arche.depart, -360.0, 360.0);
-                        champ(ui, "mur", &mut r.arche.largeur_mur, 1.0, 4096.0);
-                        champ(ui, "+ hauteur", &mut r.arche.hauteur_ajoutee, -1024.0, 1024.0);
+                        champ(ui, crate::langue::t("arc °"), &mut r.arche.arc, 8.0, 360.0);
+                        champ(ui, crate::langue::t("départ °"), &mut r.arche.depart, -360.0, 360.0);
+                        champ(ui, crate::langue::t("mur"), &mut r.arche.largeur_mur, 1.0, 4096.0);
+                        champ(ui, crate::langue::t("+ hauteur"), &mut r.arche.hauteur_ajoutee, -1024.0, 1024.0);
                     }
                     _ => {}
                 }
                 if r.forme != FormeBloc::Bloc {
-                    ui.label(egui::RichText::new("Entrée : créer").small().weak());
+                    ui.label(egui::RichText::new(crate::langue::t("Entrée : créer")).small().weak());
                 }
             }
             Outil::Decoupe => {
-                ui.label("Garder");
-                for (g, n) in [(Garder::LesDeux, "les deux"), (Garder::Devant, "devant"), (Garder::Derriere, "derrière")] {
+                ui.label(crate::langue::t("Garder"));
+                for (g, n) in [(Garder::LesDeux, crate::langue::t("les deux")), (Garder::Devant, crate::langue::t("devant")), (Garder::Derriere, crate::langue::t("derrière"))] {
                     ui.radio_value(&mut r.garder, g, n);
                 }
-                ui.label(egui::RichText::new("tracer dans une vue 2D, Entrée : couper").small().weak());
+                ui.label(egui::RichText::new(crate::langue::t("tracer dans une vue 2D, Entrée : couper")).small().weak());
             }
             _ => {}
         }

@@ -76,7 +76,7 @@ impl Editeur {
         let Ok((_, ents, _)) = hm_doc::resoudre(self.session.doc(), &self.session.selection) else { return };
         let ents: Vec<u64> = ents.into_iter().filter(|e| self.session.doc().entite(*e).map_or(false, |x| x.ponctuelle())).collect();
         if ents.is_empty() {
-            self.statut = "aucune entité ponctuelle sélectionnée".into();
+            self.statut = crate::langue::t("aucune entité ponctuelle sélectionnée").into();
             return;
         }
         let bas: Vec<f64> = ents.iter().map(|e| if plafond { self.bornes_z(*e).1 } else { self.bas_de(*e) }).collect();
@@ -159,13 +159,13 @@ impl Editeur {
         let cle_body = self.cle_body(&classe);
         let body_actuel = ent.get("body").or(ent.get("SetBodyGroup")).and_then(|v| v.trim().parse::<f64>().ok()).unwrap_or(0.0).max(0.0) as u32;
         let Some(info) = self.info_modele(&m) else {
-            ui.colored_label(egui::Color32::from_rgb(255, 140, 100), format!("modèle illisible : {m}"));
+            ui.colored_label(egui::Color32::from_rgb(255, 140, 100), tr!("modèle illisible : {m}", "unreadable model: {m}"));
             return;
         };
         let mut cles: Vec<(String, Option<String>)> = Vec::new();
         let mut skin_glisse: Option<u32> = None;
         ui.horizontal(|ui| {
-            ui.strong("Modèle");
+            ui.strong(crate::langue::t("Modèle"));
             ui.label(m.strip_prefix("models/").unwrap_or(&m));
         });
         ui.horizontal(|ui| {
@@ -174,7 +174,7 @@ impl Editeur {
             if ui.add_enabled(info.skins > 1, egui::DragValue::new(&mut s).range(0..=(info.skins as u32 - 1))).changed() {
                 skin_glisse = Some(s);
             }
-            ui.weak(format!("sur {}", info.skins));
+            ui.weak(tr!("sur {}", "on {}", info.skins));
         });
         let mut choix = hm_assets::model::bodygroups(&info.parties, body_actuel);
         let mut change = false;
@@ -182,7 +182,7 @@ impl Editeur {
         if !choisissables.is_empty() {
             match cle_body {
                 None => {
-                    ui.weak(format!("{} : pas de bodygroups (seul le premier sous-modèle est montré en jeu)", classe));
+                    ui.weak(tr!("{} : pas de bodygroups (seul le premier sous-modèle est montré en jeu)", "{}: no bodygroups (only the first submodel is shown in game)", classe));
                 }
                 Some(_) => {
                     for (i, p) in &choisissables {
@@ -191,7 +191,7 @@ impl Editeur {
                             let mut c = choix[*i];
                             egui::ComboBox::from_id_salt(("body_ent", *i)).selected_text(p.sous_modeles.get(c).cloned().unwrap_or_default()).width(170.0).show_ui(ui, |ui| {
                                 for (k, s) in p.sous_modeles.iter().enumerate() {
-                                    ui.selectable_value(&mut c, k, if s.is_empty() { format!("{k} (vide)") } else { s.clone() });
+                                    ui.selectable_value(&mut c, k, if s.is_empty() { tr!("{k} (vide)", "{k} (empty)") } else { s.clone() });
                                 }
                             });
                             if c != choix[*i] {
@@ -209,13 +209,13 @@ impl Editeur {
             }
         }
         ui.horizontal(|ui| {
-            if ui.button("Poser au sol").on_hover_text("descend la sélection sur la surface dessous").clicked() {
+            if ui.button(crate::langue::t("Poser au sol")).on_hover_text(crate::langue::t("descend la sélection sur la surface dessous")).clicked() {
                 self.poser_au_sol_selection(false);
             }
-            if ui.button("Poser aligné").on_hover_text("descend la sélection et aligne son haut sur la surface").clicked() {
+            if ui.button(crate::langue::t("Poser aligné")).on_hover_text(crate::langue::t("descend la sélection et aligne son haut sur la surface")).clicked() {
                 self.poser_au_sol_selection(true);
             }
-            if ui.button("Voir dans Modèles").clicked() {
+            if ui.button(crate::langue::t("Voir dans Modèles")).clicked() {
                 self.modeles.montrer(&self.vfs, &m, skin_actuel, body_actuel);
                 self.onglet = Onglet::Modeles;
             }
@@ -224,7 +224,7 @@ impl Editeur {
         // un glisser du skin : une seule étape d'historique
         if let Some(v) = skin_glisse {
             if let Err(err) = self.session.executer_continu(Commande::Cles { entite: e, cles: vec![("skin".into(), Some(v.to_string()))] }, &format!("skin{e}")) {
-                self.erreur = Some(format!("skin refusé : {err}"));
+                self.erreur = Some(tr!("skin refusé : {err}", "skin refused: {err}"));
             }
         }
         if !cles.is_empty() {
@@ -241,9 +241,9 @@ impl Editeur {
             .filter(|e| self.session.doc().entite(*e).map_or(false, |x| self.classe_a_modele(x.classe())))
             .collect();
         ui.horizontal(|ui| {
-            ui.checkbox(&mut self.aligner_surface, "aligner sur la surface").on_hover_text("outil entité dans la 3D : le haut du modèle suit la surface visée");
+            ui.checkbox(&mut self.aligner_surface, crate::langue::t("aligner sur la surface")).on_hover_text(crate::langue::t("outil entité dans la 3D : le haut du modèle suit la surface visée"));
             if let Some((m, ..)) = &self.modele_entite {
-                ui.weak(format!("outil : {}", m.rsplit('/').next().unwrap_or(m)));
+                ui.weak(tr!("outil : {}", "tool: {}", m.rsplit('/').next().unwrap_or(m)));
             }
         });
         let apercu = self.apercu.as_ref().map(|a| a.id);
@@ -265,8 +265,8 @@ impl Editeur {
                     }
                     .into();
                 }
-                let perdu = if body > 0 && self.cle_body(&self.classe_entite.clone()).is_none() { format!(" ({} ne prend pas de bodygroups : choix ignoré)", self.classe_entite) } else { String::new() };
-                self.statut = format!("outil entité : {} avec {m}{perdu} — cliquer dans une vue", self.classe_entite);
+                let perdu = if body > 0 && self.cle_body(&self.classe_entite.clone()).is_none() { tr!(" ({} ne prend pas de bodygroups : choix ignoré)", " ({} takes no bodygroups: choice ignored)", self.classe_entite) } else { String::new() };
+                self.statut = tr!("outil entité : {} avec {m}{perdu} — cliquer dans une vue", "entity tool: {} with {m}{perdu} — click in a view", self.classe_entite);
                 self.modele_entite = Some((m, skin, body));
                 self.outil = Outil::Entite;
             }
@@ -280,7 +280,7 @@ impl Editeur {
                     }
                     cmds.push(Commande::Cles { entite: e, cles });
                 }
-                self.executer(Commande::Lot { nom: format!("modèle {m}"), commandes: cmds });
+                self.executer(Commande::Lot { nom: tr!("modèle {m}", "model {m}"), commandes: cmds });
             }
             None => {}
         }

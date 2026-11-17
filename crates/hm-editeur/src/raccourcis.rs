@@ -54,7 +54,7 @@ impl Combo {
             s += "Ctrl+";
         }
         if self.shift {
-            s += "Maj+";
+            s += crate::langue::t("Maj+");
         }
         if self.alt {
             s += "Alt+";
@@ -285,7 +285,7 @@ impl Raccourcis {
         for (a, _, combos) in ACTIONS {
             table.insert(a.to_string(), combos.iter().filter_map(|c| Combo::lire(c)).collect());
         }
-        Raccourcis { table, source: "Hammer (wiki Valve)".into() }
+        Raccourcis { table, source: crate::langue::t("Hammer (wiki Valve)").into() }
     }
 
     /// Le fichier de Hammer++ installé, s'il est trouvé.
@@ -313,7 +313,7 @@ impl Raccourcis {
             }
         }
         let n = vus.len();
-        r.source = format!("Hammer++ ({} actions reprises de {})", n, p.display());
+        r.source = tr!("Hammer++ ({} actions reprises de {})", "Hammer++ ({} actions taken from {})", n, p.display());
         Ok(r)
     }
 
@@ -344,7 +344,7 @@ impl Raccourcis {
         for (a, combos) in f.actions {
             r.table.insert(a, combos.iter().filter_map(|c| Combo::lire(c)).collect());
         }
-        r.source = format!("les tiens ({})", p.display());
+        r.source = tr!("les tiens ({})", "yours ({})", p.display());
         Some(r)
     }
 
@@ -431,39 +431,40 @@ impl Editeur {
             }
         }
         let mut ouvert = self.ouvert;
-        egui::Window::new("Raccourcis").open(&mut ouvert).default_width(520.0).show(ctx, |ui| {
-            ui.label(format!("source : {}", rc.source));
+        egui::Window::new(crate::langue::t("Raccourcis")).open(&mut ouvert).default_width(520.0).show(ctx, |ui| {
+            ui.label(tr!("source : {}", "source: {}", rc.source));
             ui.horizontal(|ui| {
-                ui.label("Chercher");
+                ui.label(crate::langue::t("Chercher"));
                 ui.text_edit_singleline(&mut self.filtre);
-                if ui.button("Reprendre ceux de Hammer++ / Hammer").clicked() {
+                if ui.button(crate::langue::t("Reprendre ceux de Hammer++ / Hammer")).clicked() {
                     *rc = Raccourcis::par_defaut();
                     change = true;
                 }
             });
             let conflits = rc.conflits();
             for (a, b, c) in conflits.iter().take(4) {
-                ui.colored_label(egui::Color32::from_rgb(255, 170, 80), format!("{} sert à « {a} » et à « {b} »", c.texte()));
+                ui.colored_label(egui::Color32::from_rgb(255, 170, 80), tr!("{} sert à « {a} » et à « {b} »", "{} is used by \"{a}\" and by \"{b}\"", c.texte()));
             }
             ui.separator();
             let f = self.filtre.to_lowercase();
             egui::ScrollArea::vertical().max_height(480.0).show(ui, |ui| {
                 egui::Grid::new("raccourcis").num_columns(3).striped(true).show(ui, |ui| {
                     for (action, libelle, _) in ACTIONS {
+                        let libelle = &crate::langue::t(libelle);
                         if !f.is_empty() && !libelle.to_lowercase().contains(&f) && !action.to_lowercase().contains(&f) {
                             continue;
                         }
                         ui.label(*libelle).on_hover_text(*action);
                         if self.attente.as_deref() == Some(*action) {
-                            ui.colored_label(egui::Color32::from_rgb(255, 200, 60), "appuyer sur la nouvelle touche…");
+                            ui.colored_label(egui::Color32::from_rgb(255, 200, 60), crate::langue::t("appuyer sur la nouvelle touche…"));
                         } else {
                             ui.monospace(rc.texte(action));
                         }
                         ui.horizontal(|ui| {
-                            if ui.small_button("Changer").clicked() {
+                            if ui.small_button(crate::langue::t("Changer")).clicked() {
                                 self.attente = Some(action.to_string());
                             }
-                            if ui.small_button("Aucune").clicked() {
+                            if ui.small_button(crate::langue::t("Aucune")).clicked() {
                                 rc.table.insert(action.to_string(), Vec::new());
                                 change = true;
                             }
@@ -475,7 +476,7 @@ impl Editeur {
         });
         self.ouvert = ouvert;
         if change {
-            rc.source = format!("les tiens ({})", Raccourcis::fichier_utilisateur().display());
+            rc.source = tr!("les tiens ({})", "yours ({})", Raccourcis::fichier_utilisateur().display());
         }
         change
     }

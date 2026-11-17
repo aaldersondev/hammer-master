@@ -28,6 +28,8 @@ pub struct Options {
     pub distance_modeles: f32,
     /// Débuts de chemins de matériaux absents du navigateur de textures (« Material directory exclusion list »).
     pub exclus: Vec<String>,
+    /// Langue de l'interface : anglais, ou le français du source ; au premier lancement, celle du système.
+    pub anglais: bool,
 }
 
 impl Default for Options {
@@ -48,6 +50,7 @@ impl Default for Options {
             filtrer_textures: true,
             distance_modeles: 0.0,
             exclus: ["models/", "vgui/", "console/", "hud/"].map(String::from).to_vec(),
+            anglais: crate::langue::systeme_anglais(),
         }
     }
 }
@@ -67,6 +70,12 @@ fn fichier() -> PathBuf {
 impl Options {
     pub fn charger() -> Options {
         Options::lire(&std::fs::read_to_string(fichier()).unwrap_or_default())
+    }
+
+    /// Met l'interface dans la langue choisie.
+    pub fn appliquer(self) -> Options {
+        crate::langue::choisir(self.anglais);
+        self
     }
 
     pub fn enregistrer(&self) -> Result<(), String> {
@@ -99,6 +108,7 @@ impl Options {
                 "filtrer_textures" => o.filtrer_textures = v == "oui",
                 "distance_modeles" => o.distance_modeles = f(o.distance_modeles, 0.0, 200000.0),
                 "exclus" => o.exclus = v.split(',').map(|x| x.trim().to_string()).filter(|x| !x.is_empty()).collect(),
+                "langue" => o.anglais = v == "en",
                 _ => {}
             }
         }
@@ -107,7 +117,7 @@ impl Options {
 
     fn ecrire(&self) -> String {
         format!(
-            "fov = {}\nvitesse = {}\nvitesse_rapide = {}\nsensibilite = {}\ninverser_y = {}\nsauvegarde_min = {}\ndistance = {}\nsurligner_64 = {}\nsurligner_n = {}\ncacher_petite_grille = {}\nfleches = {}\ngrille_pointillee = {}\nfiltrer_textures = {}\ndistance_modeles = {}\nexclus = {}\n",
+            "fov = {}\nvitesse = {}\nvitesse_rapide = {}\nsensibilite = {}\ninverser_y = {}\nsauvegarde_min = {}\ndistance = {}\nsurligner_64 = {}\nsurligner_n = {}\ncacher_petite_grille = {}\nfleches = {}\ngrille_pointillee = {}\nfiltrer_textures = {}\ndistance_modeles = {}\nexclus = {}\nlangue = {}\n",
             self.fov,
             self.vitesse,
             self.vitesse_rapide,
@@ -122,7 +132,8 @@ impl Options {
             oui(self.grille_pointillee),
             oui(self.filtrer_textures),
             self.distance_modeles,
-            self.exclus.join(", ")
+            self.exclus.join(", "),
+            if self.anglais { "en" } else { "fr" }
         )
     }
 }
@@ -133,7 +144,7 @@ mod tests {
 
     #[test]
     fn relire_ce_qui_est_ecrit() {
-        let o = Options { fov: 75.0, vitesse: 800.0, vitesse_rapide: 3000.0, sensibilite: 0.4, inverser_y: true, sauvegarde_min: 5, distance: 32768.0, surligner_64: false, surligner_n: 0, cacher_petite_grille: false, fleches: false, grille_pointillee: true, filtrer_textures: false, distance_modeles: 3000.0, exclus: vec!["models/".into(), "effects/".into()] };
+        let o = Options { fov: 75.0, vitesse: 800.0, vitesse_rapide: 3000.0, sensibilite: 0.4, inverser_y: true, sauvegarde_min: 5, distance: 32768.0, surligner_64: false, surligner_n: 0, cacher_petite_grille: false, fleches: false, grille_pointillee: true, filtrer_textures: false, distance_modeles: 3000.0, exclus: vec!["models/".into(), "effects/".into()], anglais: !Options::default().anglais };
         assert_eq!(Options::lire(&o.ecrire()), o);
         // clés inconnues ignorées, valeurs illisibles ou hors bornes : défaut ou bornée
         let l = Options::lire("fov = beaucoup\nvitesse = 1e9\nautre = 3\nsauvegarde_min = 0");

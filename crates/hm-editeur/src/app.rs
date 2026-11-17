@@ -81,19 +81,19 @@ pub enum Outil {
 impl Outil {
     pub fn nom(self) -> &'static str {
         match self {
-            Outil::Selection => "Sélection",
-            Outil::Camera => "Caméra",
-            Outil::Bloc => "Bloc",
-            Outil::Entite => "Entité",
-            Outil::Texture => "Texture",
-            Outil::Decoupe => "Découpe",
-            Outil::Sommets => "Sommets",
-            Outil::Decal => "Décal",
-            Outil::Overlay => "Overlay",
-            Outil::Sculpter => "Sculpter",
-            Outil::Loupe => "Loupe",
-            Outil::Semer => "Semer",
-            Outil::Polygone => "Polygone",
+            Outil::Selection => crate::langue::t("Sélection"),
+            Outil::Camera => crate::langue::t("Caméra"),
+            Outil::Bloc => crate::langue::t("Bloc"),
+            Outil::Entite => crate::langue::t("Entité"),
+            Outil::Texture => crate::langue::t("Texture"),
+            Outil::Decoupe => crate::langue::t("Découpe"),
+            Outil::Sommets => crate::langue::t("Sommets"),
+            Outil::Decal => crate::langue::t("Décal"),
+            Outil::Overlay => crate::langue::t("Overlay"),
+            Outil::Sculpter => crate::langue::t("Sculpter"),
+            Outil::Loupe => crate::langue::t("Loupe"),
+            Outil::Semer => crate::langue::t("Semer"),
+            Outil::Polygone => crate::langue::t("Polygone"),
         }
     }
 }
@@ -383,7 +383,7 @@ impl Editeur {
             sous_onglet_vg: 0,
             aretes_modeles: Default::default(),
             dialogues: Default::default(),
-            options: crate::options::Options::charger(),
+            options: crate::options::Options::charger().appliquer(),
             options_ouvertes: false,
             options_a_enregistrer: false,
             revision_monde: 0,
@@ -463,7 +463,7 @@ impl Editeur {
         if let Some(c) = carte {
             e.ouvrir(&c);
         }
-        e.statut = format!("raccourcis : {}", e.rc.source);
+        e.statut = tr!("raccourcis : {}", "shortcuts: {}", e.rc.source);
         e
     }
 
@@ -487,7 +487,7 @@ impl Editeur {
         }
         let mut vfs = Vfs::new();
         if let Err(e) = vfs.add_gameinfo(&gi) {
-            self.erreur = Some(format!("fichiers du jeu introuvables ({}) : {e}", gi.display()));
+            self.erreur = Some(tr!("fichiers du jeu introuvables ({}) : {e}", "game files not found ({}): {e}", gi.display()));
         }
         // le projecteur des light_spot tel que Hammer++ le montre (son modèle gris, teinté de `_light`), s'il est là
         if let Some(g) = hm_assets::jeu::garrysmod() {
@@ -520,27 +520,26 @@ impl Editeur {
                 self.nom_d_apres(p);
                 self.fuite = None;
                 let invalides = self.session.doc().solides_invalides().len();
-                self.statut = format!(
-                    "ouvert : {}{}{}",
+                self.statut = tr!("ouvert : {}{}{}", "opened: {}{}{}",
                     p.display(),
-                    if renum > 0 { format!(" ({renum} numéro(s) en double renuméroté(s))") } else { String::new() },
-                    if invalides > 0 { format!(" — {invalides} solide(s) invalide(s) : Outils > Sélectionner les solides invalides") } else { String::new() }
+                    if renum > 0 { tr!(" ({renum} numéro(s) en double renuméroté(s))", " ({renum} duplicate ID(s) renumbered)") } else { String::new() },
+                    if invalides > 0 { tr!(" — {invalides} solide(s) invalide(s) : Outils > Sélectionner les solides invalides", " — {invalides} invalid solid(s): Tools > Select invalid solids") } else { String::new() }
                 );
             }
-            Err(e) => self.erreur = Some(format!("ouverture impossible : {e}")),
+            Err(e) => self.erreur = Some(tr!("ouverture impossible : {e}", "cannot open: {e}")),
         }
     }
 
     fn executer(&mut self, c: Commande) {
         let nom = c.nom();
         match self.session.executer(c) {
-            Ok(r) => self.statut = if r.message.is_empty() { format!("fait : {nom}") } else { format!("{nom} : {}", r.message) },
-            Err(e) => self.erreur = Some(format!("{nom} refusé : {e}")),
+            Ok(r) => self.statut = if r.message.is_empty() { tr!("fait : {nom}", "done: {nom}") } else { tr!("{nom} : {}", "{nom}: {}", r.message) },
+            Err(e) => self.erreur = Some(tr!("{nom} refusé : {e}", "{nom} refused: {e}")),
         }
     }
 
     fn titre(&self) -> String {
-        let nom = self.session.chemin().and_then(|p| p.file_name()).map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "sans titre".into());
+        let nom = self.session.chemin().and_then(|p| p.file_name()).map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| crate::langue::t("sans titre").into());
         format!("{}{} — Hammer Master", nom, if self.session.modifiee() { " *" } else { "" })
     }
 
@@ -551,7 +550,7 @@ impl Editeur {
             return;
         }
         let Some(rs) = frame.wgpu_render_state() else {
-            self.erreur = Some("pas de carte graphique wgpu".into());
+            self.erreur = Some(crate::langue::t("pas de carte graphique wgpu").into());
             return;
         };
         let info = rs.adapter.get_info();
@@ -716,7 +715,7 @@ impl Editeur {
     /// Masquage rapide de la sélection (H), ou de tout le reste (Ctrl+H) : un réglage de la vue, pas une édition.
     pub fn masquer(&mut self, le_reste: bool) {
         if self.session.selection.is_empty() {
-            self.statut = "rien de sélectionné à masquer".into();
+            self.statut = crate::langue::t("rien de sélectionné à masquer").into();
             return;
         }
         let sel = self.session.selection.clone();
@@ -724,7 +723,7 @@ impl Editeur {
         if !le_reste {
             self.session.selection.clear();
         }
-        self.statut = format!("{n} objet(s) masqué(s) — U pour tout réafficher");
+        self.statut = tr!("{n} objet(s) masqué(s) — U pour tout réafficher", "{n} object(s) hidden — U to show everything again");
     }
 
     /// Réaffiche les objets du masquage rapide (U).
@@ -733,7 +732,7 @@ impl Editeur {
         self.filtres.masques.clear();
         self.instances.borrow_mut().clear();
         self.filtres.changer();
-        self.statut = format!("{n} objet(s) réaffiché(s)");
+        self.statut = tr!("{n} objet(s) réaffiché(s)", "{n} object(s) shown again");
     }
 
     fn cliquer(&mut self, cands: Vec<Designe>, pos: Pos2, ajouter: bool) {
@@ -765,7 +764,7 @@ impl Editeur {
         } else {
             self.session.selection = vec![r];
         }
-        self.statut = format!("sélection : {} objet(s){}", self.session.selection.len(), if cands.len() > 1 { format!(" — {} sous le curseur (PgUp/PgDn pour changer)", cands.len()) } else { String::new() });
+        self.statut = tr!("sélection : {} objet(s){}", "selection: {} object(s){}", self.session.selection.len(), if cands.len() > 1 { tr!(" — {} sous le curseur (PgUp/PgDn pour changer)", " — {} under the cursor (PgUp/PgDn to cycle)", cands.len()) } else { String::new() });
     }
 
     fn passer_sous_le_curseur(&mut self, sens: i32) {
@@ -794,14 +793,14 @@ impl Editeur {
         }
         if p("Edit_Undo") {
             match self.session.annuler() {
-                Some(n) => self.statut = format!("annulé : {n}"),
-                None => self.statut = "rien à annuler".into(),
+                Some(n) => self.statut = tr!("annulé : {n}", "undone: {n}"),
+                None => self.statut = crate::langue::t("rien à annuler").into(),
             }
         }
         if p("Edit_Redo") {
             match self.session.retablir() {
-                Some(n) => self.statut = format!("rétabli : {n}"),
-                None => self.statut = "rien à rétablir".into(),
+                Some(n) => self.statut = tr!("rétabli : {n}", "redone: {n}"),
+                None => self.statut = crate::langue::t("rien à rétablir").into(),
             }
         }
         if p("File_Save") {
@@ -826,14 +825,14 @@ impl Editeur {
         }
         if p("Map_Snap_To_Grid") {
             self.aimant = !self.aimant;
-            self.statut = format!("aimantation : {}", if self.aimant { "oui" } else { "non" });
+            self.statut = tr!("aimantation : {}", "snapping: {}", if self.aimant { crate::langue::t("oui") } else { crate::langue::t("non") });
         }
         if p("View_Toggle_Grid") {
             self.grille_visible = !self.grille_visible;
         }
         if p("Tools_Toggle_Texture_Lock") {
             self.verrou_texture = !self.verrou_texture;
-            self.statut = format!("verrou de texture : {}", if self.verrou_texture { "oui" } else { "non" });
+            self.statut = tr!("verrou de texture : {}", "texture lock: {}", if self.verrou_texture { crate::langue::t("oui") } else { crate::langue::t("non") });
         }
         if p("Edit_Toggle_Group_Ignore") {
             self.ignorer_groupes = !self.ignorer_groupes;
@@ -949,7 +948,7 @@ impl Editeur {
         self.vue_souris = actif;
         ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(if actif { egui::CursorGrab::Locked } else { egui::CursorGrab::None }));
         ctx.send_viewport_cmd(egui::ViewportCommand::CursorVisible(!actif));
-        self.statut = if actif { "vue souris : Échap ou la même touche pour en sortir".into() } else { String::new() };
+        self.statut = if actif { crate::langue::t("vue souris : Échap ou la même touche pour en sortir").into() } else { String::new() };
     }
 
 
@@ -978,7 +977,7 @@ impl Editeur {
             match self.session.copier() {
                 Ok(t) => {
                     ctx.copy_text(t);
-                    self.statut = format!("{} objet(s) copié(s)", sel.len());
+                    self.statut = tr!("{} objet(s) copié(s)", "{} object(s) copied", sel.len());
                     if coupe {
                         self.executer(Commande::Supprimer { objets: sel.clone() });
                     }
@@ -1065,7 +1064,7 @@ impl Editeur {
                 self.executer(Commande::LierAEntite { objets: sel.clone(), classe: "func_detail".into() });
                 self.onglet = Onglet::Proprietes;
                 self.vue_proprietes = io_ui::VueProprietes::Cles;
-                self.statut = "lié à func_detail : choisir la classe avec « … » à côté de Classe".into();
+                self.statut = crate::langue::t("lié à func_detail : choisir la classe avec « … » à côté de Classe").into();
             }
             if p("Edit_To_World") {
                 let entites: Vec<u64> = sel.iter().filter_map(|r| if let Ref::Entite(e) = r { Some(*e) } else { None }).filter(|e| self.session.doc().entite(*e).map_or(false, |x| !x.ponctuelle())).collect();
@@ -1118,10 +1117,10 @@ impl Editeur {
             Onglet::Historique => {
                 let faits: Vec<String> = self.session.historique().faits().iter().map(|c| c.nom.clone()).collect();
                 let annules: Vec<String> = self.session.historique().annules().iter().rev().map(|c| c.nom.clone()).collect();
-                ui.label(format!("{} étape(s) ; cliquer une ligne pour revenir à ce point", faits.len()));
+                ui.label(tr!("{} étape(s) ; cliquer une ligne pour revenir à ce point", "{} step(s); click a line to go back to that point", faits.len()));
                 let mut aller = None;
                 egui::ScrollArea::vertical().auto_shrink(false).stick_to_bottom(true).show(ui, |ui| {
-                    if ui.selectable_label(faits.is_empty(), "(ouverture de la map)").clicked() {
+                    if ui.selectable_label(faits.is_empty(), crate::langue::t("(ouverture de la map)")).clicked() {
                         aller = Some(0);
                     }
                     for (i, n) in faits.iter().enumerate() {
@@ -1130,14 +1129,14 @@ impl Editeur {
                         }
                     }
                     for (k, n) in annules.iter().enumerate() {
-                        if ui.add(egui::Button::new(egui::RichText::new(format!("{:>3}  {n}", faits.len() + k + 1)).weak()).frame(false)).on_hover_text("annulé : cliquer pour rétablir jusqu'ici").clicked() {
+                        if ui.add(egui::Button::new(egui::RichText::new(format!("{:>3}  {n}", faits.len() + k + 1)).weak()).frame(false)).on_hover_text(crate::langue::t("annulé : cliquer pour rétablir jusqu'ici")).clicked() {
                             aller = Some(faits.len() + k + 1);
                         }
                     }
                 });
                 if let Some(n) = aller {
                     self.session.aller_a(n);
-                    self.statut = format!("historique : étape {n}");
+                    self.statut = tr!("historique : étape {n}", "history: step {n}");
                 }
             }
         }
@@ -1147,8 +1146,8 @@ impl Editeur {
     /// appliqués à toutes les faces choisies.
     fn panneau_faces(&mut self, ui: &mut egui::Ui) {
         self.faces.retain(|f| self.session.doc().solide(f.solide).map_or(false, |s| s.faces.iter().any(|x| x.id == f.face)));
-        ui.strong(format!("Faces : {} choisie(s)", self.faces.len()));
-        ui.label(egui::RichText::new("clic : choisir et prendre la texture · Ctrl : ajouter · Maj : tout le solide · clic droit : appliquer la courante · Alt+clic droit : enrouler depuis la face prise").small().weak());
+        ui.strong(tr!("Faces : {} choisie(s)", "Faces: {} chosen", self.faces.len()));
+        ui.label(egui::RichText::new(crate::langue::t("clic : choisir et prendre la texture · Ctrl : ajouter · Maj : tout le solide · clic droit : appliquer la courante · Alt+clic droit : enrouler depuis la face prise")).small().weak());
         self.section_disp(ui);
         let Some(f) = self.faces.first().and_then(|r| self.session.doc().solide(r.solide).and_then(|s| s.faces.iter().find(|x| x.id == r.face))).cloned() else {
             return;
@@ -1157,11 +1156,11 @@ impl Editeur {
         let cle_faces = format!("{:?}", faces);
         let mut regler: Option<(ReglageFaces, &'static str)> = None;
         let mut fini_glisser = false;
-        ui.label(format!("matériau : {}", f.materiau));
+        ui.label(tr!("matériau : {}", "material: {}", f.materiau));
         egui::Grid::new("face_edit").num_columns(3).spacing([6.0, 4.0]).show(ui, |ui| {
             let mut champ = |ui: &mut egui::Ui, nom: &str, val: f64, vitesse: f64, cle: &'static str, faire: &dyn Fn(f64) -> ReglageFaces| {
                 let mut v = val;
-                let r = ui.add(egui::DragValue::new(&mut v).speed(vitesse).max_decimals(4)).on_hover_text(format!("{nom} : glisser, molette ou taper une valeur"));
+                let r = ui.add(egui::DragValue::new(&mut v).speed(vitesse).max_decimals(4)).on_hover_text(tr!("{nom} : glisser, molette ou taper une valeur", "{nom}: drag, scroll or type a value"));
                 if r.changed() && v != val {
                     regler = Some((faire(v), cle));
                 }
@@ -1169,21 +1168,21 @@ impl Editeur {
                     fini_glisser = true;
                 }
             };
-            ui.label("échelle");
-            champ(ui, "échelle X", f.u.echelle, 0.01, "echelle_u", &|v| ReglageFaces { echelle_u: Some(v), ..Default::default() });
-            champ(ui, "échelle Y", f.v.echelle, 0.01, "echelle_v", &|v| ReglageFaces { echelle_v: Some(v), ..Default::default() });
+            ui.label(crate::langue::t("échelle"));
+            champ(ui, crate::langue::t("échelle X"), f.u.echelle, 0.01, "echelle_u", &|v| ReglageFaces { echelle_u: Some(v), ..Default::default() });
+            champ(ui, crate::langue::t("échelle Y"), f.v.echelle, 0.01, "echelle_v", &|v| ReglageFaces { echelle_v: Some(v), ..Default::default() });
             ui.end_row();
-            ui.label("décalage");
-            champ(ui, "décalage X", f.u.decalage, 1.0, "decalage_u", &|v| ReglageFaces { decalage_u: Some(v), ..Default::default() });
-            champ(ui, "décalage Y", f.v.decalage, 1.0, "decalage_v", &|v| ReglageFaces { decalage_v: Some(v), ..Default::default() });
+            ui.label(crate::langue::t("décalage"));
+            champ(ui, crate::langue::t("décalage X"), f.u.decalage, 1.0, "decalage_u", &|v| ReglageFaces { decalage_u: Some(v), ..Default::default() });
+            champ(ui, crate::langue::t("décalage Y"), f.v.decalage, 1.0, "decalage_v", &|v| ReglageFaces { decalage_v: Some(v), ..Default::default() });
             ui.end_row();
             ui.label("rotation");
             champ(ui, "rotation", f.rotation, 1.0, "rotation", &|v| ReglageFaces { rotation: Some(v), ..Default::default() });
             ui.label("");
             ui.end_row();
-            ui.label("lumière");
-            champ(ui, "unités par luxel (16 par défaut ; moins = plus fin et plus cher)", f.echelle_lumiere, 1.0, "lumiere", &|v| ReglageFaces { echelle_lumiere: Some(v.round().max(1.0)), ..Default::default() });
-            ui.label("unités / luxel");
+            ui.label(crate::langue::t("lumière"));
+            champ(ui, crate::langue::t("unités par luxel (16 par défaut ; moins = plus fin et plus cher)"), f.echelle_lumiere, 1.0, "lumiere", &|v| ReglageFaces { echelle_lumiere: Some(v.round().max(1.0)), ..Default::default() });
+            ui.label(crate::langue::t("unités / luxel"));
             ui.end_row();
         });
         if let Some((r, cle)) = regler {
@@ -1197,37 +1196,37 @@ impl Editeur {
             self.session.couper_continu();
         }
         ui.horizontal(|ui| {
-            ui.label("justifier");
+            ui.label(crate::langue::t("justifier"));
             let mut j = None;
-            for (t, x, aide) in [("G", Justif::Gauche, "gauche"), ("D", Justif::Droite, "droite"), ("H", Justif::Haut, "haut"), ("B", Justif::Bas, "bas"), ("C", Justif::Centre, "centre"), ("Ajuster", Justif::Ajuster, "une répétition exacte sur la face")] {
+            for (t, x, aide) in [("G", Justif::Gauche, crate::langue::t("gauche")), ("D", Justif::Droite, crate::langue::t("droite")), ("H", Justif::Haut, crate::langue::t("haut")), ("B", Justif::Bas, crate::langue::t("bas")), ("C", Justif::Centre, crate::langue::t("centre")), (crate::langue::t("Ajuster"), Justif::Ajuster, crate::langue::t("une répétition exacte sur la face"))] {
                 if ui.small_button(t).on_hover_text(aide).clicked() {
                     j = Some(x);
                 }
             }
-            ui.checkbox(&mut self.faces_comme_une, "comme une seule");
+            ui.checkbox(&mut self.faces_comme_une, crate::langue::t("comme une seule"));
             if let Some(justif) = j {
                 let tailles = self.tailles_textures(&faces);
                 self.executer(Commande::JustifierFaces { faces: faces.clone(), justif, ensemble: self.faces_comme_une, tailles });
             }
         });
         ui.horizontal(|ui| {
-            ui.label("aligner sur");
-            if ui.small_button("le monde").clicked() {
+            ui.label(crate::langue::t("aligner sur"));
+            if ui.small_button(crate::langue::t("le monde")).clicked() {
                 self.executer(Commande::AlignerFaces { faces: faces.clone(), sur: Alignement::Monde });
             }
-            if ui.small_button("la face").clicked() {
+            if ui.small_button(crate::langue::t("la face")).clicked() {
                 self.executer(Commande::AlignerFaces { faces: faces.clone(), sur: Alignement::Face });
             }
-            if ui.small_button("Nodraw").on_hover_text("tools/toolsnodraw sur les faces choisies, sans changer la texture courante").clicked() {
+            if ui.small_button("Nodraw").on_hover_text(crate::langue::t("tools/toolsnodraw sur les faces choisies, sans changer la texture courante")).clicked() {
                 self.executer(Commande::MateriauFaces { faces: faces.clone(), materiau: "TOOLS/TOOLSNODRAW".into() });
             }
-            if ui.small_button("Remplacer…").clicked() {
+            if ui.small_button(crate::langue::t("Remplacer…")).clicked() {
                 self.remplacer = Some((f.materiau.clone(), self.materiau.clone(), false));
             }
         });
         // groupes de lissage (masque de bits du VMF)
         let masque: u32 = f.lissage.trim().parse().unwrap_or(0);
-        ui.label("lissage");
+        ui.label(crate::langue::t("lissage"));
         let mut nouveau = masque;
         egui::Grid::new("lissage").spacing([2.0, 2.0]).show(ui, |ui| {
             for g in 0..24u32 {
@@ -1244,7 +1243,7 @@ impl Editeur {
             self.executer(Commande::ReglerFaces { faces: faces.clone(), reglage: ReglageFaces { lissage: Some(nouveau.to_string()), ..Default::default() } });
         }
         // axes U et V (comme les « UV vectors » de Hammer++)
-        ui.collapsing("axes U et V", |ui| {
+        ui.collapsing(crate::langue::t("axes U et V"), |ui| {
             for (k, axe) in [("U", f.u.dir), ("V", f.v.dir)] {
                 ui.horizontal(|ui| {
                     ui.label(k);
@@ -1266,7 +1265,7 @@ impl Editeur {
                 });
             }
         });
-        if ui.button(format!("Appliquer {} aux faces choisies", self.materiau)).clicked() {
+        if ui.button(tr!("Appliquer {} aux faces choisies", "Apply {} to the chosen faces", self.materiau)).clicked() {
             let m = self.materiau.clone();
             self.executer(Commande::MateriauFaces { faces, materiau: m });
         }
@@ -1292,17 +1291,17 @@ impl Editeur {
         let Some((mut ancien, mut nouveau, mut selection)) = self.remplacer.clone() else { return };
         let mut ouvert = true;
         let mut faire = false;
-        egui::Window::new("Remplacer un matériau").open(&mut ouvert).collapsible(false).resizable(false).show(ctx, |ui| {
+        egui::Window::new(crate::langue::t("Remplacer un matériau")).open(&mut ouvert).collapsible(false).resizable(false).show(ctx, |ui| {
             egui::Grid::new("remplacer").num_columns(2).show(ui, |ui| {
-                ui.label("chercher");
+                ui.label(crate::langue::t("chercher"));
                 ui.text_edit_singleline(&mut ancien);
                 ui.end_row();
-                ui.label("remplacer par");
+                ui.label(crate::langue::t("remplacer par"));
                 ui.text_edit_singleline(&mut nouveau);
                 ui.end_row();
             });
-            ui.checkbox(&mut selection, "dans la sélection seulement");
-            faire = ui.button("Remplacer").clicked();
+            ui.checkbox(&mut selection, crate::langue::t("dans la sélection seulement"));
+            faire = ui.button(crate::langue::t("Remplacer")).clicked();
         });
         self.remplacer = Some((ancien.clone(), nouveau.clone(), selection));
         if faire && !ancien.trim().is_empty() && !nouveau.trim().is_empty() {
@@ -1395,7 +1394,7 @@ impl Editeur {
             self.faces = toutes;
         }
         if let Some(m) = self.faces.first().and_then(|r| self.session.doc().solide(r.solide).and_then(|s| s.faces.iter().find(|x| x.id == r.face))).map(|f| f.materiau.clone()) {
-            self.statut = format!("face choisie : {m}");
+            self.statut = tr!("face choisie : {m}", "chosen face: {m}");
         }
     }
 
@@ -1420,11 +1419,11 @@ impl Editeur {
             let ents: Vec<&hm_doc::Entite> = self.session.selection.iter().filter_map(|r| if let Ref::Entite(e) = r { doc.entite(*e) } else { None }).collect();
             match ents.as_slice() {
                 [e] => match e.get("targetname").filter(|n| !n.is_empty()) {
-                    Some(n) => format!("Propriétés de l'objet : {n} - {}", e.classe()),
-                    None => format!("Propriétés de l'objet : {}", e.classe()),
+                    Some(n) => tr!("Propriétés de l'objet : {n} - {}", "Object Properties: {n} - {}", e.classe()),
+                    None => tr!("Propriétés de l'objet : {}", "Object Properties: {}", e.classe()),
                 },
-                [] => "Propriétés de l'objet".to_string(),
-                l => format!("Propriétés de l'objet : {} entités", l.len()),
+                [] => crate::langue::t("Propriétés de l'objet").to_string(),
+                l => tr!("Propriétés de l'objet : {} entités", "Object Properties: {} entities", l.len()),
             }
         };
         let (mut ouverte, mut annuler, mut fermer) = (true, false, false);
@@ -1440,10 +1439,10 @@ impl Editeur {
                 ui.separator();
                 let changes = self.session.historique().faits().len().saturating_sub(depart);
                 ui.horizontal(|ui| {
-                    if ui.add_enabled(changes > 0, egui::Button::new("Annuler")).on_hover_text(format!("défaire les {changes} changement(s) faits depuis l'ouverture de la fenêtre")).clicked() {
+                    if ui.add_enabled(changes > 0, egui::Button::new(crate::langue::t("Annuler"))).on_hover_text(tr!("défaire les {changes} changement(s) faits depuis l'ouverture de la fenêtre", "undo the {changes} change(s) made since the window was opened")).clicked() {
                         annuler = true;
                     }
-                    if ui.button("Fermer").on_hover_text("garder les changements (déjà appliqués, annulables par Ctrl+Z)").clicked() {
+                    if ui.button(crate::langue::t("Fermer")).on_hover_text(crate::langue::t("garder les changements (déjà appliqués, annulables par Ctrl+Z)")).clicked() {
                         fermer = true;
                     }
                 });
@@ -1454,7 +1453,7 @@ impl Editeur {
                     break;
                 }
             }
-            self.statut = "propriétés : changements annulés".into();
+            self.statut = crate::langue::t("propriétés : changements annulés").into();
         }
         if !ouverte || annuler || fermer {
             self.fenetre_proprietes = None;
@@ -1463,7 +1462,7 @@ impl Editeur {
 
     fn panneau_proprietes(&mut self, ui: &mut egui::Ui) {
         if self.fenetre_proprietes.is_some() {
-            ui.label("Les propriétés sont ouvertes dans leur fenêtre.");
+            ui.label(crate::langue::t("Les propriétés sont ouvertes dans leur fenêtre."));
             return;
         }
         self.panneau_proprietes_contenu(ui);
@@ -1471,13 +1470,13 @@ impl Editeur {
 
     fn panneau_proprietes_contenu(&mut self, ui: &mut egui::Ui) {
         if self.outil == Outil::Entite {
-            ui.strong("Outil entité");
-            ui.label("Clic dans la vue 3D : posée sur la surface visée. Clic dans une vue 2D : posée à la grille.");
+            ui.strong(crate::langue::t("Outil entité"));
+            ui.label(crate::langue::t("Clic dans la vue 3D : posée sur la surface visée. Clic dans une vue 2D : posée à la grille."));
             ui.horizontal(|ui| {
-                ui.label("Classe");
-                ui.add(egui::TextEdit::singleline(&mut self.proprietes.filtre_classes).hint_text("chercher").desired_width(160.0));
+                ui.label(crate::langue::t("Classe"));
+                ui.add(egui::TextEdit::singleline(&mut self.proprietes.filtre_classes).hint_text(crate::langue::t("chercher")).desired_width(160.0));
             });
-            ui.label(format!("courante : {}", self.classe_entite));
+            ui.label(tr!("courante : {}", "current: {}", self.classe_entite));
             let f = self.proprietes.filtre_classes.to_ascii_lowercase();
             let mut choisie = None;
             egui::ScrollArea::vertical().id_salt("classes").max_height(180.0).show(ui, |ui| {
@@ -1494,7 +1493,7 @@ impl Editeur {
         }
         let ents: Vec<u64> = self.session.selection.iter().filter_map(|r| if let Ref::Entite(e) = r { Some(*e) } else { None }).collect();
         if ents.is_empty() && !self.session.selection.is_empty() {
-            ui.label("La sélection n'a pas d'entité : rien sélectionné montre les propriétés du monde.");
+            ui.label(crate::langue::t("La sélection n'a pas d'entité : rien sélectionné montre les propriétés du monde."));
             return;
         }
         if ents.len() == 1 {
@@ -1518,7 +1517,7 @@ impl Editeur {
         match cmds.len() {
             0 => {}
             1 => self.executer(cmds.into_iter().next().unwrap()),
-            _ => self.executer(Commande::Lot { nom: "propriétés".into(), commandes: cmds }),
+            _ => self.executer(Commande::Lot { nom: crate::langue::t("propriétés").into(), commandes: cmds }),
         }
     }
 
@@ -1572,75 +1571,75 @@ impl Editeur {
                 self.derniere_compil = Some((reussi, secondes, erreur.clone(), bsp));
                 self.portails = hm_compile::lire_portails(&hm_compile::dossier_compile(self.session.chemin()).join(format!("{}.prt", self.nom_en_cours)));
                 if reussi {
-                    self.journal.push((format!("compilation réussie en {secondes:.1} s"), 1));
-                    self.statut = format!("compilée en {secondes:.1} s");
+                    self.journal.push((tr!("compilation réussie en {secondes:.1} s", "compiled successfully in {secondes:.1} s"), 1));
+                    self.statut = tr!("compilée en {secondes:.1} s", "compiled in {secondes:.1} s");
                     if self.lancer_jeu {
                         if let Some(o) = &self.outils {
                             self.jeu_lance = Some(o.lancer_jeu(&self.nom_en_cours));
                         }
                     }
                 } else {
-                    let e = erreur.unwrap_or_else(|| "échec".into());
-                    self.journal.push((format!("ÉCHEC : {e}"), 2));
-                    self.erreur = Some(format!("compilation : {e}"));
+                    let e = erreur.unwrap_or_else(|| crate::langue::t("échec").into());
+                    self.journal.push((tr!("ÉCHEC : {e}", "FAILED: {e}"), 2));
+                    self.erreur = Some(tr!("compilation : {e}", "compile: {e}"));
                 }
             }
         }
         if self.fenetre_compil {
             let mut ouverte = true;
             let mut choix_exe: Option<(usize, Option<PathBuf>)> = None;
-            egui::Window::new("Compiler").open(&mut ouverte).collapsible(false).resizable(false).show(ctx, |ui| {
+            egui::Window::new(crate::langue::t("Compiler")).open(&mut ouverte).collapsible(false).resizable(false).show(ctx, |ui| {
                 match &self.outils {
                     None => {
-                        ui.colored_label(egui::Color32::from_rgb(255, 120, 100), "Garry's Mod introuvable : pas de vbsp, vvis, vrad.");
+                        ui.colored_label(egui::Color32::from_rgb(255, 120, 100), crate::langue::t("Garry's Mod introuvable : pas de vbsp, vvis, vrad."));
                     }
                     Some(o) => {
-                        ui.label(format!("outils : {}", o.source));
+                        ui.label(tr!("outils : {}", "tools: {}", o.source));
                         // l'exécutable de chaque étape (VVIS++, VRAD++… à la place de ceux du jeu), gardé pour la suite
                         egui::Grid::new("executables").num_columns(4).show(ui, |ui| {
                             for (i, (etape, chemin)) in [("vbsp", &o.vbsp), ("vvis", &o.vvis), ("vrad", &o.vrad)].into_iter().enumerate() {
                                 ui.label(etape);
                                 ui.label(chemin.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default()).on_hover_text(chemin.display().to_string());
-                                if ui.small_button("Choisir…").clicked() {
-                                    if let Some(p) = rfd::FileDialog::new().add_filter("Programme", &["exe"]).set_title(format!("Exécutable de {etape}")).pick_file() {
+                                if ui.small_button(crate::langue::t("Choisir…")).clicked() {
+                                    if let Some(p) = rfd::FileDialog::new().add_filter(crate::langue::t("Programme"), &["exe"]).set_title(tr!("Exécutable de {etape}", "{etape} executable")).pick_file() {
                                         choix_exe = Some((i, Some(p)));
                                     }
                                 }
-                                if ui.small_button("Défaut").clicked() {
+                                if ui.small_button(crate::langue::t("Défaut")).clicked() {
                                     choix_exe = Some((i, None));
                                 }
                                 ui.end_row();
                             }
                         });
                         ui.horizontal(|ui| {
-                            ui.label("nom de la map");
+                            ui.label(crate::langue::t("nom de la map"));
                             ui.text_edit_singleline(&mut self.nom_compile);
                         });
                         for m in [hm_compile::Mode::Geometrie, hm_compile::Mode::Rapide, hm_compile::Mode::Normal, hm_compile::Mode::Final] {
                             ui.radio_value(&mut self.mode_compile, m, m.nom());
                         }
-                        ui.checkbox(&mut self.copier_bsp, format!("copier le .bsp dans {}", o.dossier_maps.display()));
-                        ui.checkbox(&mut self.embarquer, "embarquer dans le .bsp ce que les joueurs n'ont pas").on_hover_text("matériaux, textures et modèles employés qui ne viennent pas du jeu de base (addons, dossiers locaux, autres jeux), par bspzip");
-                        ui.checkbox(&mut self.lancer_jeu, "lancer le jeu sur la map après");
-                        ui.checkbox(&mut self.compil_partielle, "ne refaire que ce qui a changé").on_hover_text("seulement des entités : vbsp -onlyents (quelques secondes) ; des lumières : -onlyents puis vrad ; le reste (solides, props, overlays, cubemaps…) : tout");
+                        ui.checkbox(&mut self.copier_bsp, tr!("copier le .bsp dans {}", "copy the .bsp to {}", o.dossier_maps.display()));
+                        ui.checkbox(&mut self.embarquer, crate::langue::t("embarquer dans le .bsp ce que les joueurs n'ont pas")).on_hover_text(crate::langue::t("matériaux, textures et modèles employés qui ne viennent pas du jeu de base (addons, dossiers locaux, autres jeux), par bspzip"));
+                        ui.checkbox(&mut self.lancer_jeu, crate::langue::t("lancer le jeu sur la map après"));
+                        ui.checkbox(&mut self.compil_partielle, crate::langue::t("ne refaire que ce qui a changé")).on_hover_text(crate::langue::t("seulement des entités : vbsp -onlyents (quelques secondes) ; des lumières : -onlyents puis vrad ; le reste (solides, props, overlays, cubemaps…) : tout"));
                         // ce qui ne sera pas compilé, dit avant de lancer (le piège des visgroups oubliés)
                         let doc = self.session.doc();
                         let caches = doc.tous_les_solides().filter(|(p, s)| *p == hm_doc::Proprio::Monde && s.cache).count() + doc.entites().filter(|e| e.cache).count();
                         let orange = egui::Color32::from_rgb(255, 170, 60);
                         if caches > 0 {
-                            ui.colored_label(orange, format!("{caches} objet(s) dans des visgroups décochés ne seront pas compilés"));
+                            ui.colored_label(orange, tr!("{caches} objet(s) dans des visgroups décochés ne seront pas compilés", "{caches} object(s) in unchecked visgroups will not be compiled"));
                         }
                         match doc.cordons().boites_actives().as_slice() {
                             [] => {}
                             [(a, b)] => {
-                                ui.colored_label(orange, format!("cordon actif : seul ce qui touche ({}, {}, {}) – ({}, {}, {}) est compilé", a.x, a.y, a.z, b.x, b.y, b.z));
+                                ui.colored_label(orange, tr!("cordon actif : seul ce qui touche ({}, {}, {}) – ({}, {}, {}) est compilé", "active cordon: only what touches ({}, {}, {}) – ({}, {}, {}) is compiled", a.x, a.y, a.z, b.x, b.y, b.z));
                             }
                             v => {
-                                ui.colored_label(orange, format!("cordon actif : seul ce qui touche une de ses {} boîtes est compilé", v.len()));
+                                ui.colored_label(orange, tr!("cordon actif : seul ce qui touche une de ses {} boîtes est compilé", "active cordon: only what touches one of its {} boxes is compiled", v.len()));
                             }
                         }
                         let pret = self.compil.is_none() && !self.nom_compile.trim().is_empty() && self.nom_compile.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
-                        if ui.add_enabled(pret, egui::Button::new("Compiler")).clicked() {
+                        if ui.add_enabled(pret, egui::Button::new(crate::langue::t("Compiler"))).clicked() {
                             self.demarrer_compilation();
                             self.fenetre_compil = false;
                         }
@@ -1657,34 +1656,34 @@ impl Editeur {
         if self.compil.is_some() || !self.journal.is_empty() {
             egui::Panel::bottom("journal").resizable(true).default_size(180.0).show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    ui.strong("Compilation");
+                    ui.strong(crate::langue::t("Compilation"));
                     if self.compil.is_some() {
                         ui.spinner();
-                        ui.label(format!("en cours : {}", self.etape));
-                        if ui.button("Arrêter").clicked() {
+                        ui.label(tr!("en cours : {}", "running: {}", self.etape));
+                        if ui.button(crate::langue::t("Arrêter")).clicked() {
                             if let Some(c) = &self.compil {
                                 c.arreter();
                             }
                         }
                     }
                     if let Some(f) = &self.fuite {
-                        ui.colored_label(egui::Color32::from_rgb(255, 120, 100), format!("fuite : {} points", f.len()));
-                        if ui.button("Voir la fuite").clicked() {
+                        ui.colored_label(egui::Color32::from_rgb(255, 120, 100), tr!("fuite : {} points", "leak: {} points", f.len()));
+                        if ui.button(crate::langue::t("Voir la fuite")).clicked() {
                             let lo = f.iter().fold(Vec3::splat(f32::MAX), |a, p| a.min(Vec3::from(*p)));
                             let hi = f.iter().fold(Vec3::splat(f32::MIN), |a, p| a.max(Vec3::from(*p)));
                             for v in &mut self.vues {
                                 v.cadrer(lo - Vec3::splat(64.0), hi + Vec3::splat(64.0));
                             }
                         }
-                        if ui.button("Oublier la fuite").clicked() {
+                        if ui.button(crate::langue::t("Oublier la fuite")).clicked() {
                             self.fuite = None;
                         }
                     }
                     if let Some(p) = &self.portails {
-                        ui.checkbox(&mut self.portails_visibles, format!("Portails ({})", p.len())).on_hover_text("les portails de vbsp, entre les visleafs : où poser des hints");
+                        ui.checkbox(&mut self.portails_visibles, tr!("Portails ({})", "Portals ({})", p.len())).on_hover_text(crate::langue::t("les portails de vbsp, entre les visleafs : où poser des hints"));
                     }
-                    ui.checkbox(&mut self.journal_tout, "tout le journal");
-                    if ui.button("Fermer").clicked() && self.compil.is_none() {
+                    ui.checkbox(&mut self.journal_tout, crate::langue::t("tout le journal"));
+                    if ui.button(crate::langue::t("Fermer")).clicked() && self.compil.is_none() {
                         self.journal.clear();
                     }
                 });
@@ -1718,9 +1717,9 @@ impl Editeur {
             Some(_) => format!("{}_zone", self.nom_compile.trim()),
             None => self.nom_compile.trim().to_string(),
         };
-        self.journal.push((format!("map « {} », compilation {}, dans {}", self.nom_en_cours, self.mode_compile.nom(), dossier.display()), 1));
+        self.journal.push((tr!("map « {} », compilation {}, dans {}", "map \"{}\", {} compile, in {}", self.nom_en_cours, self.mode_compile.nom(), dossier.display()), 1));
         if let Some((lo, hi)) = zone {
-            self.journal.push((format!("zone seule : ({:.0}, {:.0}, {:.0}) – ({:.0}, {:.0}, {:.0}), comme sous un cordon ; le cordon de la map n'est pas touché", lo.x, lo.y, lo.z, hi.x, hi.y, hi.z), 1));
+            self.journal.push((tr!("zone seule : ({:.0}, {:.0}, {:.0}) – ({:.0}, {:.0}, {:.0}), comme sous un cordon ; le cordon de la map n'est pas touché", "zone only: ({:.0}, {:.0}, {:.0}) – ({:.0}, {:.0}, {:.0}), as under a cordon; the map's cordon is not touched", lo.x, lo.y, lo.z, hi.x, hi.y, hi.z), 1));
         }
         // une zone sert à essayer vite : rien à embarquer
         let fichiers = if self.embarquer && zone.is_none() {
@@ -1730,7 +1729,7 @@ impl Editeur {
             Vec::new()
         };
         if !fichiers.is_empty() {
-            self.journal.push((format!("{} fichier(s) à embarquer : {}", fichiers.len(), fichiers.iter().map(|(r, _)| r.as_str()).collect::<Vec<_>>().join(", ")), 1));
+            self.journal.push((tr!("{} fichier(s) à embarquer : {}", "{} file(s) to embed: {}", fichiers.len(), fichiers.iter().map(|(r, _)| r.as_str()).collect::<Vec<_>>().join(", ")), 1));
         }
         let vmf = match zone {
             Some((lo, hi)) => self.session.doc().pour_compilation_zone(&o.texture_cordon, self.session.chemin(), &dossier, lo.to_array(), hi.to_array()),
@@ -1750,7 +1749,7 @@ impl Editeur {
             return;
         }
         let Some((lo, hi)) = hm_doc::boite_de(self.session.doc(), &self.session.selection) else {
-            self.statut = "compiler une zone : rien de sélectionné".into();
+            self.statut = crate::langue::t("compiler une zone : rien de sélectionné").into();
             return;
         };
         let m = glam::DVec3::splat(64.0);
@@ -1914,7 +1913,7 @@ impl Editeur {
                         self.session.selection = choix;
                     }
                     self.mode_poignees = ModePoignees::Taille;
-                    self.statut = format!("sélection : {} objet(s)", self.session.selection.len());
+                    self.statut = tr!("sélection : {} objet(s)", "selection: {} object(s)", self.session.selection.len());
                 }
                 Geste::Bloc { debut, fin, .. } => {
                     let (mut lo, mut hi) = (Vec3::ZERO, Vec3::ZERO);
@@ -1928,7 +1927,7 @@ impl Editeur {
                         lo[c] = self.profondeur_bloc.0;
                         hi[c] = self.profondeur_bloc.1;
                         self.bloc = Some((lo, hi));
-                        self.statut = "bloc tracé : ajuster ses poignées dans les autres vues, Entrée pour le créer, Échap pour l'abandonner".into();
+                        self.statut = crate::langue::t("bloc tracé : ajuster ses poignées dans les autres vues, Entrée pour le créer, Échap pour l'abandonner").into();
                     }
                 }
                 Geste::Deplacer { delta, cloner, .. } => {
@@ -2044,7 +2043,7 @@ impl Editeur {
                 if self.afficher_stats {
                     let dt = ctx.input(|x| x.stable_dt).max(1e-4);
                     let (s, t, f) = self.geo.as_ref().map_or((0, 0, 0), |g| (g.sommets.len(), g.lots.iter().map(|l| l.indices.len() / 3).sum::<usize>(), g.formes.len()));
-                    let texte = format!("{:.0} images/s ({:.1} ms)\n{s} sommets, {t} triangles\n{f} objets dessinés\ncaméra ({:.0} {:.0} {:.0})", 1.0 / dt, dt * 1000.0, v.cam.pos.x, v.cam.pos.y, v.cam.pos.z);
+                    let texte = tr!("{:.0} images/s ({:.1} ms)\n{s} sommets, {t} triangles\n{f} objets dessinés\ncaméra ({:.0} {:.0} {:.0})", "{:.0} fps ({:.1} ms)\n{s} vertices, {t} triangles\n{f} objects drawn\ncamera ({:.0} {:.0} {:.0})", 1.0 / dt, dt * 1000.0, v.cam.pos.x, v.cam.pos.y, v.cam.pos.z);
                     p.text(v.rect.left_bottom() + egui::vec2(8.0, -8.0), egui::Align2::LEFT_BOTTOM, texte, egui::FontId::monospace(11.0), Color32::from_rgb(255, 230, 120));
                 }
                 if let Some((o, bouts)) = self.fleches_3d(i, ctx) {
@@ -2115,7 +2114,7 @@ impl Editeur {
     }
 
     fn dialogue_ouvrir(&mut self) {
-        if let Some(p) = rfd::FileDialog::new().add_filter("Map Hammer", &["vmf"]).pick_file() {
+        if let Some(p) = rfd::FileDialog::new().add_filter(crate::langue::t("Map Hammer"), &["vmf"]).pick_file() {
             self.ouvrir(&p);
         }
     }
@@ -2133,14 +2132,14 @@ impl Editeur {
         let f = hm_compile::fichier_choix();
         let ecrit = f.parent().map_or(Ok(()), std::fs::create_dir_all).and_then(|_| std::fs::write(&f, o.texte_choix(&defaut)));
         match ecrit {
-            Ok(()) => self.statut = format!("exécutables gardés dans {}", f.display()),
-            Err(e) => self.erreur = Some(format!("choix des exécutables non enregistré : {e}")),
+            Ok(()) => self.statut = tr!("exécutables gardés dans {}", "executables kept in {}", f.display()),
+            Err(e) => self.erreur = Some(tr!("choix des exécutables non enregistré : {e}", "executable choice not saved: {e}")),
         }
     }
 
     fn enregistrer(&mut self, sous: bool) {
         let chemin = if sous || self.session.chemin().is_none() {
-            match rfd::FileDialog::new().add_filter("Map Hammer", &["vmf"]).save_file() {
+            match rfd::FileDialog::new().add_filter(crate::langue::t("Map Hammer"), &["vmf"]).save_file() {
                 Some(p) => Some(p),
                 None => return,
             }
@@ -2149,10 +2148,10 @@ impl Editeur {
         };
         match self.session.enregistrer(chemin.as_deref()) {
             Ok(p) => {
-                self.statut = format!("enregistré : {}", p.display());
+                self.statut = tr!("enregistré : {}", "saved: {}", p.display());
                 self.nom_d_apres(&p);
             }
-            Err(e) => self.erreur = Some(format!("enregistrement impossible : {e}")),
+            Err(e) => self.erreur = Some(tr!("enregistrement impossible : {e}", "cannot save: {e}")),
         }
     }
 
@@ -2619,7 +2618,7 @@ impl Editeur {
             }
             Some(Action::Commande(j)) => match serde_json::from_str::<Commande>(&j) {
                 Ok(c) => self.executer(c),
-                Err(e) => self.erreur = Some(format!("commande de script illisible : {e}")),
+                Err(e) => self.erreur = Some(tr!("commande de script illisible : {e}", "unreadable script command: {e}")),
             },
             Some(Action::Quitter) => {
                 self.fermer_sans_demander = true;
@@ -2652,7 +2651,7 @@ impl Editeur {
             Some(Action::Fond(f)) => self.charger_fond(ctx, 0, PathBuf::from(f)),
             Some(Action::Enregistrer(f)) => match self.session.enregistrer(Some(Path::new(&f))) {
                 Ok(p) => {
-                    self.statut = format!("enregistré : {}", p.display());
+                    self.statut = tr!("enregistré : {}", "saved: {}", p.display());
                     self.nom_d_apres(&p);
                 }
                 Err(e) => self.erreur = Some(e),
@@ -2714,12 +2713,12 @@ impl eframe::App for Editeur {
             }
         }
         if let Err(e) = r {
-            let quoi = e.downcast_ref::<&str>().map(|s| s.to_string()).or_else(|| e.downcast_ref::<String>().cloned()).unwrap_or_else(|| "erreur inconnue".into());
+            let quoi = e.downcast_ref::<&str>().map(|s| s.to_string()).or_else(|| e.downcast_ref::<String>().cloned()).unwrap_or_else(|| crate::langue::t("erreur inconnue").into());
             self.geste = None;
             let sauve = self.sauver_auto(true).or_else(|| self.recup.copie());
-            self.erreur = Some(format!("erreur interne rattrapée ({quoi}) ; {}", match sauve {
-                Some(p) => format!("travail sauvé dans {}", p.display()),
-                None => "rien à sauver".into(),
+            self.erreur = Some(tr!("erreur interne rattrapée ({quoi}) ; {}", "internal error caught ({quoi}); {}", match sauve {
+                Some(p) => tr!("travail sauvé dans {}", "work saved in {}", p.display()),
+                None => crate::langue::t("rien à sauver").into(),
             }));
         }
         self.sauver_auto(false);
@@ -2739,7 +2738,7 @@ impl Editeur {
         match self.recup.sauver(|| s.doc().ecrire(), s.chemin(), s.version(), s.modifiee(), tout_de_suite) {
             Ok(p) => p,
             Err(e) => {
-                self.erreur = Some(format!("sauvegarde automatique impossible : {e}"));
+                self.erreur = Some(tr!("sauvegarde automatique impossible : {e}", "autosave failed: {e}"));
                 None
             }
         }
@@ -2749,16 +2748,16 @@ impl Editeur {
     fn dialogues(&mut self, ctx: &egui::Context) {
         if !self.a_recuperer.is_empty() {
             let mut choix: Option<(usize, bool)> = None;
-            egui::Window::new("Récupération").collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0)).show(ctx, |ui| {
-                ui.label("L'éditeur ne s'est pas fermé normalement. Ces maps avaient des modifications non enregistrées :");
+            egui::Window::new(crate::langue::t("Récupération")).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0)).show(ctx, |ui| {
+                ui.label(crate::langue::t("L'éditeur ne s'est pas fermé normalement. Ces maps avaient des modifications non enregistrées :"));
                 for (i, f) in self.a_recuperer.iter().enumerate() {
                     ui.horizontal(|ui| {
-                        let nom = f.origine.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| "map sans titre".into());
-                        ui.label(format!("{nom} — {} modification(s), {}", f.version, recup::depuis(f.quand)));
-                        if ui.button("Récupérer").clicked() {
+                        let nom = f.origine.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| crate::langue::t("map sans titre").into());
+                        ui.label(tr!("{nom} — {} modification(s), {}", "{nom} — {} change(s), {}", f.version, recup::depuis(f.quand)));
+                        if ui.button(crate::langue::t("Récupérer")).clicked() {
                             choix = Some((i, true));
                         }
-                        if ui.button("Abandonner").clicked() {
+                        if ui.button(crate::langue::t("Abandonner")).clicked() {
                             choix = Some((i, false));
                         }
                     });
@@ -2776,10 +2775,10 @@ impl Editeur {
                             self.monter_jeu(f.origine.as_deref());
                             self.version_geo = None;
                             self.cadrer = true;
-                            self.statut = "map récupérée : elle n'est pas encore enregistrée".into();
+                            self.statut = crate::langue::t("map récupérée : elle n'est pas encore enregistrée").into();
                             recup::oublier(&f);
                         }
-                        Err(e) => self.erreur = Some(format!("récupération impossible : {e}")),
+                        Err(e) => self.erreur = Some(tr!("récupération impossible : {e}", "recovery failed: {e}")),
                     }
                 } else {
                     recup::oublier(&f);
@@ -2792,10 +2791,10 @@ impl Editeur {
             self.confirmer_fermeture = true;
         }
         if self.confirmer_fermeture {
-            egui::Window::new("Fermer").collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0)).show(ctx, |ui| {
-                ui.label("La map a des modifications non enregistrées.");
+            egui::Window::new(crate::langue::t("Fermer")).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0)).show(ctx, |ui| {
+                ui.label(crate::langue::t("La map a des modifications non enregistrées."));
                 ui.horizontal(|ui| {
-                    if ui.button("Enregistrer et fermer").clicked() {
+                    if ui.button(crate::langue::t("Enregistrer et fermer")).clicked() {
                         self.enregistrer(false);
                         if !self.session.modifiee() {
                             self.fermer_sans_demander = true;
@@ -2803,12 +2802,12 @@ impl Editeur {
                         }
                         self.confirmer_fermeture = false;
                     }
-                    if ui.button("Fermer sans enregistrer").clicked() {
+                    if ui.button(crate::langue::t("Fermer sans enregistrer")).clicked() {
                         self.fermer_sans_demander = true;
                         self.confirmer_fermeture = false;
                         ui.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
-                    if ui.button("Annuler").clicked() {
+                    if ui.button(crate::langue::t("Annuler")).clicked() {
                         self.confirmer_fermeture = false;
                     }
                 });
@@ -2849,9 +2848,9 @@ impl Editeur {
 
         egui::Panel::bottom("etat").show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.label(format!("grille {} (aimant {})", self.grille, if self.aimant { "oui" } else { "non" }));
+                ui.label(tr!("grille {} (aimant {})", "grid {} (snap {})", self.grille, if self.aimant { crate::langue::t("oui") } else { crate::langue::t("non") }));
                 ui.separator();
-                ui.label(format!("outil : {}", self.outil.nom()));
+                ui.label(tr!("outil : {}", "tool: {}", self.outil.nom()));
                 ui.separator();
                 if let Some(t) = self.etat_eclairage() {
                     ui.label(t);
@@ -2863,7 +2862,7 @@ impl Editeur {
                     ui.separator();
                 }
                 let (ns, ne) = self.session.doc().nombre_objets();
-                ui.label(format!("{ns} solides, {ne} entités"));
+                ui.label(tr!("{ns} solides, {ne} entités", "{ns} solids, {ne} entities"));
                 ui.separator();
                 if let Some(p) = ctx.pointer_hover_pos() {
                     let v = &self.vues[self.active];
@@ -2874,7 +2873,7 @@ impl Editeur {
                         ui.separator();
                     } else if v.genre == Genre::Camera3D {
                         let c = v.cam.pos;
-                        ui.label(format!("caméra ({:.0} {:.0} {:.0})", c.x, c.y, c.z));
+                        ui.label(tr!("caméra ({:.0} {:.0} {:.0})", "camera ({:.0} {:.0} {:.0})", c.x, c.y, c.z));
                         ui.separator();
                     }
                 }
@@ -2899,7 +2898,7 @@ impl Editeur {
         self.fenetre_options(&ctx);
         if self.editeur_raccourcis.ouvert && self.editeur_raccourcis.ui(&ctx, &mut self.rc) {
             match self.rc.enregistrer(&Raccourcis::fichier_utilisateur()) {
-                Ok(()) => self.statut = "raccourcis enregistrés".into(),
+                Ok(()) => self.statut = crate::langue::t("raccourcis enregistrés").into(),
                 Err(e) => self.erreur = Some(e),
             }
         }
@@ -2967,7 +2966,7 @@ impl Editeur {
             let actif = i == self.active;
             peintre.rect_stroke(v.rect, 0.0, Stroke::new(1.0, if actif { Color32::from_rgb(255, 200, 60) } else { Color32::from_gray(70) }), StrokeKind::Inside);
             if v.genre == Genre::Camera3D && self.vue_souris {
-                peintre.text(v.rect.left_top() + egui::vec2(140.0, 6.0), egui::Align2::LEFT_TOP, "vue souris", egui::FontId::proportional(13.0), Color32::from_rgb(255, 220, 60));
+                peintre.text(v.rect.left_top() + egui::vec2(140.0, 6.0), egui::Align2::LEFT_TOP, crate::langue::t("vue souris"), egui::FontId::proportional(13.0), Color32::from_rgb(255, 220, 60));
             }
         }
         // le titre de chaque vue choisit son type (comme le menu Affichage de Hammer)
@@ -2978,10 +2977,10 @@ impl Editeur {
                 continue;
             }
             egui::Area::new(egui::Id::unique(("titre_vue", i))).fixed_pos(v.rect.left_top() + egui::vec2(4.0, 3.0)).order(egui::Order::Background).show(&ctx, |ui| {
-                let titre = if v.genre == Genre::Camera3D { MODES_3D[rendu as usize] } else { v.genre.nom() };
+                let titre = if v.genre == Genre::Camera3D { crate::langue::t(MODES_3D[rendu as usize]) } else { v.genre.nom() };
                 egui::ComboBox::from_id_salt(("genre_vue", i)).selected_text(titre).width(175.0).show_ui(ui, |ui| {
                     for (k, n) in MODES_3D.iter().enumerate() {
-                        if ui.selectable_label(v.genre == Genre::Camera3D && rendu as usize == k, *n).clicked() {
+                        if ui.selectable_label(v.genre == Genre::Camera3D && rendu as usize == k, crate::langue::t(n)).clicked() {
                             changer = Some((i, Genre::Camera3D));
                             mode = Some(k as u8);
                         }

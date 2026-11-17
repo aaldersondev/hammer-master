@@ -49,12 +49,12 @@ impl Editeur {
                         }
                     }
                 }
-                self.statut = format!("{} objet(s) emploient {m}", sel.len());
+                self.statut = tr!("{} objet(s) emploient {m}", "{} object(s) use {m}", sel.len());
                 self.session.selection = sel;
             }
             Choix::Remplacer(m) => self.remplacer = Some((m, self.materiau.clone(), false)),
             Choix::Source(m) => {
-                let texte = self.vfs.read(&format!("materials/{m}.vmt")).map(|f| String::from_utf8_lossy(&f.bytes).into_owned()).unwrap_or_else(|| "(VMT introuvable dans les fichiers du jeu)".into());
+                let texte = self.vfs.read(&format!("materials/{m}.vmt")).map(|f| String::from_utf8_lossy(&f.bytes).into_owned()).unwrap_or_else(|| crate::langue::t("(VMT introuvable dans les fichiers du jeu)").into());
                 self.barre_objets.source = Some((m, texte));
             }
             Choix::Recharger => {
@@ -65,7 +65,7 @@ impl Editeur {
                     g.monde = None;
                 }
                 self.version_geo = None;
-                self.statut = "matériaux relus".into();
+                self.statut = crate::langue::t("matériaux relus").into();
             }
         }
     }
@@ -86,7 +86,7 @@ impl Editeur {
         }
         if let Some((nom, texte)) = &self.barre_objets.source {
             let mut ouvert = true;
-            super::barres::fenetre(ctx, "Source du matériau").open(&mut ouvert).default_size([460.0, 320.0]).show(ctx, |ui| {
+            super::barres::fenetre(ctx, crate::langue::t("Source du matériau")).open(&mut ouvert).default_size([460.0, 320.0]).show(ctx, |ui| {
                 ui.strong(format!("materials/{nom}.vmt"));
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.add(egui::Label::new(egui::RichText::new(texte).monospace()).selectable(true));
@@ -99,12 +99,12 @@ impl Editeur {
     }
 
     pub(super) fn barre_objets(&mut self, ui: &mut egui::Ui) {
-        egui::CollapsingHeader::new("Barre d'objets").default_open(true).show(ui, |ui| {
+        egui::CollapsingHeader::new(crate::langue::t("Barre d'objets")).default_open(true).show(ui, |ui| {
             // mode de sélection
             ui.horizontal(|ui| {
-                ui.label("Sélection");
+                ui.label(crate::langue::t("Sélection"));
                 let mode = if self.selection_solides { 2 } else if self.ignorer_groupes { 1 } else { 0 };
-                for (k, n, aide) in [(0, "Groupes", "un clic prend tout le groupe"), (1, "Objets", "groupes ignorés : un solide, ou une entité à brosses entière"), (2, "Solides", "chaque solide seul, même dans une entité à brosses")] {
+                for (k, n, aide) in [(0, crate::langue::t("Groupes"), crate::langue::t("un clic prend tout le groupe")), (1, crate::langue::t("Objets"), crate::langue::t("groupes ignorés : un solide, ou une entité à brosses entière")), (2, crate::langue::t("Solides"), crate::langue::t("chaque solide seul, même dans une entité à brosses"))] {
                     if ui.selectable_label(mode == k, n).on_hover_text(aide).clicked() {
                         self.selection_solides = k == 2;
                         self.ignorer_groupes = k >= 1;
@@ -124,13 +124,13 @@ impl Editeur {
                         ui.painter().rect_filled(rect, 2.0, egui::Color32::from_gray(40));
                     }
                 }
-                if rep.on_hover_text("ouvrir le navigateur de textures").clicked() {
+                if rep.on_hover_text(crate::langue::t("ouvrir le navigateur de textures")).clicked() {
                     self.navigateur.fenetre.ouverte = true;
                 }
                 ui.vertical(|ui| {
                     egui::ComboBox::from_id_salt("texture_courante").width(ui.available_width().min(240.0)).selected_text(&self.materiau).show_ui(ui, |ui| {
                         if self.navigateur.recents.is_empty() {
-                            ui.weak("pas encore de texture récente");
+                            ui.weak(crate::langue::t("pas encore de texture récente"));
                         }
                         for r in self.navigateur.recents.clone() {
                             if ui.selectable_label(r.eq_ignore_ascii_case(&self.materiau), &r).clicked() {
@@ -143,10 +143,10 @@ impl Editeur {
                         if let Some((_, t)) = v {
                             ui.label(format!("{}×{}", t[0], t[1]));
                         }
-                        if ui.button("Parcourir…").clicked() {
+                        if ui.button(crate::langue::t("Parcourir…")).clicked() {
                             self.navigateur.fenetre.ouverte = true;
                         }
-                        if ui.button("Remplacer…").clicked() {
+                        if ui.button(crate::langue::t("Remplacer…")).clicked() {
                             self.remplacer = Some((self.materiau.clone(), self.materiau.clone(), false));
                         }
                     });
@@ -154,25 +154,25 @@ impl Editeur {
             });
             // déplacer la sélection
             ui.horizontal(|ui| {
-                ui.label("Déplacer la sélection");
+                ui.label(crate::langue::t("Déplacer la sélection"));
                 let actif = !self.session.selection.is_empty();
-                if ui.add_enabled(actif, egui::Button::new("vers le monde")).on_hover_text(self.rc.texte("Edit_To_World")).clicked() {
+                if ui.add_enabled(actif, egui::Button::new(crate::langue::t("vers le monde"))).on_hover_text(self.rc.texte("Edit_To_World")).clicked() {
                     self.declenchee = Some("Edit_To_World");
                 }
-                if ui.add_enabled(actif, egui::Button::new("vers une entité")).on_hover_text(self.rc.texte("Edit_To_Entity")).clicked() {
+                if ui.add_enabled(actif, egui::Button::new(crate::langue::t("vers une entité"))).on_hover_text(self.rc.texte("Edit_To_Entity")).clicked() {
                     self.declenchee = Some("Edit_To_Entity");
                 }
             });
             // catégories et objets
             ui.horizontal(|ui| {
-                ui.label("Catégorie");
-                egui::ComboBox::from_id_salt("categorie_objets").width(110.0).selected_text(["Primitives", "Préfabriqués"][self.barre_objets.categorie as usize]).show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.barre_objets.categorie, 0, "Primitives");
-                    ui.selectable_value(&mut self.barre_objets.categorie, 1, "Préfabriqués");
+                ui.label(crate::langue::t("Catégorie"));
+                egui::ComboBox::from_id_salt("categorie_objets").width(110.0).selected_text([crate::langue::t("Primitives"), crate::langue::t("Préfabriqués")][self.barre_objets.categorie as usize]).show_ui(ui, |ui| {
+                    ui.selectable_value(&mut self.barre_objets.categorie, 0, crate::langue::t("Primitives"));
+                    ui.selectable_value(&mut self.barre_objets.categorie, 1, crate::langue::t("Préfabriqués"));
                 });
             });
             ui.horizontal(|ui| {
-                ui.label("Objet");
+                ui.label(crate::langue::t("Objet"));
                 if self.barre_objets.categorie == 0 {
                     let mut forme = self.brosses.forme;
                     egui::ComboBox::from_id_salt("objet_primitive").width(110.0).selected_text(forme.nom()).show_ui(ui, |ui| {
@@ -187,20 +187,20 @@ impl Editeur {
                     }
                     match forme {
                         FormeBloc::Cylindre | FormeBloc::Pointe | FormeBloc::Sphere => {
-                            ui.add(egui::DragValue::new(&mut self.brosses.cotes).range(3..=64)).on_hover_text("côtés");
+                            ui.add(egui::DragValue::new(&mut self.brosses.cotes).range(3..=64)).on_hover_text(crate::langue::t("côtés"));
                         }
                         FormeBloc::Arche => {
-                            ui.add(egui::DragValue::new(&mut self.brosses.arche.cotes).range(3..=100)).on_hover_text("pièces");
+                            ui.add(egui::DragValue::new(&mut self.brosses.arche.cotes).range(3..=100)).on_hover_text(crate::langue::t("pièces"));
                         }
                         FormeBloc::Escalier => {
-                            ui.add(egui::DragValue::new(&mut self.brosses.marches).range(1..=256)).on_hover_text("marches");
+                            ui.add(egui::DragValue::new(&mut self.brosses.marches).range(1..=256)).on_hover_text(crate::langue::t("marches"));
                         }
                         _ => {}
                     }
                 } else {
                     let liste = self.liste_prefabs();
                     let nom = |p: &std::path::PathBuf| p.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
-                    let choisi = self.prefabs.choisi.as_ref().map(nom).unwrap_or_else(|| "(aucun)".into());
+                    let choisi = self.prefabs.choisi.as_ref().map(nom).unwrap_or_else(|| crate::langue::t("(aucun)").into());
                     egui::ComboBox::from_id_salt("objet_prefab").width(150.0).selected_text(choisi).show_ui(ui, |ui| {
                         for p in &liste {
                             if ui.selectable_label(self.prefabs.choisi.as_ref() == Some(p), nom(p)).on_hover_text(p.display().to_string()).clicked() {
@@ -209,13 +209,13 @@ impl Editeur {
                         }
                     });
                     if let Some(p) = self.prefabs.choisi.clone() {
-                        if ui.button("Insérer").on_hover_text("au point que vise la vue 3D").clicked() {
+                        if ui.button(crate::langue::t("Insérer")).on_hover_text(crate::langue::t("au point que vise la vue 3D")).clicked() {
                             self.inserer_prefab(&p);
                         }
                     }
                 }
             });
-            if ui.add_enabled(!self.session.selection.is_empty(), egui::Button::new("Créer un préfabriqué")).on_hover_text(self.rc.texte("Tools_Create_Prefab")).clicked() {
+            if ui.add_enabled(!self.session.selection.is_empty(), egui::Button::new(crate::langue::t("Créer un préfabriqué"))).on_hover_text(self.rc.texte("Tools_Create_Prefab")).clicked() {
                 self.enregistrer_prefab();
             }
             ui.separator();

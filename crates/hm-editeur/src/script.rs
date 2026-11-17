@@ -160,7 +160,7 @@ impl Script {
                 if let Ok(p) = <[f32; 6]>::try_from(v.as_slice()) {
                     return Some(Action::Camera(p));
                 }
-                self.journal.push("camera : six nombres attendus".into());
+                self.journal.push(crate::langue::t("camera : six nombres attendus").into());
             }
             "enregistrer" => return Some(Action::Enregistrer(reste.join(" "))),
             "fond" => return Some(Action::Fond(reste.join(" "))),
@@ -229,7 +229,7 @@ impl Script {
                 }
             }
             "texte" => self.images.push_back(Image { evenements: vec![Event::Text(reste.join(" "))], ..Default::default() }),
-            autre => self.journal.push(format!("commande de script inconnue : {autre}")),
+            autre => self.journal.push(tr!("commande de script inconnue : {autre}", "unknown script command: {autre}")),
         }
         None
     }

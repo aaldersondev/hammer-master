@@ -126,11 +126,11 @@ fn processus_vivant(pid: u32) -> bool {
 pub fn depuis(quand: u64) -> String {
     let s = maintenant().saturating_sub(quand);
     if s < 120 {
-        format!("il y a {s} s")
+        tr!("il y a {s} s", "{s} s ago")
     } else if s < 7200 {
-        format!("il y a {} min", s / 60)
+        tr!("il y a {} min", "{} min ago", s / 60)
     } else {
-        format!("il y a {} h", s / 3600)
+        tr!("il y a {} h", "{} h ago", s / 3600)
     }
 }
 

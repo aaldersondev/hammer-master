@@ -42,7 +42,7 @@ impl Editeur {
     pub(super) fn galerie_entites(&mut self) {
         let classes: Vec<String> = self.fgd.classes(false).into_iter().map(String::from).collect();
         if classes.is_empty() {
-            self.statut = "aucune classe dans le FGD".into();
+            self.statut = crate::langue::t("aucune classe dans le FGD").into();
             return;
         }
         let (lo, hi) = self.geo.as_ref().map_or((glam::Vec3::ZERO, glam::Vec3::ZERO), |g| (g.min, g.max));
@@ -53,12 +53,12 @@ impl Editeur {
             .enumerate()
             .map(|(i, c)| Commande::CreerEntite { classe: c.clone(), origine: [x0 + (i % cote) as f64 * 128.0, y0 + (i / cote) as f64 * 128.0, z0], cles: vec![] })
             .collect();
-        self.executer(Commande::Lot { nom: format!("galerie d'entités ({} classes)", classes.len()), commandes });
+        self.executer(Commande::Lot { nom: tr!("galerie d'entités ({} classes)", "entity gallery ({} classes)", classes.len()), commandes });
     }
 
     /// « Diff Map File » : ce qui sépare un autre VMF (avant) de la map ouverte (après).
     pub(super) fn difference_avec_un_fichier(&mut self) {
-        let Some(p) = rfd::FileDialog::new().add_filter("Map Hammer", &["vmf"]).pick_file() else { return };
+        let Some(p) = rfd::FileDialog::new().add_filter(crate::langue::t("Map Hammer"), &["vmf"]).pick_file() else { return };
         let avant = match std::fs::read(&p) {
             Ok(o) => o,
             Err(e) => {
@@ -71,7 +71,7 @@ impl Editeur {
                 self.statut = d.resume();
                 self.carte.difference = Some((p, d));
             }
-            Err(e) => self.erreur = Some(format!("comparaison impossible : {e}")),
+            Err(e) => self.erreur = Some(tr!("comparaison impossible : {e}", "comparison failed: {e}")),
         }
     }
 
@@ -96,25 +96,25 @@ impl Editeur {
             .map(|e| (e.id, e.classe().to_string(), e.nom().to_string()))
             .collect();
         let (mut ouvert, mut action) = (true, None::<(u8, u64)>);
-        super::barres::fenetre(ctx, "Rapport d'entités").open(&mut ouvert).default_size([560.0, 460.0]).show(ctx, |ui| {
+        super::barres::fenetre(ctx, crate::langue::t("Rapport d'entités")).open(&mut ouvert).default_size([560.0, 460.0]).show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Classe ou nom");
+                ui.label(crate::langue::t("Classe ou nom"));
                 ui.add(egui::TextEdit::singleline(&mut c.filtre).desired_width(160.0));
-                ui.label("Clé");
+                ui.label(crate::langue::t("Clé"));
                 ui.add(egui::TextEdit::singleline(&mut c.cle).desired_width(90.0));
-                ui.label("contient");
+                ui.label(crate::langue::t("contient"));
                 ui.add(egui::TextEdit::singleline(&mut c.valeur).desired_width(90.0));
             });
             ui.horizontal(|ui| {
-                ui.checkbox(&mut c.ponctuelles, "Ponctuelles");
-                ui.checkbox(&mut c.a_brosses, "À brosses");
-                ui.label(format!("{} entité(s)", lignes.len()));
+                ui.checkbox(&mut c.ponctuelles, crate::langue::t("Ponctuelles"));
+                ui.checkbox(&mut c.a_brosses, crate::langue::t("À brosses"));
+                ui.label(tr!("{} entité(s)", "{} entity(ies)", lignes.len()));
             });
             ui.separator();
             let h = ui.text_style_height(&egui::TextStyle::Body) + 4.0;
             egui::ScrollArea::vertical().max_height(ui.available_height() - 40.0).auto_shrink(false).show_rows(ui, h, lignes.len(), |ui, rangs| {
                 for (id, classe, nom) in &lignes[rangs] {
-                    let r = ui.selectable_label(c.choisie == Some(*id), format!("{classe}   {}   n° {id}", if nom.is_empty() { "—" } else { nom }));
+                    let r = ui.selectable_label(c.choisie == Some(*id), tr!("{classe}   {}   n° {id}", "{classe}   {}   #{id}", if nom.is_empty() { "—" } else { nom }));
                     if r.clicked() {
                         c.choisie = Some(*id);
                     }
@@ -126,7 +126,7 @@ impl Editeur {
             ui.separator();
             ui.horizontal(|ui| {
                 let choisie = c.choisie.filter(|id| doc.entite(*id).is_some());
-                for (k, n) in ["Aller à", "Propriétés", "Supprimer"].iter().enumerate() {
+                for (k, n) in [crate::langue::t("Aller à"), crate::langue::t("Propriétés"), crate::langue::t("Supprimer")].iter().enumerate() {
                     if ui.add_enabled(choisie.is_some(), egui::Button::new(*n)).clicked() {
                         action = choisie.map(|id| (k as u8, id));
                     }
@@ -148,37 +148,37 @@ impl Editeur {
     fn fenetre_difference(&mut self, ctx: &egui::Context) {
         let Some((p, d)) = &self.carte.difference else { return };
         let (mut ouvert, mut aller) = (true, None::<[f64; 3]>);
-        super::barres::fenetre(ctx, "Différence avec un autre VMF").open(&mut ouvert).default_size([560.0, 420.0]).show(ctx, |ui| {
-            ui.label(format!("avant : {}", p.display()));
-            ui.label("après : la map ouverte");
+        super::barres::fenetre(ctx, crate::langue::t("Différence avec un autre VMF")).open(&mut ouvert).default_size([560.0, 420.0]).show(ctx, |ui| {
+            ui.label(tr!("avant : {}", "before: {}", p.display()));
+            ui.label(crate::langue::t("après : la map ouverte"));
             ui.strong(d.resume());
             ui.separator();
             egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
                 let mut ligne = |ui: &mut egui::Ui, quoi: &str, e: &hm_edit::difference::Element, vers: Option<[f64; 3]>| {
-                    let r = ui.selectable_label(false, format!("{quoi} : {}", e.decrire()));
+                    let r = ui.selectable_label(false, tr!("{quoi} : {}", "{quoi}: {}", e.decrire()));
                     if r.clicked() {
                         aller = vers.or(e.origine);
                     }
                 };
                 for e in d.ajoutes.iter().take(500) {
-                    ligne(ui, "ajoutée", e, None);
+                    ligne(ui, crate::langue::t("ajoutée"), e, None);
                 }
                 for e in d.retires.iter().take(500) {
-                    ligne(ui, "retirée", e, None);
+                    ligne(ui, crate::langue::t("retirée"), e, None);
                 }
                 for (e, vers) in d.deplaces.iter().take(500) {
-                    ligne(ui, "déplacée", e, Some(*vers));
+                    ligne(ui, crate::langue::t("déplacée"), e, Some(*vers));
                 }
                 for e in d.modifies.iter().take(500) {
-                    ligne(ui, "modifiée", e, None);
+                    ligne(ui, crate::langue::t("modifiée"), e, None);
                 }
                 for c in d.solides_ajoutes.iter().take(500) {
-                    if ui.selectable_label(false, format!("solide ajouté en ({:.0} {:.0} {:.0})", c[0], c[1], c[2])).clicked() {
+                    if ui.selectable_label(false, tr!("solide ajouté en ({:.0} {:.0} {:.0})", "solid added at ({:.0} {:.0} {:.0})", c[0], c[1], c[2])).clicked() {
                         aller = Some(*c);
                     }
                 }
                 for c in d.solides_retires.iter().take(500) {
-                    if ui.selectable_label(false, format!("solide retiré en ({:.0} {:.0} {:.0})", c[0], c[1], c[2])).clicked() {
+                    if ui.selectable_label(false, tr!("solide retiré en ({:.0} {:.0} {:.0})", "solid removed at ({:.0} {:.0} {:.0})", c[0], c[1], c[2])).clicked() {
                         aller = Some(*c);
                     }
                 }

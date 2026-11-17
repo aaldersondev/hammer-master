@@ -38,13 +38,13 @@ impl Editeur {
         if self.polygone.points.last() != Some(&q) {
             self.polygone.points.push(q);
         }
-        self.statut = format!("polygone : {} sommet(s) — Entrée pour créer, clic droit pour retirer le dernier", self.polygone.points.len());
+        self.statut = tr!("polygone : {} sommet(s) — Entrée pour créer, clic droit pour retirer le dernier", "polygon: {} vertex(es) — Enter to create, right click to remove the last one", self.polygone.points.len());
     }
 
     pub(super) fn creer_polygone(&mut self) {
         let Some(g) = self.polygone.genre else { return };
         if self.polygone.points.len() < 3 {
-            self.statut = "polygone : au moins trois sommets".into();
+            self.statut = crate::langue::t("polygone : au moins trois sommets").into();
             return;
         }
         let (a, b, c) = g.axes();

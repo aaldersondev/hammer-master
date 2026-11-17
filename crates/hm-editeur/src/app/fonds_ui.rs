@@ -51,34 +51,34 @@ impl Editeur {
         }
         let mut ouvert = true;
         let mut charger = None;
-        super::barres::fenetre(ctx, "Images de fond des vues 2D").resizable(false).open(&mut ouvert).show(ctx, |ui| {
-            for (k, nom) in ["Dessus (X/Y)", "Face (Y/Z)", "Côté (X/Z)"].iter().enumerate() {
+        super::barres::fenetre(ctx, crate::langue::t("Images de fond des vues 2D")).resizable(false).open(&mut ouvert).show(ctx, |ui| {
+            for (k, nom) in [crate::langue::t("Dessus (X/Y)"), crate::langue::t("Face (Y/Z)"), crate::langue::t("Côté (X/Z)")].iter().enumerate() {
                 ui.strong(*nom);
                 ui.horizontal(|ui| {
-                    if ui.button("Choisir une image…").clicked() {
+                    if ui.button(crate::langue::t("Choisir une image…")).clicked() {
                         charger = Some(k);
                     }
-                    if self.fonds.fonds[k].is_some() && ui.button("Retirer").clicked() {
+                    if self.fonds.fonds[k].is_some() && ui.button(crate::langue::t("Retirer")).clicked() {
                         self.fonds.fonds[k] = None;
                     }
                 });
                 if let Some(f) = &mut self.fonds.fonds[k] {
                     ui.weak(f.chemin.display().to_string());
                     ui.horizontal(|ui| {
-                        ui.label("centre");
+                        ui.label(crate::langue::t("centre"));
                         ui.add(egui::DragValue::new(&mut f.centre[0]).speed(4.0));
                         ui.add(egui::DragValue::new(&mut f.centre[1]).speed(4.0));
-                        ui.label("largeur");
+                        ui.label(crate::langue::t("largeur"));
                         ui.add(egui::DragValue::new(&mut f.largeur).speed(4.0).range(1.0..=65536.0));
                     });
-                    ui.add(egui::Slider::new(&mut f.opacite, 0.05..=1.0).text("opacité"));
+                    ui.add(egui::Slider::new(&mut f.opacite, 0.05..=1.0).text(crate::langue::t("opacité")));
                 }
                 ui.separator();
             }
         });
         self.fonds.dialogue = ouvert;
         if let Some(k) = charger {
-            if let Some(p) = rfd::FileDialog::new().add_filter("Image", &["png", "jpg", "jpeg"]).pick_file() {
+            if let Some(p) = rfd::FileDialog::new().add_filter(crate::langue::t("Image"), &["png", "jpg", "jpeg"]).pick_file() {
                 self.charger_fond(ctx, k, p);
             }
         }

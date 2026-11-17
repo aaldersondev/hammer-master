@@ -75,7 +75,7 @@ impl Editeur {
         let Some(ent) = doc.entite(e) else { return };
         let (n_s, n_e) = (ent.sorties.as_ref().map_or(0, |v| v.len()), doc.entrees_vers(e).len());
         ui.horizontal(|ui| {
-            for (v, nom) in [(VueProprietes::Cles, "Clés".to_string()), (VueProprietes::Sorties, format!("Sorties ({n_s})")), (VueProprietes::Entrees, format!("Entrées ({n_e})"))] {
+            for (v, nom) in [(VueProprietes::Cles, crate::langue::t("Clés").to_string()), (VueProprietes::Sorties, tr!("Sorties ({n_s})", "Outputs ({n_s})")), (VueProprietes::Entrees, tr!("Entrées ({n_e})", "Inputs ({n_e})"))] {
                 if ui.selectable_label(self.vue_proprietes == v, nom).clicked() {
                     self.vue_proprietes = v;
                 }
@@ -100,7 +100,7 @@ impl Editeur {
         let mut retirer = None;
         egui::ScrollArea::vertical().id_salt("sorties").auto_shrink([false, true]).show(ui, |ui| {
             if liste.is_empty() {
-                ui.label(egui::RichText::new("aucune sortie").weak());
+                ui.label(egui::RichText::new(crate::langue::t("aucune sortie")).weak());
             }
             for (k, s) in liste.iter_mut().enumerate() {
                 let rouge = Color32::from_rgb(255, 110, 100);
@@ -111,9 +111,9 @@ impl Editeur {
                 let entree_connue = s.entree.trim().is_empty() || !trouvee || entrees.is_empty() || entrees.iter().any(|x| x.eq_ignore_ascii_case(&s.entree));
                 ui.horizontal(|ui| {
                     change |= champ(ui, (e, k, "sortie"), &mut s.sortie, 120.0, &sorties_fgd, (!sortie_connue).then_some(orange));
-                    ui.label("vers");
+                    ui.label(crate::langue::t("vers"));
                     change |= champ(ui, (e, k, "cible"), &mut s.cible, 120.0, &noms, (!cible_connue).then_some(rouge));
-                    if ui.small_button("×").on_hover_text("retirer cette sortie").clicked() {
+                    if ui.small_button("×").on_hover_text(crate::langue::t("retirer cette sortie")).clicked() {
                         retirer = Some(k);
                     }
                 });
@@ -129,20 +129,20 @@ impl Editeur {
                         change = true;
                     }
                     let mut une = s.fois == 1;
-                    if ui.checkbox(&mut une, "1×").on_hover_text("une seule fois").changed() {
+                    if ui.checkbox(&mut une, "1×").on_hover_text(crate::langue::t("une seule fois")).changed() {
                         s.fois = if une { 1 } else { -1 };
                         change = true;
                     }
                 });
                 if !cible_connue {
-                    ui.colored_label(rouge, format!("    aucune entité ne s'appelle « {} »", s.cible));
+                    ui.colored_label(rouge, tr!("    aucune entité ne s'appelle « {} »", "    no entity is named \"{}\"", s.cible));
                 } else if !entree_connue {
-                    ui.colored_label(orange, format!("    {} n'a pas d'entrée « {} » dans le FGD", s.cible, s.entree));
+                    ui.colored_label(orange, tr!("    {} n'a pas d'entrée « {} » dans le FGD", "    {} has no input \"{}\" in the FGD", s.cible, s.entree));
                 }
                 ui.separator();
             }
         });
-        if ui.button("+ Ajouter une sortie").clicked() {
+        if ui.button(crate::langue::t("+ Ajouter une sortie")).clicked() {
             liste.push(Sortie { sortie: sorties_fgd.first().cloned().unwrap_or_else(|| "OnTrigger".into()), cible: String::new(), entree: String::new(), parametre: String::new(), delai: 0.0, fois: -1 });
             self.executer(Commande::Sorties { entite: e, sorties: liste });
             return;
@@ -155,7 +155,7 @@ impl Editeur {
         if change {
             // une sortie vide de cible reste possible pendant la frappe ; la commande refuse seulement l'impossible
             if let Err(err) = self.session.executer_continu(Commande::Sorties { entite: e, sorties: liste }, &format!("sorties{e}")) {
-                self.erreur = Some(format!("sorties refusées : {err}"));
+                self.erreur = Some(tr!("sorties refusées : {err}", "outputs refused: {err}"));
             }
         }
     }
@@ -164,21 +164,21 @@ impl Editeur {
         let doc = self.session.doc();
         let entrees = doc.entrees_vers(e);
         if doc.entite(e).map_or(true, |x| x.nom_donne().is_none()) {
-            ui.label(egui::RichText::new("sans nom (targetname), personne ne peut la viser").weak());
+            ui.label(egui::RichText::new(crate::langue::t("sans nom (targetname), personne ne peut la viser")).weak());
             return;
         }
         if entrees.is_empty() {
-            ui.label(egui::RichText::new("aucune entité ne la vise").weak());
+            ui.label(egui::RichText::new(crate::langue::t("aucune entité ne la vise")).weak());
         }
         let mut aller = None;
         for (src, s) in &entrees {
             let classe = doc.entite(*src).map(|x| x.classe().to_string()).unwrap_or_default();
-            let nom = doc.entite(*src).and_then(|x| x.nom_donne()).map(|n| format!("« {n} »")).unwrap_or_else(|| format!("n° {src}"));
+            let nom = doc.entite(*src).and_then(|x| x.nom_donne()).map(|n| format!("« {n} »")).unwrap_or_else(|| tr!("n° {src}", "#{src}"));
             ui.horizontal(|ui| {
-                if ui.small_button("voir").on_hover_text("sélectionner l'entité source").clicked() {
+                if ui.small_button(crate::langue::t("voir")).on_hover_text(crate::langue::t("sélectionner l'entité source")).clicked() {
                     aller = Some(*src);
                 }
-                ui.label(format!("{classe} {nom} : {} > {}({}){}", s.sortie, s.entree, s.parametre, if s.delai > 0.0 { format!(" après {} s", s.delai) } else { String::new() }));
+                ui.label(tr!("{classe} {nom} : {} > {}({}){}", "{classe} {nom}: {} > {}({}){}", s.sortie, s.entree, s.parametre, if s.delai > 0.0 { tr!(" après {} s", " after {} s", s.delai) } else { String::new() }));
             });
         }
         if let Some(src) = aller {

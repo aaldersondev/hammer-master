@@ -26,7 +26,7 @@ impl Editeur {
     /// Comme le panneau VisGroups de Hammer : Utilisateur (ceux de la map, et le masquage rapide), Auto, Cordon.
     pub(super) fn panneau_visgroups(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            for (k, n) in ["Utilisateur", "Auto", "Cordon"].iter().enumerate() {
+            for (k, n) in [crate::langue::t("Utilisateur"), crate::langue::t("Auto"), crate::langue::t("Cordon")].iter().enumerate() {
                 if ui.selectable_label(self.sous_onglet_vg == k as u8, *n).clicked() {
                     self.sous_onglet_vg = k as u8;
                 }
@@ -49,17 +49,17 @@ impl Editeur {
         let vg = doc.visgroups();
         let membres = doc.membres_visgroups();
         ui.horizontal(|ui| {
-            ui.strong(format!("Visgroups de la map ({})", vg.len()));
-            if ui.checkbox(&mut self.filtres.tout_montrer, "tout montrer").on_hover_text("montre aussi les visgroups décochés, sans rien changer à la map (le bouton « Show » de Hammer)").changed() {
+            ui.strong(tr!("Visgroups de la map ({})", "Map visgroups ({})", vg.len()));
+            if ui.checkbox(&mut self.filtres.tout_montrer, crate::langue::t("tout montrer")).on_hover_text(crate::langue::t("montre aussi les visgroups décochés, sans rien changer à la map (le bouton « Show » de Hammer)")).changed() {
                 self.filtres.changer();
             }
         });
-        ui.label(egui::RichText::new("décoché : non compilé · clic droit sur un nom : le menu").weak());
+        ui.label(egui::RichText::new(crate::langue::t("décoché : non compilé · clic droit sur un nom : le menu")).weak());
         let mut commande: Option<Commande> = None;
         let mut selectionner: Option<Vec<Ref>> = None;
         let ordre = arbre(&vg);
         if vg.is_empty() {
-            ui.label(egui::RichText::new("aucun : sélectionner des objets puis « Nouveau depuis la sélection »").weak());
+            ui.label(egui::RichText::new(crate::langue::t("aucun : sélectionner des objets puis « Nouveau depuis la sélection »")).weak());
         }
         for (prof, v) in ordre {
             let m = membres.get(&v.id).map(|x| x.as_slice()).unwrap_or(&[]);
@@ -74,7 +74,7 @@ impl Editeur {
                 ui.spacing_mut().item_spacing.x = 2.0;
                 for (monter, icone, secours, possible) in [(true, crate::icones::MONTER, "^", rang > 0), (false, crate::icones::DESCENDRE, "v", rang + 1 < freres.len())] {
                     let b = egui::Button::new(crate::icones::texte(icone, secours, 10.0)).small().frame(false);
-                    if ui.add_enabled(possible, b).on_hover_text(if monter { "monter" } else { "descendre" }).clicked() {
+                    if ui.add_enabled(possible, b).on_hover_text(if monter { crate::langue::t("monter") } else { crate::langue::t("descendre") }).clicked() {
                         commande = Some(Commande::DeplacerVisgroup { visgroup: v.id, monter });
                     }
                 }
@@ -107,23 +107,23 @@ impl Editeur {
                         }
                         etiquette.context_menu(|ui| {
                             let sel = !self.session.selection.is_empty();
-                            if ui.add_enabled(sel, egui::Button::new("Ajouter la sélection")).clicked() {
+                            if ui.add_enabled(sel, egui::Button::new(crate::langue::t("Ajouter la sélection"))).clicked() {
                                 commande = Some(Commande::AjouterAuVisgroup { visgroup: v.id, objets: self.session.selection.clone() });
                                 ui.close();
                             }
-                            if ui.add_enabled(sel, egui::Button::new("Retirer la sélection")).clicked() {
+                            if ui.add_enabled(sel, egui::Button::new(crate::langue::t("Retirer la sélection"))).clicked() {
                                 commande = Some(Commande::RetirerDuVisgroup { visgroup: v.id, objets: self.session.selection.clone() });
                                 ui.close();
                             }
-                            if ui.button("Sélectionner ses objets").clicked() {
+                            if ui.button(crate::langue::t("Sélectionner ses objets")).clicked() {
                                 selectionner = Some(m.iter().map(|(r, _)| *r).collect());
                                 ui.close();
                             }
-                            if ui.button("Renommer").clicked() {
+                            if ui.button(crate::langue::t("Renommer")).clicked() {
                                 self.vg_renommer = Some((v.id, v.nom.clone()));
                                 ui.close();
                             }
-                            if ui.button("Supprimer (les objets restent)").clicked() {
+                            if ui.button(crate::langue::t("Supprimer (les objets restent)")).clicked() {
                                 commande = Some(Commande::SupprimerVisgroup { visgroup: v.id });
                                 ui.close();
                             }
@@ -135,13 +135,13 @@ impl Editeur {
         let n = self.session.selection.len();
         ui.horizontal(|ui| {
             if self.vg_nom.trim().is_empty() || self.vg_nom_auto {
-                self.vg_nom = format!("{n} objet{}", if n > 1 { "s" } else { "" });
+                self.vg_nom = tr!("{n} objet{}", "{n} object{}", if n > 1 { "s" } else { "" });
                 self.vg_nom_auto = true;
             }
             if ui.add(egui::TextEdit::singleline(&mut self.vg_nom).desired_width(140.0)).changed() {
                 self.vg_nom_auto = false;
             }
-            if ui.add_enabled(n > 0, egui::Button::new("Nouveau depuis la sélection")).clicked() {
+            if ui.add_enabled(n > 0, egui::Button::new(crate::langue::t("Nouveau depuis la sélection"))).clicked() {
                 commande = Some(Commande::CreerVisgroup { nom: self.vg_nom.trim().to_string(), objets: self.session.selection.clone(), cache: false });
                 self.vg_nom_auto = true;
             }
@@ -171,7 +171,7 @@ impl Editeur {
                     sel.push(r);
                 }
             }
-            self.statut = format!("sélection : {} objet(s) du visgroup", sel.len());
+            self.statut = tr!("sélection : {} objet(s) du visgroup", "selection: {} object(s) of the visgroup", sel.len());
             self.session.selection = sel;
         }
     }
@@ -184,11 +184,11 @@ impl Editeur {
         let vg = doc.visgroups();
         let membres = doc.membres_visgroups();
         let mut commande: Option<Commande> = None;
-        ui.label(format!("Visgroups ({})", vg.len()));
+        ui.label(tr!("Visgroups ({})", "Visgroups ({})", vg.len()));
         egui::Frame::new().stroke(ui.visuals().widgets.noninteractive.bg_stroke).inner_margin(2.0).show(ui, |ui| {
             egui::ScrollArea::vertical().id_salt("visgroups_compacts").max_height(120.0).auto_shrink([false, true]).show(ui, |ui| {
                 if vg.is_empty() {
-                    ui.weak("aucun");
+                    ui.weak(crate::langue::t("aucun"));
                 }
                 for (prof, v) in arbre(&vg) {
                     let m = membres.get(&v.id).map(|x| x.as_slice()).unwrap_or(&[]);
@@ -213,20 +213,20 @@ impl Editeur {
         let rang = choisi.and_then(|c| freres.iter().position(|x| *x == c.id));
         let mut marquer = None;
         ui.horizontal(|ui| {
-            if ui.selectable_label(self.filtres.tout_montrer, "Show").on_hover_text("montrer aussi les visgroups décochés, sans rien changer à la map").clicked() {
+            if ui.selectable_label(self.filtres.tout_montrer, "Show").on_hover_text(crate::langue::t("montrer aussi les visgroups décochés, sans rien changer à la map")).clicked() {
                 self.filtres.tout_montrer = !self.filtres.tout_montrer;
                 self.filtres.changer();
             }
-            if ui.button("Edit").on_hover_text("l'onglet Visgroups : créer, renommer, supprimer, cordons").clicked() {
+            if ui.button("Edit").on_hover_text(crate::langue::t("l'onglet Visgroups : créer, renommer, supprimer, cordons")).clicked() {
                 self.sous_onglet_vg = 0;
                 self.montrer_onglet(Onglet::Visgroups);
             }
-            if ui.add_enabled(choisi.is_some(), egui::Button::new("Mark")).on_hover_text("sélectionner les objets du visgroup choisi").clicked() {
+            if ui.add_enabled(choisi.is_some(), egui::Button::new("Mark")).on_hover_text(crate::langue::t("sélectionner les objets du visgroup choisi")).clicked() {
                 marquer = choisi.map(|c| membres.get(&c.id).map(|x| x.iter().map(|(r, _)| *r).collect::<Vec<Ref>>()).unwrap_or_default());
             }
             for (monter, icone, secours) in [(true, crate::icones::MONTER, "^"), (false, crate::icones::DESCENDRE, "v")] {
                 let possible = rang.map_or(false, |k| if monter { k > 0 } else { k + 1 < freres.len() });
-                if ui.add_enabled(possible, egui::Button::new(crate::icones::texte(icone, secours, 12.0))).on_hover_text(if monter { "monter" } else { "descendre" }).clicked() {
+                if ui.add_enabled(possible, egui::Button::new(crate::icones::texte(icone, secours, 12.0))).on_hover_text(if monter { crate::langue::t("monter") } else { crate::langue::t("descendre") }).clicked() {
                     commande = choisi.map(|c| Commande::DeplacerVisgroup { visgroup: c.id, monter });
                 }
             }
@@ -240,8 +240,8 @@ impl Editeur {
     }
 
     fn visgroups_auto(&mut self, ui: &mut egui::Ui) {
-        ui.strong("Visgroups automatiques");
-        ui.label(egui::RichText::new("affichage seulement : tout est compilé").weak());
+        ui.strong(crate::langue::t("Visgroups automatiques"));
+        ui.label(egui::RichText::new(crate::langue::t("affichage seulement : tout est compilé")).weak());
         let mut change = false;
         for (parent, _, enfants) in ARBRE {
             let mut vu = !self.filtres.auto_caches.contains(parent);
@@ -271,7 +271,7 @@ impl Editeur {
                 }
             });
         }
-        if ui.add_enabled(!self.filtres.auto_caches.is_empty(), egui::Button::new("Tout cocher")).clicked() {
+        if ui.add_enabled(!self.filtres.auto_caches.is_empty(), egui::Button::new(crate::langue::t("Tout cocher"))).clicked() {
             self.filtres.auto_caches.clear();
             change = true;
         }
@@ -282,23 +282,23 @@ impl Editeur {
 
     fn masquage_rapide(&mut self, ui: &mut egui::Ui) {
         let n = self.filtres.masques_existants(self.session.doc()).len();
-        ui.strong(format!("Masquage rapide : {n} objet(s) masqué(s)"));
-        ui.label(egui::RichText::new("pour la session seulement ; tout est compilé").weak());
+        ui.strong(tr!("Masquage rapide : {n} objet(s) masqué(s)", "Quick hide: {n} object(s) hidden"));
+        ui.label(egui::RichText::new(crate::langue::t("pour la session seulement ; tout est compilé")).weak());
         ui.horizontal_wrapped(|ui| {
             let sel = !self.session.selection.is_empty();
-            if ui.add_enabled(sel, egui::Button::new(format!("Masquer la sélection ({})", self.rc.texte("View_Quickhide")))).clicked() {
+            if ui.add_enabled(sel, egui::Button::new(tr!("Masquer la sélection ({})", "Hide selection ({})", self.rc.texte("View_Quickhide")))).clicked() {
                 self.masquer(false);
             }
-            if ui.add_enabled(sel, egui::Button::new(format!("Masquer le reste ({})", self.rc.texte("View_Quickhide_Unselected")))).clicked() {
+            if ui.add_enabled(sel, egui::Button::new(tr!("Masquer le reste ({})", "Hide the rest ({})", self.rc.texte("View_Quickhide_Unselected")))).clicked() {
                 self.masquer(true);
             }
-            if ui.add_enabled(n > 0, egui::Button::new(format!("Tout réafficher ({})", self.rc.texte("View_Quick_Unhide")))).clicked() {
+            if ui.add_enabled(n > 0, egui::Button::new(tr!("Tout réafficher ({})", "Show all ({})", self.rc.texte("View_Quick_Unhide")))).clicked() {
                 self.reafficher();
             }
             // « Convert QuickHide objects to VisGroup » de Hammer (wiki Valve, « Hammer View Menu »)
-            if ui.add_enabled(n > 0, egui::Button::new("En faire un visgroup")).on_hover_text("un visgroup décoché qui garde ces objets cachés, enregistré dans la map (et alors non compilé)").clicked() {
+            if ui.add_enabled(n > 0, egui::Button::new(crate::langue::t("En faire un visgroup"))).on_hover_text(crate::langue::t("un visgroup décoché qui garde ces objets cachés, enregistré dans la map (et alors non compilé)")).clicked() {
                 let objets = self.filtres.masques_existants(self.session.doc());
-                self.executer(Commande::CreerVisgroup { nom: format!("_FromQuickHide ({n})"), objets, cache: true });
+                self.executer(Commande::CreerVisgroup { nom: tr!("_FromQuickHide ({n})", "_FromQuickHide ({n})"), objets, cache: true });
                 self.filtres.masques.clear();
                 self.filtres.changer();
             }
@@ -314,18 +314,18 @@ impl Editeur {
         // une boîte à prendre : la sélection, sinon le bloc tracé par l'outil bloc (pas encore créé)
         let depuis_sel = hm_doc::boite_de(self.session.doc(), &self.session.selection).map(|(a, b)| [a.to_array(), b.to_array()]);
         let source = depuis_sel.or(self.bloc.map(|(a, b)| [a.as_dvec3().to_array(), b.as_dvec3().to_array()]));
-        let aide_source = "la boîte de la sélection, ou le bloc tracé par l'outil bloc";
+        let aide_source = crate::langue::t("la boîte de la sélection, ou le bloc tracé par l'outil bloc");
         ui.horizontal(|ui| {
-            ui.strong(format!("Cordons ({})", c.liste.len()));
+            ui.strong(tr!("Cordons ({})", "Cordons ({})", c.liste.len()));
             let mut actif = c.actif;
-            if ui.add_enabled(!c.liste.is_empty(), egui::Checkbox::new(&mut actif, "actif")).on_hover_text("seul ce qui touche une boîte d'un cordon coché est compilé et montré").changed() {
+            if ui.add_enabled(!c.liste.is_empty(), egui::Checkbox::new(&mut actif, crate::langue::t("actif"))).on_hover_text(crate::langue::t("seul ce qui touche une boîte d'un cordon coché est compilé et montré")).changed() {
                 nouveau = Some(hm_doc::Cordons { actif, liste: c.liste.clone() });
             }
         });
         if c.liste.is_empty() {
-            ui.label(egui::RichText::new("aucun : sélectionner des objets puis « Nouveau »").weak());
+            ui.label(egui::RichText::new(crate::langue::t("aucun : sélectionner des objets puis « Nouveau »")).weak());
         } else {
-            ui.label(egui::RichText::new("coché : compilé quand le cordon est actif · clic droit : le menu").weak());
+            ui.label(egui::RichText::new(crate::langue::t("coché : compilé quand le cordon est actif · clic droit : le menu")).weak());
         }
         for (i, k) in c.liste.iter().enumerate() {
             ui.horizontal(|ui| {
@@ -352,7 +352,7 @@ impl Editeur {
                     }
                     _ => {
                         let n = k.boites.len();
-                        let r = ui.selectable_label(self.cordon_choisi == i, format!("{}  ({n} boîte{})", k.nom, if n > 1 { "s" } else { "" }));
+                        let r = ui.selectable_label(self.cordon_choisi == i, tr!("{}  ({n} boîte{})", "{}  ({n} box{})", k.nom, if n > 1 { "s" } else { "" }));
                         if r.clicked() {
                             self.cordon_choisi = i;
                         }
@@ -360,11 +360,11 @@ impl Editeur {
                             self.cordon_renommer = Some((i, k.nom.clone()));
                         }
                         r.context_menu(|ui| {
-                            if ui.button("Renommer").clicked() {
+                            if ui.button(crate::langue::t("Renommer")).clicked() {
                                 self.cordon_renommer = Some((i, k.nom.clone()));
                                 ui.close();
                             }
-                            if ui.button("Supprimer").clicked() {
+                            if ui.button(crate::langue::t("Supprimer")).clicked() {
                                 let mut n = c.clone();
                                 n.liste.remove(i);
                                 nouveau = Some(n);
@@ -376,10 +376,10 @@ impl Editeur {
             });
         }
         ui.horizontal(|ui| {
-            if ui.add_enabled(source.is_some(), egui::Button::new("Nouveau")).on_hover_text(format!("un cordon coché sur {aide_source}")).on_disabled_hover_text(format!("prend {aide_source}")).clicked() {
+            if ui.add_enabled(source.is_some(), egui::Button::new(crate::langue::t("Nouveau"))).on_hover_text(tr!("un cordon coché sur {aide_source}", "a cordon checked on {aide_source}")).on_disabled_hover_text(tr!("prend {aide_source}", "takes {aide_source}")).clicked() {
                 if let Some(b) = source {
                     let mut n = c.clone();
-                    n.liste.push(hm_doc::Cordon { nom: format!("cordon {}", n.liste.len() + 1), actif: true, boites: vec![b] });
+                    n.liste.push(hm_doc::Cordon { nom: tr!("cordon {}", "cordon {}", n.liste.len() + 1), actif: true, boites: vec![b] });
                     n.actif = true;
                     self.cordon_choisi = n.liste.len() - 1;
                     nouveau = Some(n);
@@ -388,7 +388,7 @@ impl Editeur {
                     }
                 }
             }
-            if ui.add_enabled(!c.liste.is_empty(), egui::Button::new("Supprimer")).on_hover_text("le cordon choisi").clicked() {
+            if ui.add_enabled(!c.liste.is_empty(), egui::Button::new(crate::langue::t("Supprimer"))).on_hover_text(crate::langue::t("le cordon choisi")).clicked() {
                 let mut n = c.clone();
                 n.liste.remove(self.cordon_choisi);
                 nouveau = Some(n);
@@ -396,14 +396,14 @@ impl Editeur {
         });
         if let Some(k) = c.liste.get(self.cordon_choisi) {
             ui.separator();
-            ui.strong(format!("Boîtes de « {} »", k.nom));
+            ui.strong(tr!("Boîtes de « {} »", "Boxes of \"{}\"", k.nom));
             let mut n = c.clone();
             let (mut change, mut retirer) = (false, None);
             let pas = self.grille as f64 / 4.0;
             for (j, b) in n.liste[self.cordon_choisi].boites.iter_mut().enumerate() {
                 ui.horizontal(|ui| {
-                    ui.label(format!("boîte {}", j + 1));
-                    if ui.add(egui::Button::new(crate::icones::texte(crate::icones::SUPPRIMER, "x", 12.0)).small().frame(false)).on_hover_text("retirer la boîte").clicked() {
+                    ui.label(tr!("boîte {}", "box {}", j + 1));
+                    if ui.add(egui::Button::new(crate::icones::texte(crate::icones::SUPPRIMER, "x", 12.0)).small().frame(false)).on_hover_text(crate::langue::t("retirer la boîte")).clicked() {
                         retirer = Some(j);
                     }
                 });
@@ -421,7 +421,7 @@ impl Editeur {
             }
             if change {
                 if let Err(e) = self.session.executer_continu(Commande::Cordons { actif: n.actif, liste: n.liste.clone() }, "cordon") {
-                    self.erreur = Some(format!("cordon refusé : {e}"));
+                    self.erreur = Some(tr!("cordon refusé : {e}", "cordon refused: {e}"));
                 }
             }
             if let Some(j) = retirer {
@@ -429,13 +429,13 @@ impl Editeur {
                 nouveau = Some(n.clone());
             }
             ui.horizontal(|ui| {
-                if ui.add_enabled(source.is_some(), egui::Button::new("Ajouter une boîte")).on_hover_text(aide_source).clicked() {
+                if ui.add_enabled(source.is_some(), egui::Button::new(crate::langue::t("Ajouter une boîte"))).on_hover_text(aide_source).clicked() {
                     if let Some(b) = source {
                         n.liste[self.cordon_choisi].boites.push(b);
                         nouveau = Some(n.clone());
                     }
                 }
-                if ui.add_enabled(source.is_some(), egui::Button::new("Remplacer les boîtes")).on_hover_text(format!("une seule boîte : {aide_source}")).clicked() {
+                if ui.add_enabled(source.is_some(), egui::Button::new(crate::langue::t("Remplacer les boîtes"))).on_hover_text(tr!("une seule boîte : {aide_source}", "a single box: {aide_source}")).clicked() {
                     if let Some(b) = source {
                         n.liste[self.cordon_choisi].boites = vec![b];
                         nouveau = Some(n.clone());

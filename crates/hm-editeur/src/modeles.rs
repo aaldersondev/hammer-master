@@ -137,25 +137,25 @@ impl NavModeles {
                 ui.painter().image(id, r, egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)), egui::Color32::WHITE);
             }
             (_, Some(Err(e))) => {
-                ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, format!("illisible : {e}"), egui::FontId::proportional(12.0), egui::Color32::from_rgb(255, 140, 100));
+                ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, tr!("illisible : {e}", "unreadable: {e}"), egui::FontId::proportional(12.0), egui::Color32::from_rgb(255, 140, 100));
             }
             _ => {
-                ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, "cliquer un modèle de la liste", egui::FontId::proportional(13.0), egui::Color32::GRAY);
+                ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, crate::langue::t("cliquer un modèle de la liste"), egui::FontId::proportional(13.0), egui::Color32::GRAY);
             }
         }
         if let (Some(m), Some(Ok(info))) = (self.choisi.clone(), self.info.clone()) {
             ui.label(egui::RichText::new(&m).strong());
             let (lo, hi) = info.bornes;
-            ui.label(format!("{:.0} × {:.0} × {:.0} unités · {} triangles", hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], info.triangles));
+            ui.label(tr!("{:.0} × {:.0} × {:.0} unités · {} triangles", "{:.0} × {:.0} × {:.0} units · {} triangles", hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], info.triangles));
             if info.prop_data {
-                ui.colored_label(egui::Color32::from_rgb(255, 170, 60), "a un bloc prop_data : vbsp le retire d'un prop_static (prop_physics ou prop_dynamic)");
+                ui.colored_label(egui::Color32::from_rgb(255, 170, 60), crate::langue::t("a un bloc prop_data : vbsp le retire d'un prop_static (prop_physics ou prop_dynamic)"));
             } else if !info.statique {
-                ui.colored_label(egui::Color32::from_rgb(255, 170, 60), "non compilé en $staticprop : pas en prop_static");
+                ui.colored_label(egui::Color32::from_rgb(255, 170, 60), crate::langue::t("non compilé en $staticprop : pas en prop_static"));
             }
             ui.horizontal(|ui| {
                 ui.label("skin");
                 ui.add_enabled(info.skins > 1, egui::DragValue::new(&mut self.skin).range(0..=(info.skins as u32 - 1)));
-                ui.weak(format!("sur {}", info.skins));
+                ui.weak(tr!("sur {}", "on {}", info.skins));
             });
             for (i, p) in info.choisissables() {
                 ui.horizontal(|ui| {
@@ -163,7 +163,7 @@ impl NavModeles {
                     let mut c = self.choix.get(i).copied().unwrap_or(0);
                     egui::ComboBox::from_id_salt(("bodypart", i)).selected_text(p.sous_modeles.get(c).cloned().unwrap_or_default()).width(170.0).show_ui(ui, |ui| {
                         for (k, s) in p.sous_modeles.iter().enumerate() {
-                            ui.selectable_value(&mut c, k, if s.is_empty() { format!("{k} (vide)") } else { s.clone() });
+                            ui.selectable_value(&mut c, k, if s.is_empty() { tr!("{k} (vide)", "{k} (empty)") } else { s.clone() });
                         }
                     });
                     if self.choix.len() <= i {
@@ -173,11 +173,11 @@ impl NavModeles {
                 });
             }
             ui.horizontal_wrapped(|ui| {
-                if ui.button("Pour l'outil entité").on_hover_text("le prochain clic de l'outil entité pose ce modèle").clicked() {
+                if ui.button(crate::langue::t("Pour l'outil entité")).on_hover_text(crate::langue::t("le prochain clic de l'outil entité pose ce modèle")).clicked() {
                     action = Some(ActionModele::PourOutil(m.clone(), self.skin, self.body()));
                     self.noter_recent(&m);
                 }
-                if ui.add_enabled(n_sel > 0, egui::Button::new(format!("Appliquer à la sélection ({n_sel})"))).clicked() {
+                if ui.add_enabled(n_sel > 0, egui::Button::new(tr!("Appliquer à la sélection ({n_sel})", "Apply to selection ({n_sel})"))).clicked() {
                     action = Some(ActionModele::Appliquer(m.clone(), self.skin, self.body()));
                     self.noter_recent(&m);
                 }
@@ -186,14 +186,14 @@ impl NavModeles {
         ui.separator();
         // ------------------------------------------------------------ recherche et liste
         ui.horizontal(|ui| {
-            ui.label("Chercher");
+            ui.label(crate::langue::t("Chercher"));
             ui.add(egui::TextEdit::singleline(&mut self.filtre).hint_text("chair, props_c17/, crate…").desired_width(f32::INFINITY));
         });
         ui.horizontal(|ui| {
-            ui.checkbox(&mut self.seulement_favoris, "favoris");
-            ui.label("récents :");
+            ui.checkbox(&mut self.seulement_favoris, crate::langue::t("favoris"));
+            ui.label(crate::langue::t("récents :"));
             if self.recents.is_empty() {
-                ui.weak("aucun");
+                ui.weak(crate::langue::t("aucun"));
             }
         });
         let mut montrer = None;
@@ -209,13 +209,13 @@ impl NavModeles {
         }
         let Some(tous) = &self.tous else {
             ui.spinner();
-            ui.label("liste des modèles en cours…");
+            ui.label(crate::langue::t("liste des modèles en cours…"));
             ui.ctx().request_repaint();
             return action;
         };
         let mots: Vec<String> = self.filtre.to_ascii_lowercase().split_whitespace().map(String::from).collect();
         let liste: Vec<String> = tous.iter().filter(|m| !self.seulement_favoris || self.favoris.contains(*m)).filter(|m| mots.iter().all(|w| m.contains(w.as_str()))).cloned().collect();
-        ui.label(format!("{} modèle(s) · clic : voir · double clic : pour l'outil entité · clic droit : favori", liste.len()));
+        ui.label(tr!("{} modèle(s) · clic : voir · double clic : pour l'outil entité · clic droit : favori", "{} model(s) · click: view · double click: for the entity tool · right click: favorite", liste.len()));
         let haut = ui.text_style_height(&egui::TextStyle::Body) + 4.0;
         egui::ScrollArea::vertical().id_salt("liste_modeles").auto_shrink(false).show_rows(ui, haut, liste.len(), |ui, rangs| {
             for m in &liste[rangs] {
