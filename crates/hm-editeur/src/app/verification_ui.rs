@@ -101,7 +101,7 @@ impl Editeur {
                     1 => egui::Color32::from_rgb(240, 200, 90),
                     _ => ui.visuals().weak_text_color(),
                 };
-                let texte = egui::RichText::new(format!("{} : {}", p.genre, p.message)).color(couleur);
+                let texte = egui::RichText::new(tr!("{} : {}", "{}: {}", p.genre, p.message)).color(couleur);
                 let r = ui.add(egui::Button::selectable(self.verification.choisi == Some(i), texte).wrap());
                 if r.double_clicked() {
                     aller = Some(i);

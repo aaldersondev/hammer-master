@@ -69,7 +69,7 @@ const SANS_MODELE: &[&str] = &["func_detail", "func_areaportal", "func_areaporta
 
 fn zone_de(p: DVec3) -> String {
     let lettre = |v: f64| (b'A' + (((v + 16384.0) / 4096.0).floor().clamp(0.0, 7.0) as u8)) as char;
-    let etage = if p.z < -2048.0 { " bas" } else if p.z > 4096.0 { " haut" } else { "" };
+    let etage = if p.z < -2048.0 { hm_langue::t(" bas") } else if p.z > 4096.0 { hm_langue::t(" haut") } else { "" };
     format!("{}{}{}", lettre(p.x), ((p.y + 16384.0) / 4096.0).floor().clamp(0.0, 7.0) as u8 + 1, etage)
 }
 
@@ -86,9 +86,9 @@ pub fn compter(scene: &Scene, monde: &crate::Monde) -> Budgets {
     let tous: Vec<&hm_vmf::Node> = scene.vmf.world().into_iter().flat_map(|w| w.solids()).chain(scene.vmf.entities().flat_map(|e| e.solids())).collect();
     let solides = tous.iter().filter(|s| !a_disp(s)).count() as u64;
     let cotes: u64 = tous.iter().filter(|s| !a_disp(s)).map(|s| s.children_named("side").count() as u64).sum();
-    ligne("brushes", "solides (brosses, hors displacements)", solides, true);
+    ligne("brushes", hm_langue::t("solides (brosses, hors displacements)"), solides, true);
     // vbsp ajoute des faces de biseau aux solides non droits (AddBrushBevels) : le compte du VMF est un plancher
-    ligne("brushsides", "faces de solides (plancher : vbsp ajoute des biseaux)", cotes, false);
+    ligne("brushsides", hm_langue::t("faces de solides (plancher : vbsp ajoute des biseaux)"), cotes, false);
     let mut modeles = 1u64; // le monde
     let (mut statiques, mut areaportals, mut cubemaps, mut overlays, mut entites, mut entdata) = (0u64, 0u64, 0u64, 0u64, 0u64, 0u64);
     let mut noms_lumieres: HashSet<String> = HashSet::new();
@@ -118,16 +118,16 @@ pub fn compter(scene: &Scene, monde: &crate::Monde) -> Budgets {
             entdata += 4 + e.pairs.iter().filter(|p| p.key != "id").map(|p| p.key.len() as u64 + p.value.len() as u64 + 6).sum::<u64>();
         }
     }
-    ligne("models", "modèles de brosses (monde + entités à solides)", modeles, true);
-    ligne("static prop count", "props statiques", statiques, true);
+    ligne("models", hm_langue::t("modèles de brosses (monde + entités à solides)"), modeles, true);
+    ligne("static prop count", hm_langue::t("props statiques"), statiques, true);
     ligne("cubemapsamples", "cubemaps", cubemaps, true);
     ligne("overlays", "overlays", overlays, true);
     ligne("dispinfos", "displacements", scene.report.displacements as u64, true);
     ligne("areaportals", "areaportals", areaportals, true);
-    ligne("lumieres_nommees", "noms de lumières distincts", noms_lumieres.len() as u64, true);
-    ligne("lumieres", "entités de lumière", lumieres, true);
-    ligne("entites", "entités dans le VMF", entites, true);
-    ligne("entdata", "données d'entités (octets, estimation)", entdata, false);
+    ligne("lumieres_nommees", hm_langue::t("noms de lumières distincts"), noms_lumieres.len() as u64, true);
+    ligne("lumieres", hm_langue::t("entités de lumière"), lumieres, true);
+    ligne("entites", hm_langue::t("entités dans le VMF"), entites, true);
+    ligne("entdata", hm_langue::t("données d'entités (octets, estimation)"), entdata, false);
 
     // ---- lumière : luxels des faces éclairées
     let mut par_zone: BTreeMap<String, u64> = BTreeMap::new();
@@ -195,7 +195,7 @@ pub fn compter(scene: &Scene, monde: &crate::Monde) -> Budgets {
     let mut materiaux: Vec<(String, u64)> = par_mat.into_iter().map(|(m, l)| (m.to_string(), octets(l))).collect();
     materiaux.sort_by_key(|z| std::cmp::Reverse(z.1));
     materiaux.truncate(12);
-    b.lumiere = Lumiere { calage: "défaut (aucune compilation estampillée de ce projet)".into(), luxels, octets: octets(luxels), facteur: FACTEUR_LUMIERE, zones, materiaux };
+    b.lumiere = Lumiere { calage: hm_langue::t("défaut (aucune compilation estampillée de ce projet)").into(), luxels, octets: octets(luxels), facteur: FACTEUR_LUMIERE, zones, materiaux };
     b
 }
 
@@ -243,25 +243,25 @@ pub fn avec_log(b: &mut Budgets, vmf: &Path, revision: &str) {
         if let Some((o, m)) = table.get(&l.nom) {
             l.log = Some(*o);
             l.limite = *m;
-            l.source_limite = "table du dernier log".into();
+            l.source_limite = hm_langue::t("table du dernier log").into();
         }
     }
     // budgets que seul le compilateur connaît : repris du log tels quels, pour le tableau
-    for (nom, libelle) in [("vertexes", "sommets"), ("faces", "faces"), ("planes", "plans"), ("nodes", "nœuds"), ("leaves", "feuilles"), ("leaffaces", "faces par feuille"), ("texinfos", "texinfos"), ("edges", "arêtes"), ("waterindices", "indices d'eau"), ("LDR worldlights", "lumières (worldlights)"), ("areas", "areas"), ("visdata", "visibilité (octets)"), ("physics", "collision (octets)")] {
+    for (nom, libelle) in [("vertexes", hm_langue::t("sommets")), ("faces", "faces"), ("planes", hm_langue::t("plans")), ("nodes", hm_langue::t("nœuds")), ("leaves", hm_langue::t("feuilles")), ("leaffaces", hm_langue::t("faces par feuille")), ("texinfos", "texinfos"), ("edges", hm_langue::t("arêtes")), ("waterindices", hm_langue::t("indices d'eau")), ("LDR worldlights", hm_langue::t("lumières (worldlights)")), ("areas", "areas"), ("visdata", hm_langue::t("visibilité (octets)")), ("physics", hm_langue::t("collision (octets)"))] {
         if let Some((o, m)) = table.get(nom) {
-            b.lignes.push(Ligne { nom: nom.into(), libelle: format!("{libelle} — connu après vbsp seulement"), valeur: *o, exact: false, log: Some(*o), limite: *m, source_limite: "table du dernier log".into() });
+            b.lignes.push(Ligne { nom: nom.into(), libelle: hm_langue::tr!("{libelle} — connu après vbsp seulement", "{libelle} — known only after vbsp"), valeur: *o, exact: false, log: Some(*o), limite: *m, source_limite: hm_langue::t("table du dernier log").into() });
         }
     }
     let complet = std::fs::read(vmf.with_extension("log")).map(|o| lire_log(&String::from_utf8_lossy(&o))).unwrap_or_default();
     b.lignes.retain(|l| !(l.nom == "visdata" && l.valeur == 0));
     if let Some((o, _)) = complet.get("LDR lightdata").or(table.get("LDR lightdata")) {
-        b.lignes.push(Ligne { nom: "LDR lightdata".into(), libelle: "lumière (octets, estimation)".into(), valeur: b.lumiere.octets, exact: false, log: Some(*o), limite: None, source_limite: "pas de plafond annoncé ; 16 777 216 dans le SDK 2013 (bspfile.h MAX_MAP_LIGHTING)".into() });
+        b.lignes.push(Ligne { nom: "LDR lightdata".into(), libelle: hm_langue::t("lumière (octets, estimation)").into(), valeur: b.lumiere.octets, exact: false, log: Some(*o), limite: None, source_limite: hm_langue::t("pas de plafond annoncé ; 16 777 216 dans le SDK 2013 (bspfile.h MAX_MAP_LIGHTING)").into() });
     }
     if let Some((o, m)) = table.get("entdata") {
         if let Some(l) = b.lignes.iter_mut().find(|l| l.nom == "entdata") {
             l.log = Some(*o);
             l.limite = *m;
-            l.source_limite = "table du dernier log".into();
+            l.source_limite = hm_langue::t("table du dernier log").into();
         }
     }
 }
@@ -275,22 +275,22 @@ pub fn verifier(b: &Budgets, out: &mut Vec<Constat>) {
             continue;
         }
         let plein = l.valeur as f64 / limite as f64;
-        let quoi = format!("{} : {} sur {} ({:.1} %)", l.libelle, l.valeur, limite, plein * 100.0);
+        let quoi = hm_langue::tr!("{} : {} sur {} ({:.1} %)", "{}: {} of {} ({:.1} %)", l.libelle, l.valeur, limite, plein * 100.0);
         if l.exact && l.valeur > limite {
             out.push(Constat::lieu("budget.depasse", glam::Vec3::ZERO, glam::Vec3::ZERO, quoi).mesure(plein as f32 * 100.0));
         } else if plein >= 0.9 {
-            out.push(Constat::lieu("budget.serre", glam::Vec3::ZERO, glam::Vec3::ZERO, format!("{quoi}{}", if l.exact { "" } else { " — valeur du dernier log" })).mesure(plein as f32 * 100.0));
+            out.push(Constat::lieu("budget.serre", glam::Vec3::ZERO, glam::Vec3::ZERO, format!("{quoi}{}", if l.exact { "" } else { hm_langue::t(" — valeur du dernier log") })).mesure(plein as f32 * 100.0));
         }
     }
     if let Some(l) = b.lignes.iter().find(|l| l.nom == "lumieres_nommees") {
         if l.valeur > 32 {
-            out.push(Constat::lieu("budget.lumieres_nommees", glam::Vec3::ZERO, glam::Vec3::ZERO, format!("{} noms de lumières distincts, pour 32 admis par le vbsp du SDK", l.valeur)).mesure(l.valeur as f32));
+            out.push(Constat::lieu("budget.lumieres_nommees", glam::Vec3::ZERO, glam::Vec3::ZERO, hm_langue::tr!("{} noms de lumières distincts, pour 32 admis par le vbsp du SDK", "{} distinct light names, where the SDK's vbsp allows 32", l.valeur)).mesure(l.valeur as f32));
         }
     }
 }
 
 pub fn tableau(b: &Budgets) -> String {
-    let mut s = String::from("budgets (compté dans le VMF · dernier log · limite) :\n");
+    let mut s = String::from(hm_langue::t("budgets (compté dans le VMF · dernier log · limite) :\n"));
     for l in &b.lignes {
         let log = l.log.map_or("—".to_string(), |v| v.to_string());
         let lim = l.limite.map_or("—".to_string(), |v| v.to_string());
@@ -302,11 +302,11 @@ pub fn tableau(b: &Budgets) -> String {
         let plein = l.limite.map_or(String::new(), |m| format!("  {:.1} %", l.valeur as f64 / m as f64 * 100.0));
         s += &format!("  {:<58} {:>10} · {:>10} · {:>8}{plein}{ecart}\n", l.libelle, l.valeur, log, lim);
     }
-    s += &format!("lumière estimée : {} luxels × {:.3} = {:.2} Mo ; facteur : {}\n", b.lumiere.luxels, b.lumiere.facteur, b.lumiere.octets as f64 / 1048576.0, b.lumiere.calage);
-    s += &format!("  par zone : {}\n", b.lumiere.zones.iter().take(10).map(|(z, o)| format!("{z} {:.2} Mo", *o as f64 / 1048576.0)).collect::<Vec<_>>().join(", "));
-    s += &format!("  par matériau : {}", b.lumiere.materiaux.iter().take(8).map(|(z, o)| format!("{z} {:.2} Mo", *o as f64 / 1048576.0)).collect::<Vec<_>>().join(", "));
+    s += &hm_langue::tr!("lumière estimée : {} luxels × {:.3} = {:.2} Mo ; facteur : {}\n", "estimated lighting: {} luxels × {:.3} = {:.2} MB; factor: {}\n", b.lumiere.luxels, b.lumiere.facteur, b.lumiere.octets as f64 / 1048576.0, b.lumiere.calage);
+    s += &hm_langue::tr!("  par zone : {}\n", "  by zone: {}\n", b.lumiere.zones.iter().take(10).map(|(z, o)| format!("{z} {:.2} Mo", *o as f64 / 1048576.0)).collect::<Vec<_>>().join(", "));
+    s += &hm_langue::tr!("  par matériau : {}", "  by material: {}", b.lumiere.materiaux.iter().take(8).map(|(z, o)| format!("{z} {:.2} Mo", *o as f64 / 1048576.0)).collect::<Vec<_>>().join(", "));
     if let Some(l) = &b.log {
-        s += &format!("\nlimites lues dans {l}");
+        s += &hm_langue::tr!("\nlimites lues dans {l}", "\nlimits read from {l}");
     }
     s
 }

@@ -95,7 +95,7 @@ impl Maillage {
                 for p in points {
                     let d = self.designes(DVec3::from(*p));
                     if d.is_empty() {
-                        return Err(format!("aucun sommet ni arête en ({}, {}, {})", p[0], p[1], p[2]));
+                        return Err(hm_langue::tr!("aucun sommet ni arête en ({}, {}, {})", "no vertex or edge at ({}, {}, {})", p[0], p[1], p[2]));
                     }
                     for i in d {
                         if !idx.contains(&i) {
@@ -135,14 +135,14 @@ impl Maillage {
                 return Ok(n);
             }
         }
-        Err("le point n'est ni un sommet ni le milieu d'une arête".into())
+        Err(hm_langue::t("le point n'est ni un sommet ni le milieu d'une arête").into())
     }
 
     pub fn couper_face(&mut self, a: DVec3, b: DVec3) -> Result<(), String> {
         let ia = self.point_sur(a)?;
         let ib = self.point_sur(b)?;
         if ia == ib {
-            return Err("les deux points sont confondus".into());
+            return Err(hm_langue::t("les deux points sont confondus").into());
         }
         let k = self
             .faces
@@ -151,7 +151,7 @@ impl Maillage {
                 let (pa, pb) = (f.indices.iter().position(|x| *x == ia), f.indices.iter().position(|x| *x == ib));
                 matches!((pa, pb), (Some(x), Some(y)) if { let l = f.indices.len(); let d = (x as isize - y as isize).rem_euclid(l as isize) as usize; d != 1 && d != l - 1 })
             })
-            .ok_or("les deux points ne sont pas sur une même face, ou ils sont déjà reliés par une arête")?;
+            .ok_or(hm_langue::t("les deux points ne sont pas sur une même face, ou ils sont déjà reliés par une arête"))?;
         let f = self.faces[k].clone();
         let l = f.indices.len();
         let (x, y) = (f.indices.iter().position(|v| *v == ia).unwrap(), f.indices.iter().position(|v| *v == ib).unwrap());
@@ -218,24 +218,24 @@ impl Maillage {
             let plan = Plan { n, d: n.dot(centre) };
             if let Some(p) = pts.iter().find(|p| plan.cote(**p).abs() > PLAT) {
                 let _ = p;
-                return Err(format!("la face n° {} n'est plus plane : la couper (Ctrl+F) avant de déplacer ce sommet, ou déplacer aussi ses voisins", if f.texture.id != 0 { f.texture.id.to_string() } else { format!("neuve {k}") }));
+                return Err(hm_langue::tr!("la face n° {} n'est plus plane : la couper (Ctrl+F) avant de déplacer ce sommet, ou déplacer aussi ses voisins", "face #{} is no longer flat: split it (Ctrl+F) before moving this vertex, or move its neighbors too", if f.texture.id != 0 { f.texture.id.to_string() } else { hm_langue::tr!("neuve {k}", "new {k}") }));
             }
             faces.push((pts, plan, f.texture.clone()));
         }
         if faces.len() < 4 {
-            return Err("le solide n'a plus de volume".into());
+            return Err(hm_langue::t("le solide n'a plus de volume").into());
         }
         for i in 0..faces.len() {
             for j in 0..i {
                 if faces[i].1.n.dot(faces[j].1.n) > 1.0 - 1e-6 && (faces[i].1.d - faces[j].1.d).abs() < PLAT {
-                    return Err("deux faces sont dans le même plan : déplacer un sommet de la coupe pour plier la face".into());
+                    return Err(hm_langue::t("deux faces sont dans le même plan : déplacer un sommet de la coupe pour plier la face").into());
                 }
             }
         }
         // convexe : chaque sommet derrière chaque face
         for (_, p, _) in &faces {
             if self.sommets.iter().enumerate().filter(|(i, _)| repr[*i] == *i).any(|(_, s)| p.cote(*s) > PLAT) {
-                return Err("le solide n'est plus convexe (un sommet passe devant une face)".into());
+                return Err(hm_langue::t("le solide n'est plus convexe (un sommet passe devant une face)").into());
             }
         }
         let mut sortie = Vec::new();
@@ -250,7 +250,7 @@ impl Maillage {
         }
         let s = Solide { id, faces: sortie, editeur: editeur.clone(), cache: false, gabarit: Vec::new() };
         if !s.valide() {
-            return Err("le solide obtenu est invalide".into());
+            return Err(hm_langue::t("le solide obtenu est invalide").into());
         }
         Ok(s)
     }

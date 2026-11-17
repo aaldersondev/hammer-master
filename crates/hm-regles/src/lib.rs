@@ -355,8 +355,8 @@ impl Config {
         let texte = std::fs::read_to_string(chemin)?;
         let c: Config = toml::from_str(&texte).map_err(|e| anyhow::anyhow!("{} : {e}", chemin.display()))?;
         for e in &c.exception {
-            anyhow::ensure!(e.raison.trim().len() >= 8, "{} : l'exception sur « {} » n'a pas de raison écrite", chemin.display(), e.regle);
-            anyhow::ensure!(e.regle.ends_with('*') || regle(&e.regle).is_some(), "{} : règle inconnue « {} »", chemin.display(), e.regle);
+            anyhow::ensure!(e.raison.trim().len() >= 8, hm_langue::tr!("{} : l'exception sur « {} » n'a pas de raison écrite", "{}: the exception on \"{}\" has no written reason", chemin.display(), e.regle));
+            anyhow::ensure!(e.regle.ends_with('*') || regle(&e.regle).is_some(), hm_langue::tr!("{} : règle inconnue « {} »", "{}: unknown rule \"{}\"", chemin.display(), e.regle));
         }
         Ok(c)
     }
@@ -438,7 +438,7 @@ pub fn valider(scene: &Scene, vfs: &Vfs, config: &Config, familles: &[Famille]) 
     let modele = match hm_model::Modele::du_vmf(std::path::Path::new(&scene.path)) {
         Ok(m) => m,
         Err(e) => {
-            r.constats.push(Constat::lieu("sem.modele_invalide", Vec3::ZERO, Vec3::ZERO, format!("modèle sémantique illisible : {e:#}")));
+            r.constats.push(Constat::lieu("sem.modele_invalide", Vec3::ZERO, Vec3::ZERO, hm_langue::tr!("modèle sémantique illisible : {e:#}", "unreadable semantic model: {e:#}")));
             None
         }
     };

@@ -10,7 +10,7 @@ use crate::modele::{Document, Proprio};
 pub fn copier(doc: &Document, objets: &[Ref]) -> Res<String> {
     let (solides, entites, groupes) = resoudre(doc, objets)?;
     if solides.is_empty() && entites.is_empty() {
-        return Err("rien à copier".into());
+        return Err(hm_langue::t("rien à copier").into());
     }
     let mut frag = Document::nouveau();
     frag.format = Format { crlf: doc.format.crlf, latin1: false };
@@ -47,7 +47,7 @@ pub fn prefabriquer(doc: &Document, objets: &[Ref]) -> Res<String> {
     let texte = copier(doc, objets)?;
     let (mut frag, _) = Document::lire(texte.as_bytes()).map_err(|e| e.0)?;
     let tous: Vec<Ref> = frag.solides.keys().map(|i| Ref::Solide(*i)).chain(frag.entites.keys().map(|i| Ref::Entite(*i))).collect();
-    let (lo, hi) = crate::commandes::boite_de(&frag, &tous).ok_or("rien à enregistrer")?;
+    let (lo, hi) = crate::commandes::boite_de(&frag, &tous).ok_or(hm_langue::t("rien à enregistrer"))?;
     let f = crate::geo::Affine::translation(-glam::DVec3::new((lo.x + hi.x) / 2.0, (lo.y + hi.y) / 2.0, lo.z));
     for s in frag.solides.values_mut() {
         *s = crate::geo::transformer_solide(s, &f, true);

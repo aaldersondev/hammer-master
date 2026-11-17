@@ -184,7 +184,7 @@ impl Proprietes {
                 let court: String = if libelle.chars().count() > 26 { libelle.chars().take(25).collect::<String>() + "…" } else { libelle };
                 egui::ComboBox::from_id_salt(("choix", &p.nom)).selected_text(court).width(190.0).show_ui(ui, |ui| {
                     for c in &p.choix {
-                        if ui.selectable_label(c.valeur == affiche, format!("{} : {}", c.valeur, c.libelle)).clicked() && c.valeur != actuel {
+                        if ui.selectable_label(c.valeur == affiche, tr!("{} : {}", "{}: {}", c.valeur, c.libelle)).clicked() && c.valeur != actuel {
                             poser(&p.nom, Some(c.valeur.clone()));
                         }
                     }

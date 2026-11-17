@@ -283,7 +283,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
                     scene,
                     "asset.modele_scintille",
                     objet,
-                    format!("{} : dans le modèle lui-même, des faces de « {} » et de « {} » sont dans le même plan et se recouvrent sur {total:.0} unités carrées ; posé {poses} fois dans la map", scene.models[mi].name, nom_materiau(mi as u32, skin, ma), nom_materiau(mi as u32, skin, mb)),
+                    hm_langue::tr!("{} : dans le modèle lui-même, des faces de « {} » et de « {} » sont dans le même plan et se recouvrent sur {total:.0} unités carrées ; posé {poses} fois dans la map", "{}: within the model itself, faces of \"{}\" and \"{}\" are in the same plane and overlap over {total:.0} square units; placed {poses} times in the map", scene.models[mi].name, nom_materiau(mi as u32, skin, ma), nom_materiau(mi as u32, skin, mb)),
                 )
                 .mesure(total as f32),
             )
@@ -384,7 +384,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
         .into_iter()
         .map(|((oa, ob, _), (s, lo, hi, i, j))| {
             let (a, b) = (&pieces[i as usize], &pieces[j as usize]);
-            Constat::objet(scene, "phys.zfighting_modele", oa, format!("{} (« {} ») et {} (« {} ») ont des faces dans le même plan, tournées vers ({:.0} {:.0} {:.0}), qui se recouvrent sur {s:.0} unités carrées : elles scintilleront", monde.nommer(oa), a.materiau, monde.nommer(ob), b.materiau, a.n.x, a.n.y, a.n.z))
+            Constat::objet(scene, "phys.zfighting_modele", oa, hm_langue::tr!("{} (« {} ») et {} (« {} ») ont des faces dans le même plan, tournées vers ({:.0} {:.0} {:.0}), qui se recouvrent sur {s:.0} unités carrées : elles scintilleront", "{} (\"{}\") and {} (\"{}\") have faces in the same plane, facing ({:.0} {:.0} {:.0}), overlapping over {s:.0} square units: they will flicker", monde.nommer(oa), a.materiau, monde.nommer(ob), b.materiau, a.n.x, a.n.y, a.n.z))
                 .boite(lo.as_vec3(), hi.as_vec3())
                 .mesure(s as f32)
                 .autres_de(scene, vec![ob])

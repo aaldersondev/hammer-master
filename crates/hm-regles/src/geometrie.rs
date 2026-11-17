@@ -38,7 +38,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
 
     // ---------------------------------------------------------------- solide par solide
     for (k, b) in scene.brushes.iter().enumerate() {
-        let quoi = if b.world { "solide du monde".to_string() } else { format!("solide de {}", b.class) };
+        let quoi = if b.world { hm_langue::t("solide du monde").to_string() } else { hm_langue::tr!("solide de {}", "solid of {}", b.class) };
         let ici = |regle: &'static str, msg: String| {
             if b.object != 0 {
                 Constat::objet(scene, regle, b.object, msg)
@@ -51,9 +51,9 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
         };
         for issue in &b.brush.issues {
             match issue {
-                BrushIssue::DegeneratePlane { side } => out.push(ici("geo.plan_degenere", format!("{quoi} n° {} : les trois points du plan de la face {} sont alignés", b.brush.id, side + 1))),
-                BrushIssue::EmptyFace { side } => out.push(ici("geo.face_inutile", format!("{quoi} n° {} : la face {} ne garde aucun polygone", b.brush.id, side + 1))),
-                BrushIssue::NoVolume => out.push(ici("geo.sans_volume", format!("{quoi} n° {} : ses plans ne ferment aucun volume", b.brush.id))),
+                BrushIssue::DegeneratePlane { side } => out.push(ici("geo.plan_degenere", hm_langue::tr!("{quoi} n° {} : les trois points du plan de la face {} sont alignés", "{quoi} #{}: the three plane points of face {} are aligned", b.brush.id, side + 1))),
+                BrushIssue::EmptyFace { side } => out.push(ici("geo.face_inutile", hm_langue::tr!("{quoi} n° {} : la face {} ne garde aucun polygone", "{quoi} #{}: face {} keeps no polygon", b.brush.id, side + 1))),
+                BrushIssue::NoVolume => out.push(ici("geo.sans_volume", hm_langue::tr!("{quoi} n° {} : ses plans ne ferment aucun volume", "{quoi} #{}: its planes enclose no volume", b.brush.id))),
             }
         }
         if b.object == 0 {
@@ -65,14 +65,14 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
         if !a_disp && b.brush.faces.len() >= 4 {
             let v = volume(&polys);
             if v < 1.0 {
-                out.push(ici("geo.micro_solide", format!("{quoi} n° {} : volume de {v:.2} unité cube ({:.1} × {:.1} × {:.1})", b.brush.id, o.max.x - o.min.x, o.max.y - o.min.y, o.max.z - o.min.z)).mesure(1.0 - v as f32));
+                out.push(ici("geo.micro_solide", hm_langue::tr!("{quoi} n° {} : volume de {v:.2} unité cube ({:.1} × {:.1} × {:.1})", "{quoi} #{}: volume of {v:.2} cubic unit ({:.1} × {:.1} × {:.1})", b.brush.id, o.max.x - o.min.x, o.max.y - o.min.y, o.max.z - o.min.z)).mesure(1.0 - v as f32));
             }
         }
         let loin = o.min.abs().max(o.max.abs()).max_element();
         // l'étendue utile : MAX_COORD_INTEGER moins la marge de vbsp (portals.cpp, SIDESPACE)
         if loin > 16376.0 {
-            let pourquoi = if loin > 16384.0 { "vbsp la refuse (« bounds out of range »)" } else { "vbsp plante (« BSP node with unbounded volume »)" };
-            out.push(ici("geo.hors_limites", format!("{quoi} n° {} : va jusqu'à {loin:.0}, au-delà de ±16 376 : {pourquoi}", b.brush.id)).mesure(loin));
+            let pourquoi = if loin > 16384.0 { hm_langue::t("vbsp la refuse (« bounds out of range »)") } else { hm_langue::t("vbsp plante (« BSP node with unbounded volume »)") };
+            out.push(ici("geo.hors_limites", hm_langue::tr!("{quoi} n° {} : va jusqu'à {loin:.0}, au-delà de ±16 376 : {pourquoi}", "{quoi} #{}: reaches {loin:.0}, beyond ±16,376: {pourquoi}", b.brush.id)).mesure(loin));
         }
         // displacements
         if let Some(node) = noeuds.get(k) {
@@ -81,9 +81,9 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
                     continue;
                 }
                 if !b.world {
-                    out.push(ici("geo.displacement_invalide", format!("displacement sur un solide de {} n° {}", b.class, b.brush.id)));
+                    out.push(ici("geo.displacement_invalide", hm_langue::tr!("displacement sur un solide de {} n° {}", "displacement on a solid of {} #{}", b.class, b.brush.id)));
                 } else if !b.brush.faces.iter().any(|f| f.side == i && f.disp.is_some()) {
-                    out.push(ici("geo.displacement_invalide", format!("solide n° {} : la face {} porte un displacement mais n'a pas quatre côtés, ou sa puissance n'est pas entre 2 et 4", b.brush.id, i + 1)));
+                    out.push(ici("geo.displacement_invalide", hm_langue::tr!("solide n° {} : la face {} porte un displacement mais n'a pas quatre côtés, ou sa puissance n'est pas entre 2 et 4", "solid #{}: face {} carries a displacement but does not have four sides, or its power is not between 2 and 4", b.brush.id, i + 1)));
                 }
             }
         }
@@ -98,21 +98,21 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
                     Some(a) => {
                         let pos = f.plane.d * n[a].signum();
                         if !multiple(pos, pas) {
-                            hors.push(format!("face {} à {} = {:.3}", f.side + 1, ["x", "y", "z"][a], pos));
+                            hors.push(hm_langue::tr!("face {} à {} = {:.3}", "face {} at {} = {:.3}", f.side + 1, ["x", "y", "z"][a], pos));
                         }
                     }
                     None => {
                         let pts = noeuds.get(k).and_then(|nd| nd.children_named("side").nth(f.side)).and_then(|s| s.get("plane")).and_then(parse_plane);
                         if let Some(pts) = pts {
                             if pts.iter().flatten().any(|c| !multiple(*c, 1.0)) {
-                                hors.push(format!("face oblique {} : points de plan non entiers", f.side + 1));
+                                hors.push(hm_langue::tr!("face oblique {} : points de plan non entiers", "sloped face {}: non-integer plane points", f.side + 1));
                             }
                         }
                     }
                 }
             }
             if !hors.is_empty() {
-                out.push(ici("geo.hors_grille", format!("{quoi} n° {} : {}{}", b.brush.id, hors.iter().take(3).cloned().collect::<Vec<_>>().join(" ; "), if hors.len() > 3 { " ; …" } else { "" })).mesure(hors.len() as f32));
+                out.push(ici("geo.hors_grille", hm_langue::tr!("{quoi} n° {} : {}{}", "{quoi} #{}: {}{}", b.brush.id, hors.iter().take(3).cloned().collect::<Vec<_>>().join(" ; "), if hors.len() > 3 { " ; …" } else { "" })).mesure(hors.len() as f32));
             }
         }
         // texture perpendiculaire à la face
@@ -123,7 +123,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
             let (u, v) = (DVec3::from(f.uaxis.dir), DVec3::from(f.vaxis.dir));
             let w = u.cross(v);
             if w.length() < 1e-6 || (w.normalize().dot(f.plane.n)).abs() < 1e-3 {
-                out.push(ici("geo.texture_perpendiculaire", format!("{quoi} n° {}, face {} ({}) : les axes de texture sont perpendiculaires à la face", b.brush.id, f.side + 1, f.material)));
+                out.push(ici("geo.texture_perpendiculaire", hm_langue::tr!("{quoi} n° {}, face {} ({}) : les axes de texture sont perpendiculaires à la face", "{quoi} #{}, face {} ({}): the texture axes are perpendicular to the face", b.brush.id, f.side + 1, f.material)));
             }
         }
     }
@@ -131,7 +131,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
     // ---------------------------------------------------------------- areaportals
     for e in scene.vmf.entities() {
         if e.classname().eq_ignore_ascii_case("func_areaportal") && e.solids().count() != 1 {
-            let mut c = Constat::lieu("geo.areaportal_multiple", Vec3::ZERO, Vec3::ZERO, format!("func_areaportal n° {} : {} solides au lieu d'un seul", e.id().unwrap_or(0), e.solids().count()));
+            let mut c = Constat::lieu("geo.areaportal_multiple", Vec3::ZERO, Vec3::ZERO, hm_langue::tr!("func_areaportal n° {} : {} solides au lieu d'un seul", "func_areaportal #{}: {} solids instead of one", e.id().unwrap_or(0), e.solids().count()));
             c.vmf_id = e.id().unwrap_or(0);
             c.classe = "func_areaportal".into();
             if let Some(b) = scene.brushes.iter().find(|b| b.entity_id == c.vmf_id && b.object != 0) {
@@ -168,7 +168,7 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
                 let e = hi - lo;
                 if vol >= 64.0 && e.min_element() >= 1.0 {
                     v.push(
-                        Constat::objet(scene, "geo.chevauchement", a.objet, format!("{} et {} occupent le même volume sur {:.0} × {:.0} × {:.0}", monde.nommer(a.objet), monde.nommer(b.objet), e.x, e.y, e.z))
+                        Constat::objet(scene, "geo.chevauchement", a.objet, hm_langue::tr!("{} et {} occupent le même volume sur {:.0} × {:.0} × {:.0}", "{} and {} occupy the same volume over {:.0} × {:.0} × {:.0}", monde.nommer(a.objet), monde.nommer(b.objet), e.x, e.y, e.z))
                             .boite(lo.as_vec3(), hi.as_vec3())
                             .mesure(vol as f32)
                             .autres(vec![b.objet]),
@@ -262,9 +262,9 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
                     }
                     let lo = poly.iter().fold(poly[0], |x, p| x.min(*p)).as_vec3();
                     let hi = poly.iter().fold(poly[0], |x, p| x.max(*p)).as_vec3();
-                    let (regle, verbe) = if scintille { ("geo.zfighting", "se recouvrent dans le même plan et scintilleront") } else { ("geo.faces_superposees", "portent deux matériaux sur la même surface") };
+                    let (regle, verbe) = if scintille { ("geo.zfighting", hm_langue::t("se recouvrent dans le même plan et scintilleront")) } else { ("geo.faces_superposees", hm_langue::t("portent deux matériaux sur la même surface")) };
                     v.push(
-                        Constat::objet(scene, regle, a.objet, format!("{} ({}) et {} ({}) {verbe}, sur {s:.0} unités carrées", monde.nommer(a.objet), a.materiau, monde.nommer(b.objet), b.materiau))
+                        Constat::objet(scene, regle, a.objet, hm_langue::tr!("{} ({}) et {} ({}) {verbe}, sur {s:.0} unités carrées", "{} ({}) and {} ({}) {verbe}, over {s:.0} square units", monde.nommer(a.objet), a.materiau, monde.nommer(b.objet), b.materiau))
                             .boite(lo, hi)
                             .mesure(s as f32)
                             .autres(vec![b.objet]),

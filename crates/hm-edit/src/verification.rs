@@ -85,14 +85,14 @@ fn nom(e: &hm_doc::Entite) -> String {
 pub fn controles(doc: &Document, fgd: &Fgd) -> Vec<Probleme> {
     let mut v = Vec::new();
     for id in doc.solides_invalides() {
-        v.push(p("Solide invalide", 2, format!("le solide {id} n'est pas convexe ou n'a pas de volume"), Some(Ref::Solide(id)), None));
+        v.push(p(hm_langue::t("Solide invalide"), 2, hm_langue::tr!("le solide {id} n'est pas convexe ou n'a pas de volume", "solid {id} is not convex or has no volume"), Some(Ref::Solide(id)), None));
     }
     for e in doc.entites() {
         let classe = fgd.classe(e.classe());
         if let Some(c) = &classe {
             // entité à brosses sans solide : Hammer la supprime
             if c.genre == hm_fgd::Genre::Solide && e.solides.is_empty() {
-                v.push(p("Entité à brosses vide", 2, format!("{} n'a aucun solide", nom(e)), Some(Ref::Entite(e.id)), Some(Commande::Supprimer { objets: vec![Ref::Entite(e.id)] })));
+                v.push(p(hm_langue::t("Entité à brosses vide"), 2, hm_langue::tr!("{} n'a aucun solide", "{} has no solid", nom(e)), Some(Ref::Entite(e.id)), Some(Commande::Supprimer { objets: vec![Ref::Entite(e.id)] })));
             }
             // clés que la classe n'utilise pas : Hammer les retire
             for (k, _) in &e.cles {
@@ -101,7 +101,7 @@ pub fn controles(doc: &Document, fgd: &Fgd) -> Vec<Probleme> {
                     continue;
                 }
                 // sans effet en jeu : une information, comme dans la liste de Hammer, pas une boîte dans les vues
-                v.push(p("Clé inutilisée", 0, format!("{} : clé « {k} » inconnue de sa classe", nom(e)), Some(Ref::Entite(e.id)), Some(Commande::Cles { entite: e.id, cles: vec![(k.clone(), None)] })));
+                v.push(p(hm_langue::t("Clé inutilisée"), 0, hm_langue::tr!("{} : clé « {k} » inconnue de sa classe", "{}: key \"{k}\" unknown to its class", nom(e)), Some(Ref::Entite(e.id)), Some(Commande::Cles { entite: e.id, cles: vec![(k.clone(), None)] })));
             }
         }
     }
@@ -111,7 +111,7 @@ pub fn controles(doc: &Document, fgd: &Fgd) -> Vec<Probleme> {
         e.classe().eq_ignore_ascii_case("info_player_start") && !e.cache && e.origine().map_or(false, |o| cordon.is_empty() || hm_doc::visgroups::touche(&cordon, o, o))
     });
     if !depart {
-        v.push(p("Aucun point d'apparition", 2, format!("aucun info_player_start{}", if cordon.is_empty() { "" } else { " dans le cordon" }), None, None));
+        v.push(p(hm_langue::t("Aucun point d'apparition"), 2, hm_langue::tr!("aucun info_player_start{}", "no info_player_start{}", if cordon.is_empty() { "" } else { hm_langue::t(" dans le cordon") }), None, None));
     }
     // hint : seules ses faces hint coupent ; les autres doivent être en skip (wiki Valve, « Hint brush »)
     for (_, s) in doc.tous_les_solides() {
@@ -121,7 +121,7 @@ pub fn controles(doc: &Document, fgd: &Fgd) -> Vec<Probleme> {
         }
         let autres: Vec<RefFace> = s.faces.iter().filter(|f| !matches!(m(f).as_str(), "tools/toolshint" | "tools/toolsskip")).map(|f| RefFace { solide: s.id, face: f.id }).collect();
         if !autres.is_empty() {
-            v.push(p("Hint mal fait", 1, format!("le hint {} a {} face(s) ni hint ni skip : elles coupent aussi la map", s.id, autres.len()), Some(Ref::Solide(s.id)), Some(Commande::MateriauFaces { faces: autres, materiau: "TOOLS/TOOLSSKIP".into() })));
+            v.push(p(hm_langue::t("Hint mal fait"), 1, hm_langue::tr!("le hint {} a {} face(s) ni hint ni skip : elles coupent aussi la map", "hint {} has {} face(s) that are neither hint nor skip: they split the map too", s.id, autres.len()), Some(Ref::Solide(s.id)), Some(Commande::MateriauFaces { faces: autres, materiau: "TOOLS/TOOLSSKIP".into() })));
         }
     }
     v
@@ -202,7 +202,7 @@ pub fn regles(doc: &Document, vfs: &hm_assets::Vfs, chemin: Option<&Path>, log: 
             if c.regle == "asset.materiau_introuvable" && !c.materiau.is_empty() {
                 let l = existants.get_or_insert_with(|| materiaux_du_jeu(vfs));
                 if let Some(n) = materiau_proche(&c.materiau, l) {
-                    message = format!("{message} ; remplacement proposé : {n}");
+                    message = hm_langue::tr!("{message} ; remplacement proposé : {n}", "{message}; suggested replacement: {n}");
                     correction = Some(Commande::RemplacerMateriau { ancien: c.materiau.clone(), nouveau: n, objets: None });
                 }
             }
@@ -214,7 +214,7 @@ pub fn regles(doc: &Document, vfs: &hm_assets::Vfs, chemin: Option<&Path>, log: 
             } else {
                 None
             };
-            let titre = hm_regles::regle(c.regle).map_or(c.regle.to_string(), |r| r.titre.to_string());
+            let titre = hm_regles::regle(c.regle).map_or(c.regle.to_string(), |r| hm_langue::t(r.titre).to_string());
             let grave = match c.niveau {
                 hm_regles::Niveau::Erreur => 2,
                 hm_regles::Niveau::Avertissement => 1,
@@ -235,7 +235,7 @@ pub fn tout(doc: &Document, fgd: &Fgd, vfs: &hm_assets::Vfs, chemin: Option<&Pat
             v.extend(r);
             (b, None, c)
         }
-        Err(e) => (None, Some(format!("règles non passées : {e}")), None),
+        Err(e) => (None, Some(hm_langue::tr!("règles non passées : {e}", "rules not run: {e}")), None),
     };
     v.sort_by(|a, b| b.grave.cmp(&a.grave).then_with(|| a.genre.cmp(&b.genre)));
     (v, b, erreur, cal)

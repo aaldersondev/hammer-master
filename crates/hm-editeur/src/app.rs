@@ -1531,7 +1531,7 @@ impl Editeur {
             loop {
                 match rx.try_recv() {
                     Ok(m) => {
-                        let grave = if m.contains("impossible") || m.contains("non envoyée") { 2 } else { 1 };
+                        let grave = if m.contains("impossible") || m.contains("non envoyée") || m.starts_with("cannot ") || m.contains("not sent") { 2 } else { 1 };
                         self.statut = m.clone();
                         self.journal.push((m, grave));
                     }

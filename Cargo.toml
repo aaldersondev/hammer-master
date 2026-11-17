@@ -37,6 +37,7 @@ hm-model = { path = "crates/hm-model" }
 hm-doc = { path = "crates/hm-doc" }
 hm-fgd = { path = "crates/hm-fgd" }
 hm-compile = { path = "crates/hm-compile" }
+hm-langue = { path = "crates/hm-langue" }
 
 [profile.dev]
 opt-level = 1

@@ -6,6 +6,7 @@ publish.workspace = true
 description = "Noyau de l'éditeur : document, commandes annulables, lecture et écriture VMF sans perte"
 
 [dependencies]
+hm-langue.workspace = true
 glam = { workspace = true, features = ["serde"] }
 serde.workspace = true
 serde_json.workspace = true

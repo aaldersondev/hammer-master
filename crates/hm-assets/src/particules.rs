@@ -10,7 +10,7 @@ struct Lecteur<'a> {
 
 impl Lecteur<'_> {
     fn octets(&mut self, n: usize) -> Result<&[u8], String> {
-        let b = self.o.get(self.i..self.i + n).ok_or("fichier tronqué")?;
+        let b = self.o.get(self.i..self.i + n).ok_or(hm_langue::t("fichier tronqué"))?;
         self.i += n;
         Ok(b)
     }
@@ -23,7 +23,7 @@ impl Lecteur<'_> {
         Ok(i32::from_le_bytes([b[0], b[1], b[2], b[3]]).max(0) as usize)
     }
     fn chaine(&mut self) -> Result<String, String> {
-        let fin = self.o[self.i..].iter().position(|c| *c == 0).ok_or("chaîne sans fin")?;
+        let fin = self.o[self.i..].iter().position(|c| *c == 0).ok_or(hm_langue::t("chaîne sans fin"))?;
         let s = String::from_utf8_lossy(&self.o[self.i..self.i + fin]).into_owned();
         self.i += fin + 1;
         Ok(s)
@@ -31,11 +31,11 @@ impl Lecteur<'_> {
 }
 
 pub fn systemes(pcf: &[u8]) -> Result<Vec<String>, String> {
-    let fin_entete = pcf.windows(3).position(|w| w == b"-->").ok_or("pas un DMX")? + 3;
+    let fin_entete = pcf.windows(3).position(|w| w == b"-->").ok_or(hm_langue::t("pas un DMX"))? + 3;
     let entete = String::from_utf8_lossy(&pcf[..fin_entete]);
     let mots: Vec<&str> = entete.split_whitespace().collect();
-    let k = mots.iter().position(|m| *m == "binary").ok_or("DMX qui n'est pas binaire")?;
-    let v: u32 = mots.get(k + 1).and_then(|x| x.parse().ok()).ok_or("version du DMX illisible")?;
+    let k = mots.iter().position(|m| *m == "binary").ok_or(hm_langue::t("DMX qui n'est pas binaire"))?;
+    let v: u32 = mots.get(k + 1).and_then(|x| x.parse().ok()).ok_or(hm_langue::t("version du DMX illisible"))?;
     let mut l = Lecteur { o: pcf, i: fin_entete };
     // le texte d'en-tête se termine par une fin de ligne et un zéro
     while matches!(l.o.get(l.i), Some(b'\n' | b'\r' | 0)) {
@@ -53,7 +53,7 @@ pub fn systemes(pcf: &[u8]) -> Result<Vec<String>, String> {
     }
     let indice = |l: &mut Lecteur, dico: &Vec<String>| -> Result<String, String> {
         let i = if v >= 5 { l.i32()? } else { l.i16()? };
-        dico.get(i).cloned().ok_or_else(|| format!("indice de chaîne {i} hors du dictionnaire"))
+        dico.get(i).cloned().ok_or_else(|| hm_langue::tr!("indice de chaîne {i} hors du dictionnaire", "string index {i} outside the dictionary"))
     };
     let n = l.i32()?;
     let mut noms = Vec::new();

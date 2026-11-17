@@ -149,21 +149,21 @@ fn flotte(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Constat>)
         }
         let autres: Vec<u32> = g.iter().filter(|&&i| i != principal).map(|&i| monde.corps[i as usize].objet).collect();
         let avec = if autres.is_empty() {
-            "ne touche rien".to_string()
+            hm_langue::t("ne touche rien").to_string()
         } else {
-            format!("ne touche que {} autre(s) objet(s) ({})", autres.len(), autres.iter().take(3).map(|&o| monde.nommer(o)).collect::<Vec<_>>().join(", "))
+            hm_langue::tr!("ne touche que {} autre(s) objet(s) ({})", "touches only {} other object(s) ({})", autres.len(), autres.iter().take(3).map(|&o| monde.nommer(o)).collect::<Vec<_>>().join(", "))
         };
         let vide = match dessous {
-            Some((d, k)) => format!("{d:.0} de vide dessous, jusqu'à {}", monde.nommer(monde.corps[k as usize].objet)),
-            None => "rien dessous".to_string(),
+            Some((d, k)) => hm_langue::tr!("{d:.0} de vide dessous, jusqu'à {}", "{d:.0} of empty space below, down to {}", monde.nommer(monde.corps[k as usize].objet)),
+            None => hm_langue::t("rien dessous").to_string(),
         };
         let voisin = match proche {
-            Some((j, k)) => format!("le plus proche objet qui tient au sol, {}, est à moins de {j:.0} mais à plus de {:.0}", monde.nommer(monde.corps[k as usize].objet), if j <= 4.0 { jeu } else { j / 2.0 }),
-            None => "rien qui tienne au sol à moins de 64".to_string(),
+            Some((j, k)) => hm_langue::tr!("le plus proche objet qui tient au sol, {}, est à moins de {j:.0} mais à plus de {:.0}", "the nearest grounded object, {}, is within {j:.0} but more than {:.0} away", monde.nommer(monde.corps[k as usize].objet), if j <= 4.0 { jeu } else { j / 2.0 }),
+            None => hm_langue::t("rien qui tienne au sol à moins de 64").to_string(),
         };
         let regle = if proche.map_or(false, |x| x.0 <= 4.0) { "phys.decolle" } else { "phys.flotte" };
         out.push(
-            Constat::objet(scene, regle, p.objet, format!("{} ({:.0} × {:.0} × {:.0}) {avec} : aucun contact ne le relie au sol ; {voisin} ; {vide}", monde.nommer(p.objet), e.x, e.y, e.z))
+            Constat::objet(scene, regle, p.objet, hm_langue::tr!("{} ({:.0} × {:.0} × {:.0}) {avec} : aucun contact ne le relie au sol ; {voisin} ; {vide}", "{} ({:.0} × {:.0} × {:.0}) {avec}: no contact links it to the ground; {voisin}; {vide}", monde.nommer(p.objet), e.x, e.y, e.z))
                 .boite(lo, hi)
                 .mesure(proche.map_or(128.0, |x| x.0))
                 .autres(autres),
@@ -225,7 +225,7 @@ fn enfoui_et_traverse(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
             if part >= PART_ENFOUIE && pmax >= PROFONDEUR_ENFOUIE {
                 let dans = monde.corps[dans_qui as usize].objet;
                 v.push(
-                    Constat::objet(scene, "phys.enfoui", c.objet, format!("{} : {:.0} % de ses sommets sont dans un solide, jusqu'à {pmax:.0} de profondeur ({}){}", monde.nommer(c.objet), part * 100.0, monde.nommer(dans), if part >= 0.99 && o_statique(scene, c.objet) { " ; entièrement dans du plein, vbsp le déclarera « outside the map » et le retirera" } else { "" }))
+                    Constat::objet(scene, "phys.enfoui", c.objet, hm_langue::tr!("{} : {:.0} % de ses sommets sont dans un solide, jusqu'à {pmax:.0} de profondeur ({}){}", "{}: {:.0} % of its vertices are inside a solid, up to {pmax:.0} deep ({}){}", monde.nommer(c.objet), part * 100.0, monde.nommer(dans), if part >= 0.99 && o_statique(scene, c.objet) { hm_langue::t(" ; entièrement dans du plein, vbsp le déclarera « outside the map » et le retirera") } else { "" }))
                         .mesure(part * 100.0)
                         .autres(vec![dans]),
                 );
@@ -297,10 +297,10 @@ fn enfoui_et_traverse(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
                 let autres: Vec<u32> = perces.iter().map(|x| monde.corps[x.0 as usize].objet).collect();
                 if perces.len() >= IMBRIQUE {
                     // un modèle qui passe à travers beaucoup de solides est un habillage imbriqué dans la structure
-                    v.push(Constat::objet(scene, "phys.imbrique", c.objet, format!("{} passe à travers {} solides (le plus net : {}, dépassé de {court:.0} de chaque côté)", monde.nommer(c.objet), perces.len(), monde.nommer(q))).mesure(perces.len() as f32).autres(autres));
+                    v.push(Constat::objet(scene, "phys.imbrique", c.objet, hm_langue::tr!("{} passe à travers {} solides (le plus net : {}, dépassé de {court:.0} de chaque côté)", "{} passes through {} solids (the clearest: {}, exceeded by {court:.0} on each side)", monde.nommer(c.objet), perces.len(), monde.nommer(q))).mesure(perces.len() as f32).autres(autres));
                 } else {
                     v.push(
-                        Constat::objet(scene, "phys.traverse", c.objet, format!("{} traverse {} de part en part : il dépasse d'au moins {court:.0} de chaque côté", monde.nommer(c.objet), monde.nommer(q)))
+                        Constat::objet(scene, "phys.traverse", c.objet, hm_langue::tr!("{} traverse {} de part en part : il dépasse d'au moins {court:.0} de chaque côté", "{} goes right through {}: it sticks out at least {court:.0} on each side", monde.nommer(c.objet), monde.nommer(q)))
                             .boite(ou - Vec3::splat(96.0), ou + Vec3::splat(96.0))
                             .mesure(court)
                             .autres(autres),
@@ -362,7 +362,7 @@ fn wc(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Constat>) {
         let hi = g.iter().fold(Vec3::splat(f32::MIN), |a, &i| a.max(monde.corps[i as usize].max));
         let premier = monde.corps[g[0] as usize].objet;
         out.push(
-            Constat::objet(scene, "phys.wc_sans_cloison", premier, format!("{} cuvettes voisines se voient l'une l'autre, sans cabine ni cloison entre elles ({})", g.len(), g.iter().take(4).map(|&i| monde.nommer(monde.corps[i as usize].objet)).collect::<Vec<_>>().join(", ")))
+            Constat::objet(scene, "phys.wc_sans_cloison", premier, hm_langue::tr!("{} cuvettes voisines se voient l'une l'autre, sans cabine ni cloison entre elles ({})", "{} neighboring toilets face each other, with no stall or partition between them ({})", g.len(), g.iter().take(4).map(|&i| monde.nommer(monde.corps[i as usize].objet)).collect::<Vec<_>>().join(", ")))
                 .boite(lo, hi)
                 .mesure(g.len() as f32)
                 .autres(g[1..].iter().map(|&i| monde.corps[i as usize].objet).collect()),
@@ -415,8 +415,8 @@ fn portes(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
         let (a, b) = (bloque_vers(1.0), bloque_vers(-1.0));
         let dire = |x: &(f32, u32)| format!("{} à {:.0}°", monde.nommer(monde.corps[x.1 as usize].objet), x.0);
         match (a, b) {
-            (Some(x), Some(y)) => out.push(Constat::objet(scene, "phys.porte_bloquee", c.objet, format!("{} ne peut s'ouvrir d'aucun côté : elle rencontre {} dans un sens et {} dans l'autre", monde.nommer(c.objet), dire(&x), dire(&y))).mesure(180.0 - x.0 - y.0).autres(vec![monde.corps[x.1 as usize].objet, monde.corps[y.1 as usize].objet])),
-            (Some(x), None) | (None, Some(x)) => out.push(Constat::objet(scene, "phys.porte_genee", c.objet, format!("{} rencontre {} en s'ouvrant d'un côté ; l'autre côté est libre", monde.nommer(c.objet), dire(&x))).mesure(90.0 - x.0).autres(vec![monde.corps[x.1 as usize].objet])),
+            (Some(x), Some(y)) => out.push(Constat::objet(scene, "phys.porte_bloquee", c.objet, hm_langue::tr!("{} ne peut s'ouvrir d'aucun côté : elle rencontre {} dans un sens et {} dans l'autre", "{} cannot open either way: it hits {} one way and {} the other", monde.nommer(c.objet), dire(&x), dire(&y))).mesure(180.0 - x.0 - y.0).autres(vec![monde.corps[x.1 as usize].objet, monde.corps[y.1 as usize].objet])),
+            (Some(x), None) | (None, Some(x)) => out.push(Constat::objet(scene, "phys.porte_genee", c.objet, hm_langue::tr!("{} rencontre {} en s'ouvrant d'un côté ; l'autre côté est libre", "{} hits {} when opening one way; the other way is free", monde.nommer(c.objet), dire(&x))).mesure(90.0 - x.0).autres(vec![monde.corps[x.1 as usize].objet])),
             (None, None) => {}
         }
     }
@@ -472,7 +472,7 @@ fn porte_a_faux(scene: &Scene, monde: &Monde, out: &mut Vec<Constat>) {
         // rien derrière l'autre face
         if autre == 0 && pleines >= 2 && vides_au_bout >= 1 && pleines + vides_au_bout == 6 {
             let part = pleines as f32 / 6.0;
-            out.push(Constat::objet(scene, "phys.porte_a_faux", c.objet, format!("{} ({:.0} × {:.0}, épaisseur {:.0}) n'est adossé que sur {:.0} % de sa longueur : il dépasse de {:.0} au bout de son mur", monde.nommer(c.objet), e[u], e[w], e[k], part * 100.0, e[u] * (1.0 - part))).mesure(e[u] * (1.0 - part)));
+            out.push(Constat::objet(scene, "phys.porte_a_faux", c.objet, hm_langue::tr!("{} ({:.0} × {:.0}, épaisseur {:.0}) n'est adossé que sur {:.0} % de sa longueur : il dépasse de {:.0} au bout de son mur", "{} ({:.0} × {:.0}, thickness {:.0}) rests on its wall over only {:.0} % of its length: it overhangs by {:.0} at the end of the wall", monde.nommer(c.objet), e[u], e[w], e[k], part * 100.0, e[u] * (1.0 - part))).mesure(e[u] * (1.0 - part)));
         }
     }
 }

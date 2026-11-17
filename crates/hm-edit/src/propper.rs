@@ -102,7 +102,7 @@ fn dedans(plans: &[(DVec3, f64)], p: DVec3) -> bool {
 pub fn preparer(doc: &Document, objets: &[Ref], vfs: &Vfs, o: &OptionsPropper) -> Result<Propper, String> {
     let modele = o.modele.trim().trim_end_matches(".mdl").replace('\\', "/").to_lowercase();
     if modele.is_empty() || modele.contains(' ') || modele.starts_with('/') {
-        return Err("nom de modèle : un chemin sous models/, en minuscules, sans espace (« dossier/nom »)".into());
+        return Err(hm_langue::t("nom de modèle : un chemin sous models/, en minuscules, sans espace (« dossier/nom »)").into());
     }
     let nom = modele.rsplit('/').next().unwrap_or(&modele).to_string();
     // solides du monde, et ceux des entités à brosses visibles (func_detail, func_brush…)
@@ -135,7 +135,7 @@ pub fn preparer(doc: &Document, objets: &[Ref], vfs: &Vfs, o: &OptionsPropper) -
         }
     }
     if solides.is_empty() {
-        return Err("aucun solide dans la sélection".into());
+        return Err(hm_langue::t("aucun solide dans la sélection").into());
     }
     let polys: Vec<Vec<Vec<DVec3>>> = solides.iter().map(|s| s.polygones()).collect();
     let (mut lo, mut hi) = (DVec3::splat(f64::MAX), DVec3::splat(f64::MIN));
@@ -183,7 +183,7 @@ pub fn preparer(doc: &Document, objets: &[Ref], vfs: &Vfs, o: &OptionsPropper) -
     }
     smd.push_str("end\n");
     if triangles == 0 {
-        return Err("aucune face visible (tout est enfoui ou en texture d'outil)".into());
+        return Err(hm_langue::t("aucune face visible (tout est enfoui ou en texture d'outil)").into());
     }
     // collision : chaque brosse, fermée, rétrécie autour de son milieu, avec sa propre normale
     let mut phys = String::from(TETE_SMD);
@@ -264,7 +264,7 @@ pub fn ecrire(p: &Propper, sources: &Path, racine: &Path) -> Result<PathBuf, Str
 /// modèles de collision, vu en 10/2026). `jeu` : le dossier `garrysmod` (le modèle sort sous `jeu/models/`).
 /// Rend le journal ; une erreur de studiomdl le rend en erreur.
 pub fn compiler(qc: &Path, jeu: &Path) -> Result<String, String> {
-    let gmod = hm_assets::jeu::garrysmod().ok_or("Garry's Mod introuvable")?;
+    let gmod = hm_assets::jeu::garrysmod().ok_or(hm_langue::t("Garry's Mod introuvable"))?;
     let exe = gmod.join("bin").join("studiomdl.exe");
     let mut c = std::process::Command::new(&exe);
     c.arg("-nop4").arg("-game").arg(jeu).arg(qc).current_dir(qc.parent().unwrap_or(Path::new(".")));
@@ -277,7 +277,7 @@ pub fn compiler(qc: &Path, jeu: &Path) -> Result<String, String> {
     let journal = format!("{}{}", String::from_utf8_lossy(&r.stdout), String::from_utf8_lossy(&r.stderr));
     if !r.status.success() || journal.lines().any(|l| l.contains("ERROR")) {
         let fin: Vec<&str> = journal.lines().rev().take(25).collect();
-        return Err(format!("studiomdl a échoué :\n{}", fin.into_iter().rev().collect::<Vec<_>>().join("\n")));
+        return Err(hm_langue::tr!("studiomdl a échoué :\n{}", "studiomdl failed:\n{}", fin.into_iter().rev().collect::<Vec<_>>().join("\n")));
     }
     Ok(journal)
 }

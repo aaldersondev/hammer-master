@@ -749,7 +749,7 @@ impl Document {
             }
         }
         if !monde_vu {
-            return Err(ErreurLecture("le fichier n'a pas de bloc « world » : ce n'est pas une map".into()));
+            return Err(ErreurLecture(hm_langue::t("le fichier n'a pas de bloc « world » : ce n'est pas une map").into()));
         }
         if !doc.haut.contains(&Haut::Entites) {
             let i = doc.haut.iter().position(|h| *h == Haut::Monde).unwrap() + 1;
@@ -787,7 +787,7 @@ impl Document {
             if s.id == 0 || doc.proprio.contains_key(&s.id) {
                 let ancien = s.id;
                 s.id = doc.nouvel_id();
-                rapport.renumerotes.push(format!("solide du monde n° {ancien} en double : renuméroté {}", s.id));
+                rapport.renumerotes.push(hm_langue::tr!("solide du monde n° {ancien} en double : renuméroté {}", "duplicate world solid #{ancien}: renumbered {}", s.id));
             }
             doc.proprio.insert(s.id, Proprio::Monde);
             doc.solides.insert(s.id, s);
@@ -796,13 +796,13 @@ impl Document {
             if e.id == 0 || doc.entites.contains_key(&e.id) {
                 let ancien = e.id;
                 e.id = doc.nouvel_id();
-                rapport.renumerotes.push(format!("entité n° {ancien} en double : renumérotée {}", e.id));
+                rapport.renumerotes.push(hm_langue::tr!("entité n° {ancien} en double : renumérotée {}", "duplicate entity #{ancien}: renumbered {}", e.id));
             }
             for s in &mut e.solides {
                 if s.id == 0 || doc.proprio.contains_key(&s.id) {
                     let ancien = s.id;
                     s.id = doc.nouvel_id();
-                    rapport.renumerotes.push(format!("solide n° {ancien} en double : renuméroté {}", s.id));
+                    rapport.renumerotes.push(hm_langue::tr!("solide n° {ancien} en double : renuméroté {}", "duplicate solid #{ancien}: renumbered {}", s.id));
                 }
                 doc.proprio.insert(s.id, Proprio::Entite(e.id));
             }

@@ -151,7 +151,7 @@ pub fn lire(src: &[u8]) -> Result<(Vec<Bloc>, Format), ErreurSyntaxe> {
                     i += 1;
                 }
                 if i >= n {
-                    return Err(ErreurSyntaxe { ligne: l0, quoi: "guillemet non fermé" });
+                    return Err(ErreurSyntaxe { ligne: l0, quoi: hm_langue::t("guillemet non fermé") });
                 }
                 jetons.push((Jeton::Mot(&src[debut..i]), l0));
                 i += 1;
@@ -173,13 +173,13 @@ pub fn lire(src: &[u8]) -> Result<(Vec<Bloc>, Format), ErreurSyntaxe> {
         match j {
             Jeton::Ferme => {
                 if pile.len() == 1 {
-                    return Err(ErreurSyntaxe { ligne: l, quoi: "accolade fermante en trop" });
+                    return Err(ErreurSyntaxe { ligne: l, quoi: hm_langue::t("accolade fermante en trop") });
                 }
                 let b = pile.pop().unwrap();
                 pile.last_mut().unwrap().elements.push(Element::Bloc(b));
                 k += 1;
             }
-            Jeton::Ouvre => return Err(ErreurSyntaxe { ligne: l, quoi: "accolade sans nom de bloc" }),
+            Jeton::Ouvre => return Err(ErreurSyntaxe { ligne: l, quoi: hm_langue::t("accolade sans nom de bloc") }),
             Jeton::Mot(m) => match jetons.get(k + 1).map(|x| x.0) {
                 Some(Jeton::Ouvre) => {
                     pile.push(Bloc { nom: texte(m), elements: Vec::new() });
@@ -189,13 +189,13 @@ pub fn lire(src: &[u8]) -> Result<(Vec<Bloc>, Format), ErreurSyntaxe> {
                     pile.last_mut().unwrap().elements.push(Element::Paire(texte(m), texte(v)));
                     k += 2;
                 }
-                Some(Jeton::Ferme) => return Err(ErreurSyntaxe { ligne: l, quoi: "clé sans valeur" }),
-                None => return Err(ErreurSyntaxe { ligne: l, quoi: "clé sans valeur en fin de fichier" }),
+                Some(Jeton::Ferme) => return Err(ErreurSyntaxe { ligne: l, quoi: hm_langue::t("clé sans valeur") }),
+                None => return Err(ErreurSyntaxe { ligne: l, quoi: hm_langue::t("clé sans valeur en fin de fichier") }),
             },
         }
     }
     if pile.len() != 1 {
-        return Err(ErreurSyntaxe { ligne, quoi: "accolade fermante manquante" });
+        return Err(ErreurSyntaxe { ligne, quoi: hm_langue::t("accolade fermante manquante") });
     }
     let racine = pile.pop().unwrap();
     let mut blocs = Vec::new();

@@ -30,7 +30,7 @@ that it adds what a large map needs: a game-accurate renderer, continuous checki
   and its addons, the same way the engine does it.
 
 > The user interface is available in English and French: **Tools → Options → Langue / Language**. On first launch it
-> is French on a French Windows, English otherwise. Some messages from the map checks and the command history are still in French.
+> is French on a French Windows, English otherwise. The command-line tool and the MCP server stay in French.
 
 ## Features
 

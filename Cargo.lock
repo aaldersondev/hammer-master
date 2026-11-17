@@ -1481,6 +1481,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bytemuck",
+ "hm-langue",
  "rayon",
  "source-mdl",
  "source-vpk",
@@ -1518,6 +1519,7 @@ dependencies = [
  "glam",
  "hm-assets",
  "hm-doc",
+ "hm-langue",
  "hm-vmf",
  "image",
 ]
@@ -1528,6 +1530,7 @@ version = "0.1.0"
 dependencies = [
  "glam",
  "hm-geom",
+ "hm-langue",
  "hm-vmf",
  "indexmap",
  "serde",
@@ -1545,6 +1548,7 @@ dependencies = [
  "hm-doc",
  "hm-espace",
  "hm-fgd",
+ "hm-langue",
  "hm-model",
  "hm-regles",
  "hm-scene",
@@ -1569,6 +1573,7 @@ dependencies = [
  "hm-espace",
  "hm-fgd",
  "hm-geom",
+ "hm-langue",
  "hm-model",
  "hm-regles",
  "hm-render",
@@ -1607,6 +1612,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hm-langue"
+version = "0.1.0"
+
+[[package]]
 name = "hm-mcp"
 version = "0.1.0"
 dependencies = [
@@ -1638,6 +1647,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "blake3",
+ "hm-langue",
  "hm-vmf",
  "serde",
  "serde_json",
@@ -1654,6 +1664,7 @@ dependencies = [
  "hm-assets",
  "hm-espace",
  "hm-geom",
+ "hm-langue",
  "hm-model",
  "hm-scene",
  "hm-vmf",
@@ -1701,6 +1712,7 @@ dependencies = [
  "glam",
  "hm-assets",
  "hm-espace",
+ "hm-langue",
  "hm-render",
  "hm-scene",
  "image",

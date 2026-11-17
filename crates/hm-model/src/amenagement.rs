@@ -264,24 +264,24 @@ pub struct PosePiece {
 
 impl Amenagement {
     pub fn lire(chemin: &Path) -> Result<Amenagement> {
-        let texte = std::fs::read_to_string(chemin).with_context(|| format!("lecture de {}", chemin.display()))?;
+        let texte = std::fs::read_to_string(chemin).with_context(|| hm_langue::tr!("lecture de {}", "reading {}", chemin.display()))?;
         let a: Amenagement = toml::from_str(&texte).map_err(|e| anyhow::anyhow!("{} : {e}", chemin.display()))?;
         a.controler().with_context(|| format!("{}", chemin.display()))?;
         Ok(a)
     }
 
     pub fn controler(&self) -> Result<()> {
-        ensure!(!self.nom.trim().is_empty() && !self.nom.contains(char::is_whitespace), "nom de modèle vide ou avec un espace");
-        ensure!(!self.role.trim().is_empty(), "modèle « {} » sans rôle", self.nom);
+        ensure!(!self.nom.trim().is_empty() && !self.nom.contains(char::is_whitespace), hm_langue::tr!("nom de modèle vide ou avec un espace", "model name empty or containing a space"));
+        ensure!(!self.role.trim().is_empty(), hm_langue::tr!("modèle « {} » sans rôle", "model \"{}\" has no role", self.nom));
         let p = &self.piece;
-        ensure!(p.largeur[0] > 0.0 && p.largeur[0] <= p.largeur[1] && p.profondeur[0] > 0.0 && p.profondeur[0] <= p.profondeur[1], "modèle « {} » : dimensions de pièce à l'envers", self.nom);
-        ensure!(!self.ensemble.is_empty(), "modèle « {} » sans aucune pose", self.nom);
+        ensure!(p.largeur[0] > 0.0 && p.largeur[0] <= p.largeur[1] && p.profondeur[0] > 0.0 && p.profondeur[0] <= p.profondeur[1], hm_langue::tr!("modèle « {} » : dimensions de pièce à l'envers", "model \"{}\": room dimensions reversed", self.nom));
+        ensure!(!self.ensemble.is_empty(), hm_langue::tr!("modèle « {} » sans aucune pose", "model \"{}\" has no placement", self.nom));
         for e in &self.ensemble {
-            ensure!(!e.pose.is_empty(), "ensemble « {} » vide", e.nom);
+            ensure!(!e.pose.is_empty(), hm_langue::tr!("ensemble « {} » vide", "set \"{}\" is empty", e.nom));
             if let Some(r) = &e.repete {
-                ensure!(r.pas.abs() >= 1.0 && (r.sens == "x" || r.sens == "y") && r.min >= 1 && r.min <= r.max && r.emprise[0] <= r.emprise[1], "ensemble « {} » : répétition mal décrite", e.nom);
+                ensure!(r.pas.abs() >= 1.0 && (r.sens == "x" || r.sens == "y") && r.min >= 1 && r.min <= r.max && r.emprise[0] <= r.emprise[1], hm_langue::tr!("ensemble « {} » : répétition mal décrite", "set \"{}\": repetition badly described", e.nom));
                 if let Some(b) = &r.bouche {
-                    ensure!(b.travers[0] < b.travers[1] && b.hauteur >= 0.0, "ensemble « {} » : coffrage mal décrit", e.nom);
+                    ensure!(b.travers[0] < b.travers[1] && b.hauteur >= 0.0, hm_langue::tr!("ensemble « {} » : coffrage mal décrit", "set \"{}\": casing badly described", e.nom));
                 }
             }
         }
@@ -298,13 +298,13 @@ impl Amenagement {
     pub fn refuse(&self, largeur: f32, profondeur: f32, hauteur: f32) -> Option<String> {
         let p = &self.piece;
         if largeur < p.largeur[0] || largeur > p.largeur[1] {
-            return Some(format!("largeur {largeur:.0} hors de {:.0} à {:.0}", p.largeur[0], p.largeur[1]));
+            return Some(hm_langue::tr!("largeur {largeur:.0} hors de {:.0} à {:.0}", "width {largeur:.0} outside {:.0} to {:.0}", p.largeur[0], p.largeur[1]));
         }
         if profondeur < p.profondeur[0] || profondeur > p.profondeur[1] {
-            return Some(format!("profondeur {profondeur:.0} hors de {:.0} à {:.0}", p.profondeur[0], p.profondeur[1]));
+            return Some(hm_langue::tr!("profondeur {profondeur:.0} hors de {:.0} à {:.0}", "depth {profondeur:.0} outside {:.0} to {:.0}", p.profondeur[0], p.profondeur[1]));
         }
         if hauteur < p.hauteur_min {
-            return Some(format!("hauteur {hauteur:.0} sous {:.0}", p.hauteur_min));
+            return Some(hm_langue::tr!("hauteur {hauteur:.0} sous {:.0}", "height {hauteur:.0} below {:.0}", p.hauteur_min));
         }
         None
     }
@@ -322,7 +322,7 @@ impl Amenagement {
     /// Poses et coffrages du modèle dans une pièce de ces dimensions.
     pub fn disposer(&self, largeur: f32, profondeur: f32, hauteur: f32) -> Result<(Vec<PosePiece>, Vec<Bloc>)> {
         if let Some(raison) = self.refuse(largeur, profondeur, hauteur) {
-            bail!("le modèle « {} » ne convient pas à cette pièce : {raison}", self.nom);
+            bail!(hm_langue::tr!("le modèle « {} » ne convient pas à cette pièce : {raison}", "model \"{}\" does not suit this room: {raison}", self.nom));
         }
         let mut out = Vec::new();
         let mut blocs = Vec::new();
@@ -350,7 +350,7 @@ impl Amenagement {
                 let tient = if libre < 0.0 { 0 } else { (libre / pas.abs()).floor() as u32 + 1 };
                 n = tient.min(r.max);
                 if n < r.min {
-                    bail!("le modèle « {} » ne tient pas : l'ensemble « {} » demande {} exemplaire(s), il y a la place pour {}", self.nom, e.nom, r.min, tient);
+                    bail!(hm_langue::tr!("le modèle « {} » ne tient pas : l'ensemble « {} » demande {} exemplaire(s), il y a la place pour {}", "model \"{}\" does not fit: set \"{}\" needs {} copy(ies), there is room for {}", self.nom, e.nom, r.min, tient));
                 }
                 if r.centrer {
                     let etendue = (n - 1) as f32 * pas.abs() + (r.emprise[1] - r.emprise[0]);
@@ -471,7 +471,7 @@ impl Validations {
 /// Le modèle nommé d'un dossier, et son statut.
 pub fn trouver(dossier: &Path, nom: &str) -> Result<(Amenagement, Statut)> {
     let a = Amenagement::lire(&dossier.join(format!("{nom}.toml")))?;
-    ensure!(a.nom == nom, "{}.toml déclare le nom « {} »", nom, a.nom);
+    ensure!(a.nom == nom, hm_langue::tr!("{}.toml déclare le nom « {} »", "{}.toml declares the name \"{}\"", nom, a.nom));
     let statut = Validations::charger(dossier).statut(&a);
     Ok((a, statut))
 }

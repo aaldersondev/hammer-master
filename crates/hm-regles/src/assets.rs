@@ -79,7 +79,7 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
         }
         let Some((objet, n)) = ou(&m.name) else { continue }; // matériaux de modèles : vus plus bas
         if !m.found {
-            let mut c = Constat::objet(scene, "asset.materiau_introuvable", objet, format!("matériau « {} » introuvable, posé sur {n} solide(s)", m.name)).mesure(n as f32);
+            let mut c = Constat::objet(scene, "asset.materiau_introuvable", objet, hm_langue::tr!("matériau « {} » introuvable, posé sur {n} solide(s)", "material \"{}\" not found, used on {n} solid(s)", m.name)).mesure(n as f32);
             // le matériau manquant lui-même (pas celui qui domine sur l'objet) : la correction le remplace
             c.materiau = m.name.clone();
             out.push(c);
@@ -93,14 +93,14 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
                 _ => None,
             };
             if let Some(regle) = regle {
-                out.push(Constat::objet(scene, regle, objet, format!("matériau « {} », posé sur {n} solide(s), ne vient que de {label}", m.name)).mesure(n as f32));
+                out.push(Constat::objet(scene, regle, objet, hm_langue::tr!("matériau « {} », posé sur {n} solide(s), ne vient que de {label}", "material \"{}\", used on {n} solid(s), only comes from {label}", m.name)).mesure(n as f32));
             }
         }
     }
     for t in &scene.report.missing_textures {
         let qui = scene.materials.iter().find(|m| m.base.as_deref() == Some(t.as_str()));
         let objet = qui.and_then(|m| ou(&m.name)).map_or(0, |x| x.0);
-        let msg = format!("texture « {t} » introuvable{}", qui.map_or(String::new(), |m| format!(" (matériau « {} »)", m.name)));
+        let msg = hm_langue::tr!("texture « {t} » introuvable{}", "texture \"{t}\" not found{}", qui.map_or(String::new(), |m| hm_langue::tr!(" (matériau « {} »)", " (material \"{}\")", m.name)));
         out.push(if objet != 0 { Constat::objet(scene, "asset.texture_introuvable", objet, msg) } else { Constat::lieu("asset.texture_introuvable", Vec3::ZERO, Vec3::ZERO, msg) });
     }
     // ---- modèles : par modèle, ses exemplaires
@@ -113,7 +113,7 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
         let Some(&premier) = ex.first() else { continue };
         let objet = scene.props[premier].object;
         let Some(m) = &sm.model else {
-            out.push(Constat::objet(scene, "asset.modele_introuvable", objet, format!("modèle « {} » introuvable ou illisible ({}), posé {} fois", sm.name, sm.error.as_deref().unwrap_or("?"), ex.len())).mesure(ex.len() as f32));
+            out.push(Constat::objet(scene, "asset.modele_introuvable", objet, hm_langue::tr!("modèle « {} » introuvable ou illisible ({}), posé {} fois", "model \"{}\" not found or unreadable ({}), placed {} times", sm.name, sm.error.as_deref().unwrap_or("?"), ex.len())).mesure(ex.len() as f32));
             continue;
         };
         let (label, p) = de(m.mount);
@@ -123,19 +123,19 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
             _ => None,
         };
         if let Some(regle) = regle {
-            out.push(Constat::objet(scene, regle, objet, format!("modèle « {} », posé {} fois, ne vient que de {label}", sm.name, ex.len())).mesure(ex.len() as f32));
+            out.push(Constat::objet(scene, regle, objet, hm_langue::tr!("modèle « {} », posé {} fois, ne vient que de {label}", "model \"{}\", placed {} times, only comes from {label}", sm.name, ex.len())).mesure(ex.len() as f32));
         }
         // prop_static sans $staticprop
         let statiques: Vec<usize> = ex.iter().copied().filter(|&k| scene.objects[scene.props[k].object as usize].class == "prop_static").collect();
         if (!m.static_prop || m.prop_data) && !statiques.is_empty() {
-            let pourquoi = if !m.static_prop { "compilé sans $staticprop" } else { "fait pour une entité dynamique (ses clés portent un bloc prop_data sans allowstatic)" };
-            out.push(Constat::objet(scene, "asset.modele_non_statique", scene.props[statiques[0]].object, format!("modèle « {} » {pourquoi}, posé en prop_static {} fois", sm.name, statiques.len())).mesure(statiques.len() as f32));
+            let pourquoi = if !m.static_prop { hm_langue::t("compilé sans $staticprop") } else { hm_langue::t("fait pour une entité dynamique (ses clés portent un bloc prop_data sans allowstatic)") };
+            out.push(Constat::objet(scene, "asset.modele_non_statique", scene.props[statiques[0]].object, hm_langue::tr!("modèle « {} » {pourquoi}, posé en prop_static {} fois", "model \"{}\" {pourquoi}, placed as prop_static {} times", sm.name, statiques.len())).mesure(statiques.len() as f32));
         }
         // skins
         let n_skins = m.skins.len().max(1) as u32;
         let hors: Vec<usize> = ex.iter().copied().filter(|&k| scene.props[k].skin >= n_skins).collect();
         if let Some(&k) = hors.first() {
-            out.push(Constat::objet(scene, "asset.skin", scene.props[k].object, format!("modèle « {} » : skin {} demandé, {} skin(s) existent ({} exemplaire(s))", sm.name, scene.props[k].skin, n_skins, hors.len())).mesure(hors.len() as f32));
+            out.push(Constat::objet(scene, "asset.skin", scene.props[k].object, hm_langue::tr!("modèle « {} » : skin {} demandé, {} skin(s) existent ({} exemplaire(s))", "model \"{}\": skin {} requested, {} skin(s) exist ({} instance(s))", sm.name, scene.props[k].skin, n_skins, hors.len())).mesure(hors.len() as f32));
         }
         // matériaux du modèle
         let mut manquants: Vec<&str> = Vec::new();
@@ -148,7 +148,7 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
             }
         }
         if !manquants.is_empty() {
-            out.push(Constat::objet(scene, "asset.materiau_de_modele", objet, format!("modèle « {} » ({} fois) : matériau(x) introuvable(s) : {}", sm.name, ex.len(), manquants.join(", "))).mesure(ex.len() as f32));
+            out.push(Constat::objet(scene, "asset.materiau_de_modele", objet, hm_langue::tr!("modèle « {} » ({} fois) : matériau(x) introuvable(s) : {}", "model \"{}\" ({} times): material(s) not found: {}", sm.name, ex.len(), manquants.join(", "))).mesure(ex.len() as f32));
         }
     }
     // modèles d'entités sans objet (aucun exemplaire avec origine) : rien à dire
@@ -158,10 +158,10 @@ pub fn verifier(scene: &Scene, vfs: &Vfs, config: &Config, out: &mut Vec<Constat
 impl Provenance {
     pub fn nom(self) -> &'static str {
         match self {
-            Provenance::Projet => "projet (embarqué dans la map)",
-            Provenance::Jeu => "jeu (chez tous les joueurs)",
-            Provenance::AutreJeu => "autre jeu (à monter par chaque joueur)",
-            Provenance::Local => "local (ce PC seulement)",
+            Provenance::Projet => hm_langue::t("projet (embarqué dans la map)"),
+            Provenance::Jeu => hm_langue::t("jeu (chez tous les joueurs)"),
+            Provenance::AutreJeu => hm_langue::t("autre jeu (à monter par chaque joueur)"),
+            Provenance::Local => hm_langue::t("local (ce PC seulement)"),
         }
     }
 }

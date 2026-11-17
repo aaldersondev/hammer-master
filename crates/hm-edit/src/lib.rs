@@ -99,7 +99,7 @@ pub fn repere(emprise: [f32; 4], porte: &str) -> Result<([f32; 2], f32, f32, f32
         "x+" => ([x1, y0], 90.0, y1 - y0, x1 - x0),
         "y+" => ([x1, y1], 180.0, x1 - x0, y1 - y0),
         "x-" => ([x0, y1], -90.0, y1 - y0, x1 - x0),
-        autre => return Err(format!("mur de porte « {autre} » inconnu (x-, x+, y- ou y+)")),
+        autre => return Err(hm_langue::tr!("mur de porte « {autre} » inconnu (x-, x+, y- ou y+)", "unknown door wall \"{autre}\" (x-, x+, y- or y+)")),
     })
 }
 
@@ -162,11 +162,11 @@ pub fn commande_amenagement_boite(a: &hm_model::amenagement::Amenagement, lo: [f
     let (o, angle, largeur, profondeur) = repere([lo[0], lo[1], hi[0], hi[1]], porte).map_err(|e| anyhow!(e))?;
     let hauteur = hi[2] - lo[2];
     if let Some(r) = a.refuse(largeur, profondeur, hauteur) {
-        return Err(anyhow!("« {} » refuse une pièce de {largeur:.0} × {profondeur:.0} × {hauteur:.0} : {r}", a.nom));
+        return Err(anyhow!(hm_langue::tr!("« {} » refuse une pièce de {largeur:.0} × {profondeur:.0} × {hauteur:.0} : {r}", "\"{}\" refuses a {largeur:.0} × {profondeur:.0} × {hauteur:.0} room: {r}", a.nom)));
     }
     let (poses, blocs) = a.disposer(largeur, profondeur, hauteur).map_err(|e| anyhow!("{e:#}"))?;
     let commandes = poses_et_blocs(a, &poses, &blocs, o, angle, lo[2], "", doc);
-    Ok(Commande::Lot { nom: format!("aménager d'après « {} »", a.nom), commandes })
+    Ok(Commande::Lot { nom: hm_langue::tr!("aménager d'après « {} »", "lay out from \"{}\"", a.nom), commandes })
 }
 
 /// La commande qui aménage la pièce mesurée par `plan` : retire le mobilier relevé, pose celui du modèle et ses
@@ -174,17 +174,17 @@ pub fn commande_amenagement_boite(a: &hm_model::amenagement::Amenagement, lo: [f
 pub fn commande_amenagement(plan: &mesure::Plan, amenagements: &std::path::Path, doc: &hm_doc::Document) -> Result<Commande> {
     use hm_model::amenagement;
     let p = &plan.piece;
-    let (a, _) = amenagement::trouver(amenagements, &plan.modele).map_err(|e| anyhow!("modèle d'aménagement « {} » : {e:#}", plan.modele))?;
+    let (a, _) = amenagement::trouver(amenagements, &plan.modele).map_err(|e| anyhow!(hm_langue::tr!("modèle d'aménagement « {} » : {e:#}", "layout model \"{}\": {e:#}", plan.modele)))?;
     let (o, angle, largeur, profondeur) = repere(p.emprise, &plan.porte).map_err(|e| anyhow!(e))?;
-    let (poses, blocs) = a.disposer(largeur, profondeur, plan.hauteur).map_err(|e| anyhow!("pièce « {} » ({largeur:.0} × {profondeur:.0} × {:.0}) : {e:#}", p.id, plan.hauteur))?;
+    let (poses, blocs) = a.disposer(largeur, profondeur, plan.hauteur).map_err(|e| anyhow!(hm_langue::tr!("pièce « {} » ({largeur:.0} × {profondeur:.0} × {:.0}) : {e:#}", "room \"{}\" ({largeur:.0} × {profondeur:.0} × {:.0}): {e:#}", p.id, plan.hauteur)))?;
     let mut commandes = Vec::new();
     let retirer: Vec<Ref> = plan.contenu.retirer.iter().filter(|x| doc.entite(x.id).is_some()).map(|x| Ref::Entite(x.id)).collect();
     if retirer.len() != plan.contenu.retirer.len() {
-        return Err(anyhow!("la pièce « {} » a changé depuis sa mesure : la mesurer de nouveau", p.id));
+        return Err(anyhow!(hm_langue::tr!("la pièce « {} » a changé depuis sa mesure : la mesurer de nouveau", "room \"{}\" changed since it was measured: measure it again", p.id)));
     }
     if !retirer.is_empty() {
         commandes.push(Commande::Supprimer { objets: retirer });
     }
     commandes.extend(poses_et_blocs(&a, &poses, &blocs, o, angle, p.sol, &plan.mur, doc));
-    Ok(Commande::Lot { nom: format!("aménager « {} » d'après « {} »", p.id, plan.modele), commandes })
+    Ok(Commande::Lot { nom: hm_langue::tr!("aménager « {} » d'après « {} »", "lay out \"{}\" from \"{}\"", p.id, plan.modele), commandes })
 }

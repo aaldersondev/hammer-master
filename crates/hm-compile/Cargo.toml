@@ -6,6 +6,7 @@ publish.workspace = true
 description = "Compiler une map (vbsp, vvis, vrad), journal, fuite, lancement du jeu"
 
 [dependencies]
+hm-langue.workspace = true
 hm-assets.workspace = true
 hm-vmf.workspace = true
 image.workspace = true

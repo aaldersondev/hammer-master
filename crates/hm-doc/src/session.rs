@@ -54,7 +54,7 @@ impl Session {
     /// passe par un fichier voisin renommé ensuite : une coupure pendant l'écriture ne laisse jamais un VMF à moitié
     /// écrit.
     pub fn enregistrer(&mut self, chemin: Option<&Path>) -> Res<PathBuf> {
-        let p = chemin.map(Path::to_path_buf).or_else(|| self.chemin.clone()).ok_or("pas de fichier : choisir où enregistrer")?;
+        let p = chemin.map(Path::to_path_buf).or_else(|| self.chemin.clone()).ok_or(hm_langue::t("pas de fichier : choisir où enregistrer"))?;
         ecrire_sur(&p, &self.doc.ecrire())?;
         self.chemin = Some(p.clone());
         self.version_enregistree = self.version;

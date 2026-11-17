@@ -266,63 +266,63 @@ pub type Res<T> = Result<T, String>;
 impl Commande {
     /// Nom lisible dans l'historique.
     pub fn nom(&self) -> String {
-        let n = |v: &Vec<Ref>| if v.len() == 1 { "1 objet".to_string() } else { format!("{} objets", v.len()) };
+        let n = |v: &Vec<Ref>| if v.len() == 1 { hm_langue::t("1 objet").to_string() } else { hm_langue::tr!("{} objets", "{} objects", v.len()) };
         match self {
-            Commande::CreerBloc { classe: Some(c), .. } => format!("créer un bloc ({c})"),
-            Commande::CreerBloc { .. } => "créer un bloc".into(),
-            Commande::CreerEntite { classe, .. } => format!("créer {classe}"),
-            Commande::Supprimer { objets } => format!("supprimer {}", n(objets)),
-            Commande::Deplacer { objets, delta, .. } => format!("déplacer {} de ({} {} {})", n(objets), crate::kv::nombre(delta[0]), crate::kv::nombre(delta[1]), crate::kv::nombre(delta[2])),
-            Commande::Tourner { objets, degres, .. } => format!("tourner {} de {}°", n(objets), crate::kv::nombre(*degres)),
-            Commande::Redimensionner { objets, .. } => format!("redimensionner {}", n(objets)),
-            Commande::Miroir { objets, axe, .. } => format!("miroir de {} selon {}", n(objets), ["X", "Y", "Z"].get(*axe).unwrap_or(&"?")),
-            Commande::Dupliquer { objets, .. } => format!("dupliquer {}", n(objets)),
-            Commande::Coller { .. } => "coller".into(),
-            Commande::CollerSpecial { copies, .. } => format!("coller spécial ({copies} copie(s))"),
-            Commande::MateriauFaces { faces, materiau } => format!("{materiau} sur {} face(s)", faces.len()),
-            Commande::MateriauObjets { objets, materiau } => format!("{materiau} sur {}", n(objets)),
-            Commande::Cles { cles, .. } => format!("propriétés : {}", cles.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>().join(", ")),
-            Commande::Grouper { objets } => format!("grouper {}", n(objets)),
-            Commande::Degrouper { groupes } => format!("dégrouper {} groupe(s)", groupes.len()),
-            Commande::LierAEntite { classe, .. } => format!("lier à {classe}"),
-            Commande::RemettreAuMonde { entites } => format!("remettre au monde {} entité(s)", entites.len()),
-            Commande::ReglerFaces { faces, .. } => format!("régler {} face(s)", faces.len()),
-            Commande::JustifierFaces { faces, justif, .. } => format!("justifier {} face(s) ({justif:?})", faces.len()).to_lowercase(),
-            Commande::AlignerFaces { faces, sur } => format!("aligner {} face(s) sur {}", faces.len(), if *sur == Alignement::Monde { "le monde" } else { "la face" }),
-            Commande::EnroulerFaces { cibles, .. } => format!("enrouler la texture sur {} face(s)", cibles.len()),
-            Commande::RemplacerMateriau { ancien, nouveau, .. } => format!("remplacer {ancien} par {nouveau}"),
-            Commande::PoserAuSol { entites, plafond, .. } => format!("poser {} ({})", if *plafond { "au plafond" } else { "au sol" }, entites.len()),
-            Commande::Decouper { objets, .. } => format!("découper {}", n(objets)),
-            Commande::ModifierSommets { .. } => "modifier des sommets".into(),
-            Commande::Sorties { sorties, .. } => format!("sorties ({})", sorties.len()),
-            Commande::PoserDecal { materiau, .. } => format!("décal {materiau}"),
-            Commande::InsererPrefab { .. } => "insérer un préfabriqué".into(),
-            Commande::CreerDisp { faces, puissance } => format!("displacement de puissance {puissance} ({} face(s))", faces.len()),
-            Commande::DetruireDisp { faces } => format!("détruire {} displacement(s)", faces.len()),
+            Commande::CreerBloc { classe: Some(c), .. } => hm_langue::tr!("créer un bloc ({c})", "create a block ({c})"),
+            Commande::CreerBloc { .. } => hm_langue::t("créer un bloc").into(),
+            Commande::CreerEntite { classe, .. } => hm_langue::tr!("créer {classe}", "create {classe}"),
+            Commande::Supprimer { objets } => hm_langue::tr!("supprimer {}", "delete {}", n(objets)),
+            Commande::Deplacer { objets, delta, .. } => hm_langue::tr!("déplacer {} de ({} {} {})", "move {} by ({} {} {})", n(objets), crate::kv::nombre(delta[0]), crate::kv::nombre(delta[1]), crate::kv::nombre(delta[2])),
+            Commande::Tourner { objets, degres, .. } => hm_langue::tr!("tourner {} de {}°", "rotate {} by {}°", n(objets), crate::kv::nombre(*degres)),
+            Commande::Redimensionner { objets, .. } => hm_langue::tr!("redimensionner {}", "resize {}", n(objets)),
+            Commande::Miroir { objets, axe, .. } => hm_langue::tr!("miroir de {} selon {}", "mirror {} along {}", n(objets), ["X", "Y", "Z"].get(*axe).unwrap_or(&"?")),
+            Commande::Dupliquer { objets, .. } => hm_langue::tr!("dupliquer {}", "duplicate {}", n(objets)),
+            Commande::Coller { .. } => hm_langue::t("coller").into(),
+            Commande::CollerSpecial { copies, .. } => hm_langue::tr!("coller spécial ({copies} copie(s))", "paste special ({copies} copy(ies))"),
+            Commande::MateriauFaces { faces, materiau } => hm_langue::tr!("{materiau} sur {} face(s)", "{materiau} on {} face(s)", faces.len()),
+            Commande::MateriauObjets { objets, materiau } => hm_langue::tr!("{materiau} sur {}", "{materiau} on {}", n(objets)),
+            Commande::Cles { cles, .. } => hm_langue::tr!("propriétés : {}", "properties: {}", cles.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>().join(", ")),
+            Commande::Grouper { objets } => hm_langue::tr!("grouper {}", "group {}", n(objets)),
+            Commande::Degrouper { groupes } => hm_langue::tr!("dégrouper {} groupe(s)", "ungroup {} group(s)", groupes.len()),
+            Commande::LierAEntite { classe, .. } => hm_langue::tr!("lier à {classe}", "tie to {classe}"),
+            Commande::RemettreAuMonde { entites } => hm_langue::tr!("remettre au monde {} entité(s)", "move {} entity(ies) to world", entites.len()),
+            Commande::ReglerFaces { faces, .. } => hm_langue::tr!("régler {} face(s)", "set {} face(s)", faces.len()),
+            Commande::JustifierFaces { faces, justif, .. } => hm_langue::tr!("justifier {} face(s) ({justif:?})", "justify {} face(s) ({justif:?})", faces.len()).to_lowercase(),
+            Commande::AlignerFaces { faces, sur } => hm_langue::tr!("aligner {} face(s) sur {}", "align {} face(s) to {}", faces.len(), if *sur == Alignement::Monde { hm_langue::t("le monde") } else { hm_langue::t("la face") }),
+            Commande::EnroulerFaces { cibles, .. } => hm_langue::tr!("enrouler la texture sur {} face(s)", "wrap the texture over {} face(s)", cibles.len()),
+            Commande::RemplacerMateriau { ancien, nouveau, .. } => hm_langue::tr!("remplacer {ancien} par {nouveau}", "replace {ancien} with {nouveau}"),
+            Commande::PoserAuSol { entites, plafond, .. } => hm_langue::tr!("poser {} ({})", "place {} ({})", if *plafond { hm_langue::t("au plafond") } else { hm_langue::t("au sol") }, entites.len()),
+            Commande::Decouper { objets, .. } => hm_langue::tr!("découper {}", "clip {}", n(objets)),
+            Commande::ModifierSommets { .. } => hm_langue::t("modifier des sommets").into(),
+            Commande::Sorties { sorties, .. } => hm_langue::tr!("sorties ({})", "outputs ({})", sorties.len()),
+            Commande::PoserDecal { materiau, .. } => hm_langue::tr!("décal {materiau}", "decal {materiau}"),
+            Commande::InsererPrefab { .. } => hm_langue::t("insérer un préfabriqué").into(),
+            Commande::CreerDisp { faces, puissance } => hm_langue::tr!("displacement de puissance {puissance} ({} face(s))", "power {puissance} displacement ({} face(s))", faces.len()),
+            Commande::DetruireDisp { faces } => hm_langue::tr!("détruire {} displacement(s)", "destroy {} displacement(s)", faces.len()),
             Commande::PeindreDisp { pinceau, .. } => match pinceau {
-                crate::disp::Pinceau::Relever { hauteur } if *hauteur < 0.0 => "abaisser un displacement".into(),
-                crate::disp::Pinceau::Relever { .. } => "relever un displacement".into(),
-                crate::disp::Pinceau::Lisser { .. } => "lisser un displacement".into(),
-                crate::disp::Pinceau::Alpha { .. } => "peindre l'alpha".into(),
+                crate::disp::Pinceau::Relever { hauteur } if *hauteur < 0.0 => hm_langue::t("abaisser un displacement").into(),
+                crate::disp::Pinceau::Relever { .. } => hm_langue::t("relever un displacement").into(),
+                crate::disp::Pinceau::Lisser { .. } => hm_langue::t("lisser un displacement").into(),
+                crate::disp::Pinceau::Alpha { .. } => hm_langue::t("peindre l'alpha").into(),
             },
-            Commande::CoudreDisp { faces } => format!("coudre {} displacement(s)", faces.len()),
+            Commande::CoudreDisp { faces } => hm_langue::tr!("coudre {} displacement(s)", "sew {} displacement(s)", faces.len()),
             Commande::PoserOverlay { materiau, .. } => format!("overlay {materiau}"),
-            Commande::Creuser { outils, .. } => format!("creuser avec {}", n(outils)),
-            Commande::Fusionner { objets } => format!("fusionner {}", n(objets)),
-            Commande::Primitive { forme, .. } => format!("créer {}", forme.nom()),
-            Commande::CreerVisgroup { nom, objets, .. } => format!("visgroup « {nom} » ({})", n(objets)),
-            Commande::AjouterAuVisgroup { objets, .. } => format!("ajouter {} au visgroup", n(objets)),
-            Commande::RetirerDuVisgroup { objets, .. } => format!("retirer {} du visgroup", n(objets)),
-            Commande::MontrerVisgroup { visible, .. } => if *visible { "montrer un visgroup".into() } else { "cacher un visgroup".into() },
-            Commande::RenommerVisgroup { nom, .. } => format!("renommer un visgroup en « {nom} »"),
-            Commande::DeplacerVisgroup { monter, .. } => if *monter { "monter un visgroup".into() } else { "descendre un visgroup".into() },
-            Commande::SupprimerVisgroup { .. } => "supprimer un visgroup".into(),
-            Commande::Cordon { actif, .. } => if *actif { "cordon actif".into() } else { "cordon inactif".into() },
-            Commande::Cordons { actif, liste } => format!("cordons ({}{})", liste.len(), if *actif { ", actifs" } else { "" }),
-            Commande::Evider { objets, epaisseur } => format!("évider {} (murs de {})", n(objets), crate::kv::nombre(*epaisseur)),
-            Commande::FondreInstance { .. } => "fondre une instance".into(),
-            Commande::CouleurEditeur { objets, .. } => format!("couleur de {}", n(objets)),
-            Commande::CreerEnveloppe { points, .. } => format!("créer un solide de {} points", points.len()),
+            Commande::Creuser { outils, .. } => hm_langue::tr!("creuser avec {}", "carve with {}", n(outils)),
+            Commande::Fusionner { objets } => hm_langue::tr!("fusionner {}", "merge {}", n(objets)),
+            Commande::Primitive { forme, .. } => hm_langue::tr!("créer {}", "create {}", forme.nom()),
+            Commande::CreerVisgroup { nom, objets, .. } => hm_langue::tr!("visgroup « {nom} » ({})", "visgroup \"{nom}\" ({})", n(objets)),
+            Commande::AjouterAuVisgroup { objets, .. } => hm_langue::tr!("ajouter {} au visgroup", "add {} to the visgroup", n(objets)),
+            Commande::RetirerDuVisgroup { objets, .. } => hm_langue::tr!("retirer {} du visgroup", "remove {} from the visgroup", n(objets)),
+            Commande::MontrerVisgroup { visible, .. } => if *visible { hm_langue::t("montrer un visgroup").into() } else { hm_langue::t("cacher un visgroup").into() },
+            Commande::RenommerVisgroup { nom, .. } => hm_langue::tr!("renommer un visgroup en « {nom} »", "rename a visgroup to \"{nom}\""),
+            Commande::DeplacerVisgroup { monter, .. } => if *monter { hm_langue::t("monter un visgroup").into() } else { hm_langue::t("descendre un visgroup").into() },
+            Commande::SupprimerVisgroup { .. } => hm_langue::t("supprimer un visgroup").into(),
+            Commande::Cordon { actif, .. } => if *actif { hm_langue::t("cordon actif").into() } else { hm_langue::t("cordon inactif").into() },
+            Commande::Cordons { actif, liste } => format!("cordons ({}{})", liste.len(), if *actif { hm_langue::t(", actifs") } else { "" }),
+            Commande::Evider { objets, epaisseur } => hm_langue::tr!("évider {} (murs de {})", "hollow {} (walls of {})", n(objets), crate::kv::nombre(*epaisseur)),
+            Commande::FondreInstance { .. } => hm_langue::t("fondre une instance").into(),
+            Commande::CouleurEditeur { objets, .. } => hm_langue::tr!("couleur de {}", "color of {}", n(objets)),
+            Commande::CreerEnveloppe { points, .. } => hm_langue::tr!("créer un solide de {} points", "create a solid from {} points", points.len()),
             Commande::Lot { nom, .. } => nom.clone(),
         }
     }
@@ -332,7 +332,7 @@ impl Commande {
             Commande::CreerBloc { min, max, materiau, classe } => {
                 let (lo, hi) = (DVec3::from(*min).min(DVec3::from(*max)), DVec3::from(*min).max(DVec3::from(*max)));
                 if (hi - lo).min_element() < 1e-6 {
-                    return Err("un bloc doit avoir une épaisseur dans les trois directions".into());
+                    return Err(hm_langue::t("un bloc doit avoir une épaisseur dans les trois directions").into());
                 }
                 let id = tx.nouvel_id();
                 let faces = [tx.nouvelle_face(), tx.nouvelle_face(), tx.nouvelle_face(), tx.nouvelle_face(), tx.nouvelle_face(), tx.nouvelle_face()];
@@ -354,7 +354,7 @@ impl Commande {
             }
             Commande::CreerEntite { classe, origine, cles } => {
                 if classe.trim().is_empty() {
-                    return Err("une entité a besoin d'une classe".into());
+                    return Err(hm_langue::t("une entité a besoin d'une classe").into());
                 }
                 let id = tx.nouvel_id();
                 let mut e = Entite::nouvelle(id, classe.trim());
@@ -389,7 +389,7 @@ impl Commande {
                         tx.retirer_entite(e);
                     }
                 }
-                Ok(Resultat { crees: vec![], message: format!("{} solide(s), {} entité(s) supprimés", solides.len(), entites.len()) })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{} solide(s), {} entité(s) supprimés", "{} solid(s), {} entity(ies) deleted", solides.len(), entites.len()) })
             }
             Commande::Deplacer { objets, delta, verrou_texture } => transformer(tx, objets, &Affine::translation(DVec3::from(*delta)), *verrou_texture),
             Commande::Tourner { objets, centre, axe, degres, verrou_texture } => transformer(tx, objets, &Affine::rotation(DVec3::from(*centre), DVec3::from(*axe), *degres), *verrou_texture),
@@ -397,13 +397,13 @@ impl Commande {
                 let de = (DVec3::from(de[0]), DVec3::from(de[1]));
                 let vers = (DVec3::from(vers[0]), DVec3::from(vers[1]));
                 if (vers.1 - vers.0).abs().min_element() < 1e-6 {
-                    return Err("la nouvelle boîte est plate".into());
+                    return Err(hm_langue::t("la nouvelle boîte est plate").into());
                 }
                 transformer(tx, objets, &Affine::boite(de, vers), *verrou_texture)
             }
             Commande::Miroir { objets, centre, axe } => {
                 if *axe > 2 {
-                    return Err("axe de miroir : 0, 1 ou 2".into());
+                    return Err(hm_langue::t("axe de miroir : 0, 1 ou 2").into());
                 }
                 transformer(tx, objets, &Affine::miroir(DVec3::from(*centre), *axe), true)
             }
@@ -415,8 +415,8 @@ impl Commande {
             Commande::CollerSpecial { vmf, copies, decalage, rotation, grouper, prefixe, noms_uniques } => coller_special(tx, vmf, *copies, DVec3::from(*decalage), DVec3::from(*rotation), *grouper, prefixe, *noms_uniques),
             Commande::MateriauFaces { faces, materiau } => {
                 for rf in faces {
-                    let s = tx.solide_mut(rf.solide).ok_or_else(|| format!("solide {} introuvable", rf.solide))?;
-                    let f = s.faces.iter_mut().find(|f| f.id == rf.face).ok_or_else(|| format!("face {} introuvable sur le solide {}", rf.face, rf.solide))?;
+                    let s = tx.solide_mut(rf.solide).ok_or_else(|| hm_langue::tr!("solide {} introuvable", "solid {} not found", rf.solide))?;
+                    let f = s.faces.iter_mut().find(|f| f.id == rf.face).ok_or_else(|| hm_langue::tr!("face {} introuvable sur le solide {}", "face {} not found on solid {}", rf.face, rf.solide))?;
                     f.materiau = materiau.clone();
                 }
                 Ok(Resultat::default())
@@ -441,15 +441,15 @@ impl Commande {
             Commande::Cles { entite, cles } => {
                 let monde = *entite == tx.doc().monde.id;
                 let e = if monde { Some(tx.monde_mut()) } else { tx.entite_mut(*entite) };
-                let e = e.ok_or_else(|| format!("entité {entite} introuvable"))?;
+                let e = e.ok_or_else(|| hm_langue::tr!("entité {entite} introuvable", "entity {entite} not found"))?;
                 for (k, v) in cles {
                     if k.eq_ignore_ascii_case("id") {
-                        return Err("le numéro d'un objet ne se change pas".into());
+                        return Err(hm_langue::t("le numéro d'un objet ne se change pas").into());
                     }
                     match v {
                         Some(v) => {
                             if v.contains('"') {
-                                return Err(format!("{k} : un guillemet ne peut pas entrer dans un VMF"));
+                                return Err(hm_langue::tr!("{k} : un guillemet ne peut pas entrer dans un VMF", "{k}: a quote cannot go into a VMF"));
                             }
                             e.set(k, v)
                         }
@@ -460,21 +460,21 @@ impl Commande {
             }
             Commande::Grouper { objets } => {
                 if objets.is_empty() {
-                    return Err("rien à grouper".into());
+                    return Err(hm_langue::t("rien à grouper").into());
                 }
                 let id = tx.nouvel_id();
                 let mut g = Groupe { id, editeur: geo::editeur_neuf(id), gabarit: Vec::new() };
                 g.editeur.elements.retain(|e| !matches!(e, Element::Paire(k, _) if k == "visgroupautoshown"));
                 tx.ajouter_groupe(g);
                 for r in objets {
-                    let ed = editeur_de(tx, *r).ok_or_else(|| format!("{r:?} introuvable"))?;
+                    let ed = editeur_de(tx, *r).ok_or_else(|| hm_langue::tr!("{r:?} introuvable", "{r:?} not found"))?;
                     ed.set("groupid", &id.to_string());
                 }
                 Ok(Resultat { crees: vec![Ref::Groupe(id)], message: String::new() })
             }
             Commande::Degrouper { groupes } => {
                 for g in groupes {
-                    let parent = tx.doc().groupes.get(g).ok_or_else(|| format!("groupe {g} introuvable"))?.editeur.get("groupid").map(String::from);
+                    let parent = tx.doc().groupes.get(g).ok_or_else(|| hm_langue::tr!("groupe {g} introuvable", "group {g} not found"))?.editeur.get("groupid").map(String::from);
                     for r in membres_directs(tx.doc(), *g) {
                         let ed = editeur_de(tx, r).unwrap();
                         match &parent {
@@ -489,7 +489,7 @@ impl Commande {
             Commande::LierAEntite { objets, classe } => {
                 let (solides, _, _) = resoudre(tx.doc(), objets)?;
                 if solides.is_empty() {
-                    return Err("aucun solide à lier".into());
+                    return Err(hm_langue::t("aucun solide à lier").into());
                 }
                 let eid = tx.nouvel_id();
                 let mut e = Entite::nouvelle(eid, classe);
@@ -505,9 +505,9 @@ impl Commande {
             Commande::RemettreAuMonde { entites } => {
                 let mut crees = Vec::new();
                 for id in entites {
-                    let e = tx.retirer_entite(*id).ok_or_else(|| format!("entité {id} introuvable"))?;
+                    let e = tx.retirer_entite(*id).ok_or_else(|| hm_langue::tr!("entité {id} introuvable", "entity {id} not found"))?;
                     if e.solides.is_empty() {
-                        return Err(format!("{} n'a pas de solides", e.classe()));
+                        return Err(hm_langue::tr!("{} n'a pas de solides", "{} has no solids", e.classe()));
                     }
                     for s in e.solides {
                         crees.push(Ref::Solide(s.id));
@@ -545,7 +545,7 @@ impl Commande {
                 Ok(Resultat::default())
             }
             Commande::EnroulerFaces { source, cibles } => {
-                let src = tx.doc().solide(source.solide).and_then(|s| s.faces.iter().find(|f| f.id == source.face)).cloned().ok_or("face source introuvable")?;
+                let src = tx.doc().solide(source.solide).and_then(|s| s.faces.iter().find(|f| f.id == source.face)).cloned().ok_or(hm_langue::t("face source introuvable"))?;
                 let psrc = polygone(tx.doc(), *source)?;
                 for rf in cibles {
                     if rf == source {
@@ -580,7 +580,7 @@ impl Commande {
                         }
                     }
                 }
-                Ok(Resultat { crees: vec![], message: format!("{n} face(s) remplacée(s)") })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{n} face(s) remplacée(s)", "{n} face(s) replaced") })
             }
             Commande::InsererPrefab { vmf, origine } => {
                 let texte = if vmf.contains("&i") {
@@ -597,12 +597,12 @@ impl Commande {
             }
             Commande::CreerDisp { faces, puissance } => {
                 if !(2..=4).contains(puissance) {
-                    return Err(format!("puissance {puissance} : 2, 3 ou 4 seulement (wiki Valve)"));
+                    return Err(hm_langue::tr!("puissance {puissance} : 2, 3 ou 4 seulement (wiki Valve)", "power {puissance}: 2, 3 or 4 only (Valve wiki)"));
                 }
                 for rf in faces {
                     let poly = polygone(tx.doc(), *rf)?;
                     if poly.len() != 4 {
-                        return Err(format!("la face {} a {} côtés : un displacement demande une face à quatre côtés", rf.face, poly.len()));
+                        return Err(hm_langue::tr!("la face {} a {} côtés : un displacement demande une face à quatre côtés", "face {} has {} sides: a displacement needs a four-sided face", rf.face, poly.len()));
                     }
                     let f = face_mut(tx, *rf)?;
                     let n = f.normale();
@@ -614,14 +614,14 @@ impl Commande {
                 for rf in faces {
                     let f = face_mut(tx, *rf)?;
                     if f.disp.take().is_none() {
-                        return Err(format!("la face {} n'est pas un displacement", rf.face));
+                        return Err(hm_langue::tr!("la face {} n'est pas un displacement", "face {} is not a displacement", rf.face));
                     }
                 }
                 Ok(Resultat::default())
             }
             Commande::PeindreDisp { faces, centre, rayon, pinceau } => {
                 if *rayon <= 0.0 {
-                    return Err("le rayon du pinceau doit être positif".into());
+                    return Err(hm_langue::t("le rayon du pinceau doit être positif").into());
                 }
                 let c = DVec3::from(*centre);
                 // les faces displacement visées, ou toutes celles que le pinceau peut toucher
@@ -652,7 +652,7 @@ impl Commande {
                         touchees += 1;
                     }
                 }
-                Ok(Resultat { crees: vec![], message: format!("{touchees} displacement(s) touché(s)") })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{touchees} displacement(s) touché(s)", "{touchees} displacement(s) touched") })
             }
             Commande::CoudreDisp { faces } => {
                 // points de bord de chaque displacement : (face, indice, position à plat, position)
@@ -660,9 +660,9 @@ impl Commande {
                 for rf in faces {
                     let poly = polygone(tx.doc(), *rf)?;
                     let f = tx.doc().solide(rf.solide).and_then(|s| s.faces.iter().find(|x| x.id == rf.face)).unwrap();
-                    let d = f.disp.as_ref().and_then(crate::disp::Disp::lire).ok_or_else(|| format!("la face {} n'est pas un displacement", rf.face))?;
+                    let d = f.disp.as_ref().and_then(crate::disp::Disp::lire).ok_or_else(|| hm_langue::tr!("la face {} n'est pas un displacement", "face {} is not a displacement", rf.face))?;
                     let n = f.normale();
-                    let (plat, monde) = d.points(&poly, n).ok_or("displacement illisible")?;
+                    let (plat, monde) = d.points(&poly, n).ok_or(hm_langue::t("displacement illisible"))?;
                     infos.push((*rf, d, poly, plat, monde, n));
                 }
                 // regroupe les points de bord confondus à plat, et les met à leur position moyenne
@@ -694,7 +694,7 @@ impl Commande {
                     }
                 }
                 if cibles.is_empty() {
-                    return Err("ces displacements n'ont pas de bord commun".into());
+                    return Err(hm_langue::t("ces displacements n'ont pas de bord commun").into());
                 }
                 for groupe in &cibles {
                     let moy = groupe.iter().fold(DVec3::ZERO, |s, (a, x)| s + infos[*a].4[*x]) / groupe.len() as f64;
@@ -716,39 +716,39 @@ impl Commande {
                         face_mut(tx, rf)?.disp = Some(d.ecrire());
                     }
                 }
-                Ok(Resultat { crees: vec![], message: format!("{} point(s) cousu(s)", cibles.len()) })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{} point(s) cousu(s)", "{} point(s) sewn", cibles.len()) })
             }
             Commande::PoserDecal { point, materiau } => {
                 if materiau.trim().is_empty() {
-                    return Err("un décal sans matériau".into());
+                    return Err(hm_langue::t("un décal sans matériau").into());
                 }
                 Commande::CreerEntite { classe: "infodecal".into(), origine: *point, cles: vec![("texture".into(), materiau.clone())] }.executer(tx)
             }
             Commande::PoserOverlay { face, point, materiau, taille } => {
                 if materiau.trim().is_empty() || taille[0] <= 0.0 || taille[1] <= 0.0 {
-                    return Err("un overlay demande un matériau et une taille positive".into());
+                    return Err(hm_langue::t("un overlay demande un matériau et une taille positive").into());
                 }
-                let s = tx.doc().solide(face.solide).ok_or_else(|| format!("solide {} introuvable", face.solide))?;
-                let f = s.faces.iter().find(|x| x.id == face.face).ok_or_else(|| format!("face {} introuvable", face.face))?.clone();
+                let s = tx.doc().solide(face.solide).ok_or_else(|| hm_langue::tr!("solide {} introuvable", "solid {} not found", face.solide))?;
+                let f = s.faces.iter().find(|x| x.id == face.face).ok_or_else(|| hm_langue::tr!("face {} introuvable", "face {} not found", face.face))?.clone();
                 let cles = crate::decals::cles_overlay(DVec3::from(*point), &f, materiau, *taille);
                 Commande::CreerEntite { classe: "info_overlay".into(), origine: *point, cles }.executer(tx)
             }
             Commande::Sorties { entite, sorties } => {
-                let e = tx.doc().entite(*entite).ok_or_else(|| format!("entité {entite} introuvable"))?;
+                let e = tx.doc().entite(*entite).ok_or_else(|| hm_langue::tr!("entité {entite} introuvable", "entity {entite} not found"))?;
                 for x in sorties {
                     if x.sortie.trim().is_empty() {
-                        return Err("une sortie sans nom".into());
+                        return Err(hm_langue::t("une sortie sans nom").into());
                     }
-                    for (champ, v) in [("sortie", &x.sortie), ("cible", &x.cible), ("entrée", &x.entree), ("paramètre", &x.parametre)] {
+                    for (champ, v) in [(hm_langue::t("sortie"), &x.sortie), (hm_langue::t("cible"), &x.cible), (hm_langue::t("entrée"), &x.entree), (hm_langue::t("paramètre"), &x.parametre)] {
                         if v.contains('"') || v.contains(crate::io::ESC) {
-                            return Err(format!("{champ} « {v} » : pas de guillemet ni de caractère ESC"));
+                            return Err(hm_langue::tr!("{champ} « {v} » : pas de guillemet ni de caractère ESC", "{champ} \"{v}\": no quotes or ESC characters"));
                         }
                     }
                     if !(x.delai >= 0.0) {
-                        return Err(format!("délai {} : doit être positif ou nul", x.delai));
+                        return Err(hm_langue::tr!("délai {} : doit être positif ou nul", "delay {}: must be zero or positive", x.delai));
                     }
                     if x.fois == 0 || x.fois < -1 {
-                        return Err(format!("{} fois : −1 (toujours) ou au moins 1", x.fois));
+                        return Err(hm_langue::tr!("{} fois : −1 (toujours) ou au moins 1", "{} times: −1 (always) or at least 1", x.fois));
                     }
                 }
                 let origine: Vec<(String, String)> = e.sorties.clone().unwrap_or_default();
@@ -776,7 +776,7 @@ impl Commande {
                 Ok(Resultat::default())
             }
             Commande::ModifierSommets { solide, operations } => {
-                let s = tx.doc().solide(*solide).ok_or_else(|| format!("solide {solide} introuvable"))?.clone();
+                let s = tx.doc().solide(*solide).ok_or_else(|| hm_langue::tr!("solide {solide} introuvable", "solid {solide} not found"))?.clone();
                 let mut m = crate::sommets::Maillage::de(&s);
                 for op in operations {
                     m.appliquer(op)?;
@@ -786,7 +786,7 @@ impl Commande {
                 Ok(Resultat { crees: selection_de(tx.doc(), vec![Ref::Solide(*solide)]), message: String::new() })
             }
             Commande::Decouper { objets, plan, garder, materiau } => {
-                let p = crate::brosses::Plan::de_points(plan.map(DVec3::from)).ok_or("le plan de coupe est dégénéré (points alignés)")?;
+                let p = crate::brosses::Plan::de_points(plan.map(DVec3::from)).ok_or(hm_langue::t("le plan de coupe est dégénéré (points alignés)"))?;
                 let texture = crate::brosses::Gabarit::neuf(p, materiau).texture;
                 let mut crees = Vec::new();
                 let mut coupes = 0;
@@ -806,7 +806,7 @@ impl Commande {
                     let mut neufs = Vec::new();
                     for (k, g) in parts.iter().enumerate() {
                         let nid = if k == 0 { id } else { tx.nouvel_id() };
-                        let sol = crate::brosses::solide_de(nid, g, &mut || tx.nouvelle_face(), &s.editeur, k == 0).ok_or_else(|| format!("le solide {id} coupé donnerait un morceau sans volume"))?;
+                        let sol = crate::brosses::solide_de(nid, g, &mut || tx.nouvelle_face(), &s.editeur, k == 0).ok_or_else(|| hm_langue::tr!("le solide {id} coupé donnerait un morceau sans volume", "cutting solid {id} would leave a piece with no volume"))?;
                         neufs.push(sol);
                     }
                     let mut neufs = neufs.into_iter();
@@ -819,9 +819,9 @@ impl Commande {
                     coupes += 1;
                 }
                 if coupes == 0 {
-                    return Err("le plan ne coupe aucun des solides".into());
+                    return Err(hm_langue::t("le plan ne coupe aucun des solides").into());
                 }
-                Ok(Resultat { crees: selection_de(tx.doc(), crees), message: format!("{coupes} solide(s) coupé(s)") })
+                Ok(Resultat { crees: selection_de(tx.doc(), crees), message: hm_langue::tr!("{coupes} solide(s) coupé(s)", "{coupes} solid(s) clipped") })
             }
             Commande::Creuser { outils, cibles } => {
                 let outils_ids = solides_de(tx.doc(), outils)?;
@@ -834,7 +834,7 @@ impl Commande {
                     let b = tx.doc().solide(*o).unwrap().clone();
                     let faces_b: Vec<Face> = b.faces.iter().filter(|f| crate::brosses::Plan::de_face(f).is_some()).cloned().collect();
                     let plans: Vec<crate::brosses::Plan> = faces_b.iter().filter_map(crate::brosses::Plan::de_face).collect();
-                    let (blo, bhi) = b.boite().ok_or("outil sans volume")?;
+                    let (blo, bhi) = b.boite().ok_or(hm_langue::t("outil sans volume"))?;
                     for c in &cibles_ids {
                         if outils_ids.contains(c) || tx.doc().solide(*c).is_none() {
                             continue;
@@ -869,27 +869,27 @@ impl Commande {
                     }
                 }
                 if creuses == 0 {
-                    return Err("les outils ne touchent aucun solide à creuser".into());
+                    return Err(hm_langue::t("les outils ne touchent aucun solide à creuser").into());
                 }
-                Ok(Resultat { crees: vec![], message: format!("{creuses} solide(s) creusé(s)") })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{creuses} solide(s) creusé(s)", "{creuses} solid(s) carved") })
             }
             Commande::Fusionner { objets } => {
                 let ids = solides_de(tx.doc(), objets)?;
                 if ids.len() < 2 {
-                    return Err("il faut au moins deux solides à fusionner".into());
+                    return Err(hm_langue::t("il faut au moins deux solides à fusionner").into());
                 }
                 let proprio = tx.doc().proprio(ids[0]).unwrap();
                 if ids.iter().any(|i| tx.doc().proprio(*i) != Some(proprio)) {
-                    return Err("les solides n'ont pas le même propriétaire (monde ou entité)".into());
+                    return Err(hm_langue::t("les solides n'ont pas le même propriétaire (monde ou entité)").into());
                 }
                 let solides: Vec<Solide> = ids.iter().map(|i| tx.doc().solide(*i).unwrap().clone()).collect();
                 let points: Vec<DVec3> = solides.iter().flat_map(crate::brosses::sommets).collect();
                 if points.len() > 160 {
-                    return Err(format!("{} sommets : trop pour une fusion (160 au plus)", points.len()));
+                    return Err(hm_langue::tr!("{} sommets : trop pour une fusion (160 au plus)", "{} vertices: too many for a merge (160 at most)", points.len()));
                 }
                 let plans = crate::brosses::enveloppe(&points);
                 if plans.is_empty() {
-                    return Err("les solides n'ont pas de volume à eux tous".into());
+                    return Err(hm_langue::t("les solides n'ont pas de volume à eux tous").into());
                 }
                 // chaque face de l'enveloppe prend la texture de la face d'origine du même plan, sinon de la plus proche
                 let faces: Vec<&Face> = solides.iter().flat_map(|s| s.faces.iter()).collect();
@@ -904,19 +904,19 @@ impl Commande {
                     })
                     .collect();
                 let somme: f64 = solides.iter().map(crate::brosses::volume).sum();
-                let sol = crate::brosses::solide_de(ids[0], &g, &mut || tx.nouvelle_face(), &solides[0].editeur, false).ok_or("l'enveloppe n'a pas de volume")?;
+                let sol = crate::brosses::solide_de(ids[0], &g, &mut || tx.nouvelle_face(), &solides[0].editeur, false).ok_or(hm_langue::t("l'enveloppe n'a pas de volume"))?;
                 let ajout = crate::brosses::volume(&sol) - somme;
                 for i in &ids[1..] {
                     tx.retirer_solide(*i);
                 }
                 *tx.solide_mut(ids[0]).unwrap() = sol;
-                let message = if ajout > somme * 0.005 + 1.0 { format!("l'enveloppe ajoute {ajout:.0} unités³ : les solides ne formaient pas une forme convexe") } else { String::new() };
+                let message = if ajout > somme * 0.005 + 1.0 { hm_langue::tr!("l'enveloppe ajoute {ajout:.0} unités³ : les solides ne formaient pas une forme convexe", "the hull adds {ajout:.0} units³: the solids did not form a convex shape") } else { String::new() };
                 Ok(Resultat { crees: selection_de(tx.doc(), vec![Ref::Solide(ids[0])]), message })
             }
             Commande::Primitive { forme, min, max, materiau, classe } => {
                 let (lo, hi) = (DVec3::from(*min).min(DVec3::from(*max)), DVec3::from(*min).max(DVec3::from(*max)));
                 if (hi - lo).min_element() < 1.0 {
-                    return Err("la boîte d'une primitive doit avoir une épaisseur dans les trois directions".into());
+                    return Err(hm_langue::t("la boîte d'une primitive doit avoir une épaisseur dans les trois directions").into());
                 }
                 let pieces = forme.pieces(lo, hi)?;
                 let mut crees = Vec::new();
@@ -924,7 +924,7 @@ impl Commande {
                     let g: Vec<crate::brosses::Gabarit> = plans.iter().map(|p| crate::brosses::Gabarit::neuf(*p, materiau)).collect();
                     let id = tx.nouvel_id();
                     let ed = geo::editeur_neuf(id);
-                    let sol = crate::brosses::solide_de(id, &g, &mut || tx.nouvelle_face(), &ed, false).ok_or_else(|| format!("{} : une pièce n'a pas de volume (boîte trop petite pour tant de côtés ?)", forme.nom()))?;
+                    let sol = crate::brosses::solide_de(id, &g, &mut || tx.nouvelle_face(), &ed, false).ok_or_else(|| hm_langue::tr!("{} : une pièce n'a pas de volume (boîte trop petite pour tant de côtés ?)", "{}: a piece has no volume (box too small for so many sides?)", forme.nom()))?;
                     tx.ajouter_solide(Proprio::Monde, sol);
                     crees.push(Ref::Solide(id));
                 }
@@ -938,12 +938,12 @@ impl Commande {
             }
             Commande::PoserAuSol { entites, bas, aligner, plafond } => {
                 if bas.len() != entites.len() {
-                    return Err(format!("{} entités pour {} valeurs de bas", entites.len(), bas.len()));
+                    return Err(hm_langue::tr!("{} entités pour {} valeurs de bas", "{} entities for {} bottom values", entites.len(), bas.len()));
                 }
                 let mut posees = 0;
                 for (id, b) in entites.iter().zip(bas) {
-                    let e = tx.doc().entite(*id).ok_or_else(|| format!("entité {id} introuvable"))?;
-                    let o = e.origine().ok_or_else(|| format!("entité {id} sans origine"))?;
+                    let e = tx.doc().entite(*id).ok_or_else(|| hm_langue::tr!("entité {id} introuvable", "entity {id} not found"))?;
+                    let o = e.origine().ok_or_else(|| hm_langue::tr!("entité {id} sans origine", "entity {id} has no origin"))?;
                     let siens: Vec<u64> = e.solides.iter().map(|s| s.id).collect();
                     let angles = e.angles();
                     // depuis un peu au-dessus de son bas (au-dessous de son haut), pour ne pas manquer une surface
@@ -958,13 +958,13 @@ impl Commande {
                     }
                     posees += 1;
                 }
-                Ok(Resultat { crees: vec![], message: format!("{posees} posée(s) sur {}", entites.len()) })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("{posees} posée(s) sur {}", "{posees} placed out of {}", entites.len()) })
             }
             Commande::CreerVisgroup { nom, objets, cache } => {
                 let id = tx.doc().visgroups().iter().map(|v| v.id).max().unwrap_or(0) + 1;
                 let h = id.wrapping_mul(0x9E37_79B9_7F4A_7C15);
                 let v = crate::visgroups::Visgroup { id, nom: nom.clone(), couleur: [(h >> 8) as u8 | 64, (h >> 16) as u8 | 64, (h >> 24) as u8 | 64], parent: 0 };
-                crate::visgroups::creer(tx.bloc_haut_mut("visgroups").ok_or("la map n'a pas de bloc visgroups")?, &v);
+                crate::visgroups::creer(tx.bloc_haut_mut("visgroups").ok_or(hm_langue::t("la map n'a pas de bloc visgroups"))?, &v);
                 for r in membres(tx.doc(), objets)? {
                     let ed = editeur_de(tx, r).unwrap();
                     crate::visgroups::ajouter(ed, id);
@@ -975,11 +975,11 @@ impl Commande {
                 if *cache {
                     mettre_a_jour_visibilite(tx);
                 }
-                Ok(Resultat { crees: vec![], message: format!("visgroup n° {id}") })
+                Ok(Resultat { crees: vec![], message: hm_langue::tr!("visgroup n° {id}", "visgroup #{id}") })
             }
             Commande::AjouterAuVisgroup { visgroup, objets } | Commande::RetirerDuVisgroup { visgroup, objets } => {
                 if !tx.doc().visgroups().iter().any(|v| v.id == *visgroup) {
-                    return Err(format!("visgroup {visgroup} introuvable"));
+                    return Err(hm_langue::tr!("visgroup {visgroup} introuvable", "visgroup {visgroup} not found"));
                 }
                 let ajout = matches!(self, Commande::AjouterAuVisgroup { .. });
                 for r in membres(tx.doc(), objets)? {
@@ -996,7 +996,7 @@ impl Commande {
             Commande::MontrerVisgroup { visgroup, visible } => {
                 let vg = tx.doc().visgroups();
                 if !vg.iter().any(|v| v.id == *visgroup) {
-                    return Err(format!("visgroup {visgroup} introuvable"));
+                    return Err(hm_langue::tr!("visgroup {visgroup} introuvable", "visgroup {visgroup} not found"));
                 }
                 // le visgroup et ses enfants
                 let mut ids = vec![*visgroup];
@@ -1016,20 +1016,20 @@ impl Commande {
                 Ok(Resultat::default())
             }
             Commande::RenommerVisgroup { visgroup, nom } => {
-                if !crate::visgroups::renommer(tx.bloc_haut_mut("visgroups").ok_or("pas de bloc visgroups")?, *visgroup, nom) {
-                    return Err(format!("visgroup {visgroup} introuvable"));
+                if !crate::visgroups::renommer(tx.bloc_haut_mut("visgroups").ok_or(hm_langue::t("pas de bloc visgroups"))?, *visgroup, nom) {
+                    return Err(hm_langue::tr!("visgroup {visgroup} introuvable", "visgroup {visgroup} not found"));
                 }
                 Ok(Resultat::default())
             }
-            Commande::DeplacerVisgroup { visgroup, monter } => match crate::visgroups::deplacer(tx.bloc_haut_mut("visgroups").ok_or("pas de bloc visgroups")?, *visgroup, *monter) {
-                None => Err(format!("visgroup {visgroup} introuvable")),
-                Some(false) => Err(if *monter { "le visgroup est déjà le premier" } else { "le visgroup est déjà le dernier" }.into()),
+            Commande::DeplacerVisgroup { visgroup, monter } => match crate::visgroups::deplacer(tx.bloc_haut_mut("visgroups").ok_or(hm_langue::t("pas de bloc visgroups"))?, *visgroup, *monter) {
+                None => Err(hm_langue::tr!("visgroup {visgroup} introuvable", "visgroup {visgroup} not found")),
+                Some(false) => Err(if *monter { hm_langue::t("le visgroup est déjà le premier") } else { hm_langue::t("le visgroup est déjà le dernier") }.into()),
                 Some(true) => Ok(Resultat::default()),
             },
             Commande::SupprimerVisgroup { visgroup } => {
-                let retires = crate::visgroups::supprimer(tx.bloc_haut_mut("visgroups").ok_or("pas de bloc visgroups")?, *visgroup);
+                let retires = crate::visgroups::supprimer(tx.bloc_haut_mut("visgroups").ok_or(hm_langue::t("pas de bloc visgroups"))?, *visgroup);
                 if retires.is_empty() {
-                    return Err(format!("visgroup {visgroup} introuvable"));
+                    return Err(hm_langue::tr!("visgroup {visgroup} introuvable", "visgroup {visgroup} not found"));
                 }
                 for r in tous_les_objets(tx.doc()) {
                     let dans = editeur_lu(tx.doc(), r).map_or(false, |ed| crate::visgroups::de(ed).iter().any(|x| retires.contains(x)));
@@ -1063,12 +1063,12 @@ impl Commande {
                     for b in &mut k.boites {
                         let (lo, hi) = (DVec3::from(b[0]).min(DVec3::from(b[1])), DVec3::from(b[0]).max(DVec3::from(b[1])));
                         if (hi - lo).min_element() < 1.0 {
-                            return Err(format!("une boîte du cordon « {} » est plate", k.nom));
+                            return Err(hm_langue::tr!("une boîte du cordon « {} » est plate", "a box of cordon \"{}\" is flat", k.nom));
                         }
                         *b = [lo.to_array(), hi.to_array()];
                     }
                 }
-                crate::visgroups::ecrire_cordons(tx.bloc_haut_mut("cordons").ok_or("la map n'a pas de bloc cordons")?, &c);
+                crate::visgroups::ecrire_cordons(tx.bloc_haut_mut("cordons").ok_or(hm_langue::t("la map n'a pas de bloc cordons"))?, &c);
                 if let Some(v) = tx.bloc_haut_mut("cordon") {
                     crate::visgroups::ecrire_ancien_cordon(v, &c);
                 }
@@ -1077,11 +1077,11 @@ impl Commande {
             Commande::Evider { objets, epaisseur } => {
                 let e = *epaisseur;
                 if e <= 0.0 {
-                    return Err("l'épaisseur des murs doit être positive".into());
+                    return Err(hm_langue::t("l'épaisseur des murs doit être positive").into());
                 }
                 let solides = solides_de(tx.doc(), objets)?;
                 if solides.is_empty() {
-                    return Err("aucun solide à évider".into());
+                    return Err(hm_langue::t("aucun solide à évider").into());
                 }
                 let mut crees = Vec::new();
                 for id in solides {
@@ -1099,7 +1099,7 @@ impl Commande {
                         .collect();
                     let g_dedans: Vec<crate::brosses::Gabarit> = dedans.iter().zip(&faces).map(|(p, f)| crate::brosses::Gabarit { plan: *p, texture: f.clone() }).collect();
                     if crate::brosses::solide_de(0, &g_dedans, &mut || 0, &s.editeur, false).is_none() {
-                        return Err(format!("le solide {id} est trop petit pour des murs de {e}"));
+                        return Err(hm_langue::tr!("le solide {id} est trop petit pour des murs de {e}", "solid {id} is too small for walls of {e}"));
                     }
                     let morceaux = crate::brosses::soustraire(&crate::brosses::gabarits(&s), &dedans, &|i| {
                         let mut f = faces[i].clone();
@@ -1124,7 +1124,7 @@ impl Commande {
                 let g: Vec<crate::brosses::Gabarit> = plans.iter().map(|p| crate::brosses::Gabarit::neuf(*p, materiau)).collect();
                 let id = tx.nouvel_id();
                 let ed = geo::editeur_neuf(id);
-                let sol = (g.len() >= 4).then(|| crate::brosses::solide_de(id, &g, &mut || tx.nouvelle_face(), &ed, false)).flatten().ok_or("ces points n'enferment aucun volume (alignés ou dans un même plan)")?;
+                let sol = (g.len() >= 4).then(|| crate::brosses::solide_de(id, &g, &mut || tx.nouvelle_face(), &ed, false)).flatten().ok_or(hm_langue::t("ces points n'enferment aucun volume (alignés ou dans un même plan)"))?;
                 tx.ajouter_solide(Proprio::Monde, sol);
                 let crees = vec![Ref::Solide(id)];
                 match classe {
@@ -1185,19 +1185,19 @@ pub fn resoudre(doc: &Document, objets: &[Ref]) -> Res<(Vec<u64>, Vec<u64>, Vec<
         match r {
             Ref::Solide(id) => {
                 if doc.solide(id).is_none() {
-                    return Err(format!("solide {id} introuvable"));
+                    return Err(hm_langue::tr!("solide {id} introuvable", "solid {id} not found"));
                 }
                 s.insert(id);
             }
             Ref::Entite(id) => {
                 if !doc.entites.contains_key(&id) {
-                    return Err(format!("entité {id} introuvable"));
+                    return Err(hm_langue::tr!("entité {id} introuvable", "entity {id} not found"));
                 }
                 e.insert(id);
             }
             Ref::Groupe(id) => {
                 if !doc.groupes.contains_key(&id) {
-                    return Err(format!("groupe {id} introuvable"));
+                    return Err(hm_langue::tr!("groupe {id} introuvable", "group {id} not found"));
                 }
                 if g.insert(id) {
                     pile.extend(membres_directs(doc, id));
@@ -1239,13 +1239,13 @@ pub fn boite_de(doc: &Document, objets: &[Ref]) -> Option<(DVec3, DVec3)> {
 fn transformer(tx: &mut Tx, objets: &[Ref], f: &Affine, verrou: bool) -> Res<Resultat> {
     let (solides, entites, _) = resoudre(tx.doc(), objets)?;
     if solides.is_empty() && entites.is_empty() {
-        return Err("rien à transformer".into());
+        return Err(hm_langue::t("rien à transformer").into());
     }
     for id in solides {
         let s = tx.solide_mut(id).unwrap();
         let t = geo::transformer_solide(s, f, verrou);
         if !t.valide() {
-            return Err(format!("le solide {id} deviendrait invalide : transformation refusée"));
+            return Err(hm_langue::tr!("le solide {id} deviendrait invalide : transformation refusée", "solid {id} would become invalid: transform refused"));
         }
         *s = t;
     }
@@ -1253,7 +1253,7 @@ fn transformer(tx: &mut Tx, objets: &[Ref], f: &Affine, verrou: bool) -> Res<Res
         let e = tx.entite_mut(id).unwrap();
         let t = geo::transformer_entite(e, f, verrou);
         if let Some(s) = t.solides.iter().find(|s| !s.valide()) {
-            return Err(format!("le solide {} de l'entité {id} deviendrait invalide : transformation refusée", s.id));
+            return Err(hm_langue::tr!("le solide {} de l'entité {id} deviendrait invalide : transformation refusée", "solid {} of entity {id} would become invalid: transform refused", s.id));
         }
         *e = t;
     }
@@ -1262,18 +1262,18 @@ fn transformer(tx: &mut Tx, objets: &[Ref], f: &Affine, verrou: bool) -> Res<Res
 
 /// Ajoute le contenu d'un morceau de VMF avec des numéros neufs, décalé de `d`.
 fn coller(tx: &mut Tx, vmf: &str, d: DVec3) -> Res<Resultat> {
-    let (frag, _) = Document::lire(vmf.as_bytes()).map_err(|e| format!("presse-papiers illisible : {e}"))?;
+    let (frag, _) = Document::lire(vmf.as_bytes()).map_err(|e| hm_langue::tr!("presse-papiers illisible : {e}", "unreadable clipboard: {e}"))?;
     coller_doc(tx, &frag, &Affine::translation(d))
 }
 
 #[allow(clippy::too_many_arguments)]
 fn coller_special(tx: &mut Tx, vmf: &str, copies: u32, decalage: DVec3, rotation: DVec3, grouper: bool, prefixe: &str, noms_uniques: bool) -> Res<Resultat> {
     if copies == 0 || copies > 1000 {
-        return Err("nombre de copies : de 1 à 1000".into());
+        return Err(hm_langue::t("nombre de copies : de 1 à 1000").into());
     }
-    let (frag, _) = Document::lire(vmf.as_bytes()).map_err(|e| format!("presse-papiers illisible : {e}"))?;
+    let (frag, _) = Document::lire(vmf.as_bytes()).map_err(|e| hm_langue::tr!("presse-papiers illisible : {e}", "unreadable clipboard: {e}"))?;
     let tout: Vec<Ref> = frag.solides.keys().map(|i| Ref::Solide(*i)).chain(frag.entites.keys().map(|i| Ref::Entite(*i))).collect();
-    let (lo, hi) = boite_de(&frag, &tout).ok_or("le presse-papiers ne contient aucun objet")?;
+    let (lo, hi) = boite_de(&frag, &tout).ok_or(hm_langue::t("le presse-papiers ne contient aucun objet"))?;
     let centre = (lo + hi) * 0.5;
     let mut pris: std::collections::HashSet<String> = tx.doc().noms().into_iter().map(|n| n.to_lowercase()).collect();
     let mut crees = Vec::new();
@@ -1341,11 +1341,11 @@ fn appliquer_noms(copie: &mut Document, table: &std::collections::HashMap<String
 }
 
 fn fondre_instance(tx: &mut Tx, entite: u64, vmf: &str) -> Res<Resultat> {
-    let e = tx.doc().entite(entite).ok_or_else(|| format!("entité {entite} introuvable"))?.clone();
+    let e = tx.doc().entite(entite).ok_or_else(|| hm_langue::tr!("entité {entite} introuvable", "entity {entite} not found"))?.clone();
     if !e.classe().eq_ignore_ascii_case("func_instance") {
-        return Err(format!("l'entité {entite} n'est pas une func_instance"));
+        return Err(hm_langue::tr!("l'entité {entite} n'est pas une func_instance", "entity {entite} is not a func_instance"));
     }
-    let (mut frag, _) = Document::lire(vmf.as_bytes()).map_err(|x| format!("fichier d'instance illisible : {x}"))?;
+    let (mut frag, _) = Document::lire(vmf.as_bytes()).map_err(|x| hm_langue::tr!("fichier d'instance illisible : {x}", "unreadable instance file: {x}"))?;
     // noms : préfixe ou suffixe du nom de l'instance, sauf ceux qui commencent par @
     let style = e.get("fixup_style").and_then(|v| v.trim().parse::<u8>().ok()).unwrap_or(0);
     let nom = e.nom().trim().to_string();
@@ -1450,20 +1450,20 @@ fn coller_doc(tx: &mut Tx, frag: &Document, f: &Affine) -> Res<Resultat> {
         tx.ajouter_entite(n);
     }
     if crees.is_empty() {
-        return Err("le presse-papiers ne contient aucun objet".into());
+        return Err(hm_langue::t("le presse-papiers ne contient aucun objet").into());
     }
     Ok(Resultat { crees, message: String::new() })
 }
 
 fn face_mut<'a>(tx: &'a mut Tx, rf: RefFace) -> Res<&'a mut crate::modele::Face> {
-    let s = tx.solide_mut(rf.solide).ok_or_else(|| format!("solide {} introuvable", rf.solide))?;
-    s.faces.iter_mut().find(|f| f.id == rf.face).ok_or_else(|| format!("face {} introuvable sur le solide {}", rf.face, rf.solide))
+    let s = tx.solide_mut(rf.solide).ok_or_else(|| hm_langue::tr!("solide {} introuvable", "solid {} not found", rf.solide))?;
+    s.faces.iter_mut().find(|f| f.id == rf.face).ok_or_else(|| hm_langue::tr!("face {} introuvable sur le solide {}", "face {} not found on solid {}", rf.face, rf.solide))
 }
 
 /// Le polygone d'une face.
 pub fn polygone(doc: &Document, rf: RefFace) -> Res<Vec<DVec3>> {
-    let s = doc.solide(rf.solide).ok_or_else(|| format!("solide {} introuvable", rf.solide))?;
-    let i = s.faces.iter().position(|f| f.id == rf.face).ok_or_else(|| format!("face {} introuvable sur le solide {}", rf.face, rf.solide))?;
+    let s = doc.solide(rf.solide).ok_or_else(|| hm_langue::tr!("solide {} introuvable", "solid {} not found", rf.solide))?;
+    let i = s.faces.iter().position(|f| f.id == rf.face).ok_or_else(|| hm_langue::tr!("face {} introuvable sur le solide {}", "face {} not found on solid {}", rf.face, rf.solide))?;
     Ok(s.polygones().swap_remove(i))
 }
 
@@ -1544,7 +1544,7 @@ impl Forme {
             Forme::Coin => vec![b::coin(lo, hi)],
             Forme::Arche(a) => {
                 if !(3..=100).contains(&a.cotes) || !(8.0..=360.0).contains(&a.arc) || a.largeur_mur <= 0.0 {
-                    return Err("arche : de 3 à 100 côtés, un arc de 8 à 360°, une largeur de mur positive".into());
+                    return Err(hm_langue::t("arche : de 3 à 100 côtés, un arc de 8 à 360°, une largeur de mur positive").into());
                 }
                 b::arche(lo, hi, a)
             }
@@ -1566,12 +1566,12 @@ impl Forme {
 
     pub fn nom(&self) -> &'static str {
         match self {
-            Forme::Cylindre { .. } => "un cylindre",
-            Forme::Pointe { .. } => "une pointe",
-            Forme::Sphere { .. } => "une sphère",
-            Forme::Coin => "un coin",
-            Forme::Arche(_) => "une arche",
-            Forme::Escalier { .. } => "un escalier",
+            Forme::Cylindre { .. } => hm_langue::t("un cylindre"),
+            Forme::Pointe { .. } => hm_langue::t("une pointe"),
+            Forme::Sphere { .. } => hm_langue::t("une sphère"),
+            Forme::Coin => hm_langue::t("un coin"),
+            Forme::Arche(_) => hm_langue::t("une arche"),
+            Forme::Escalier { .. } => hm_langue::t("un escalier"),
         }
     }
 }

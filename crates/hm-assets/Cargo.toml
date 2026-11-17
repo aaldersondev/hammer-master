@@ -5,6 +5,7 @@ edition.workspace = true
 publish.workspace = true
 
 [dependencies]
+hm-langue.workspace = true
 vformats.workspace = true
 source-mdl.workspace = true
 source-vpk.workspace = true

@@ -47,7 +47,7 @@ pub fn caler_chacun(doc: &Document, objets: &[Ref], grille: f64, verrou_texture:
             (d.length() > 1e-9).then(|| Commande::Deplacer { objets: vec![r], delta: d.to_array(), verrou_texture })
         })
         .collect();
-    lot("caler chaque objet sur la grille", commandes)
+    lot(hm_langue::t("caler chaque objet sur la grille"), commandes)
 }
 
 /// Ce que fait le dialogue « Transform » : tourner (degrés autour des axes X, puis Y, puis Z du monde, sens direct),
@@ -67,11 +67,11 @@ pub fn transformer(doc: &Document, objets: &[Ref], t: Transformation, verrou_tex
     Ok(match t {
         Transformation::Tourner(a) => {
             let commandes = (0..3).filter(|i| a[*i].abs() > 1e-9).map(|i| Commande::Tourner { objets: objets.clone(), centre: centre.to_array(), axe: le_long(i, 1.0), degres: a[i], verrou_texture }).collect();
-            lot("transformer (tourner)", commandes)
+            lot(hm_langue::t("transformer (tourner)"), commandes)
         }
         Transformation::Echelle(s) => {
             if s.iter().any(|f| *f <= 0.0) {
-                return Err("facteur d'échelle nul ou négatif (pour retourner, Outils → Miroir)".into());
+                return Err(hm_langue::t("facteur d'échelle nul ou négatif (pour retourner, Outils → Miroir)").into());
             }
             let s = DVec3::from(s);
             if (s - DVec3::ONE).length() < 1e-12 {

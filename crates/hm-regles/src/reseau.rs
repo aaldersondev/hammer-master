@@ -56,12 +56,12 @@ pub fn bouts_selon(scene: &Scene, motifs: &[&str], strict: bool) -> Vec<Bout> {
         let prev = tracks.iter().find(|o| o.2 == Some(t.0)).map(|o| o.1);
         if !targeted[i] {
             if let Some(n) = next {
-                bouts.push(Bout { nom: format!("{} (départ de la ligne)", t.0), pos: t.1, dir: (t.1 - n).normalize_or(Vec3::X), objet: None });
+                bouts.push(Bout { nom: hm_langue::tr!("{} (départ de la ligne)", "{} (start of the line)", t.0), pos: t.1, dir: (t.1 - n).normalize_or(Vec3::X), objet: None });
             }
         }
         if next.is_none() {
             if let Some(p) = prev {
-                bouts.push(Bout { nom: format!("{} (fin de la ligne)", t.0), pos: t.1, dir: (t.1 - p).normalize_or(Vec3::X), objet: None });
+                bouts.push(Bout { nom: hm_langue::tr!("{} (fin de la ligne)", "{} (end of the line)", t.0), pos: t.1, dir: (t.1 - p).normalize_or(Vec3::X), objet: None });
             }
         }
     }
@@ -166,13 +166,13 @@ pub fn verifier(scene: &Scene, monde: &Monde, config: &Config, out: &mut Vec<Con
         let boite = (b.pos - Vec3::splat(200.0), b.pos + Vec3::splat(200.0));
         if chute - epaisseur > VIDE {
             out.push(
-                Constat::objet(scene, "phys.reseau_coupe", objet, format!("le réseau s'arrête net à {} ({:.0} {:.0} {:.0}) : ni terminus, ni mur, ni téléporteur, et {:.0} de vide sous son prolongement", b.nom, b.pos.x, b.pos.y, b.pos.z, chute))
+                Constat::objet(scene, "phys.reseau_coupe", objet, hm_langue::tr!("le réseau s'arrête net à {} ({:.0} {:.0} {:.0}) : ni terminus, ni mur, ni téléporteur, et {:.0} de vide sous son prolongement", "the network stops dead at {} ({:.0} {:.0} {:.0}): no terminus, wall or teleporter, and {:.0} of empty space below its extension", b.nom, b.pos.x, b.pos.y, b.pos.z, chute))
                     .boite(boite.0, boite.1)
                     .mesure(chute),
             );
         } else {
             out.push(
-                Constat::objet(scene, "phys.reseau_sans_terminus", objet, format!("le réseau s'arrête à {} ({:.0} {:.0} {:.0}) sans butoir, mur ni téléporteur", b.nom, b.pos.x, b.pos.y, b.pos.z))
+                Constat::objet(scene, "phys.reseau_sans_terminus", objet, hm_langue::tr!("le réseau s'arrête à {} ({:.0} {:.0} {:.0}) sans butoir, mur ni téléporteur", "the network stops at {} ({:.0} {:.0} {:.0}) without a buffer stop, wall or teleporter", b.nom, b.pos.x, b.pos.y, b.pos.z))
                     .boite(boite.0, boite.1)
                     .mesure(chute.max(0.0)),
             );

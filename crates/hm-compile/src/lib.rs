@@ -60,7 +60,7 @@ impl Outils {
                 "vrad" => self.vrad = p,
                 _ => continue,
             }
-            self.source = "choisis dans Hammer Master".into();
+            self.source = hm_langue::t("choisis dans Hammer Master").into();
         }
     }
 
@@ -116,7 +116,7 @@ impl Outils {
                 }
             }
             if n > 0 {
-                o.source = format!("configuration de Hammer++ ({})", cfg.display());
+                o.source = hm_langue::tr!("configuration de Hammer++ ({})", "Hammer++ configuration ({})", cfg.display());
             }
         }
         Some(o)
@@ -150,17 +150,17 @@ impl Outils {
         let envoyer = || Command::new(&self.jeu).current_dir(&dossier).args(["-hijack", "+map", nom]).spawn().map(|_| ());
         if self.jeu_ouvert() {
             return match envoyer() {
-                Ok(()) => format!("map {nom} envoyée au jeu ouvert (-hijack +map {nom})"),
-                Err(e) => format!("envoi de la map au jeu impossible : {e}"),
+                Ok(()) => hm_langue::tr!("map {nom} envoyée au jeu ouvert (-hijack +map {nom})", "map {nom} sent to the running game (-hijack +map {nom})"),
+                Err(e) => hm_langue::tr!("envoi de la map au jeu impossible : {e}", "cannot send the map to the game: {e}"),
             };
         }
         let journal = self.dossier_jeu.join("console.log");
         let debut = std::fs::metadata(&journal).map_or(0, |m| m.len());
         let (exe, args) = self.commande_jeu();
         if let Err(e) = Command::new(&exe).current_dir(&dossier).args(&args).spawn() {
-            return format!("lancement du jeu impossible : {e}");
+            return hm_langue::tr!("lancement du jeu impossible : {e}", "cannot launch the game: {e}");
         }
-        let _ = tx.send(format!("jeu lancé : {} {} ; la map lui sera envoyée dès son menu affiché", exe.display(), args.join(" ")));
+        let _ = tx.send(hm_langue::tr!("jeu lancé : {} {} ; la map lui sera envoyée dès son menu affiché", "game launched: {} {}; the map will be sent as soon as its menu shows", exe.display(), args.join(" ")));
         for _ in 0..300 {
             std::thread::sleep(std::time::Duration::from_secs(1));
             let Ok(mut f) = std::fs::File::open(&journal) else { continue };
@@ -173,12 +173,12 @@ impl Outils {
                 // comme les notes du skill : un temps après le montage des addons
                 std::thread::sleep(std::time::Duration::from_secs(3));
                 return match envoyer() {
-                    Ok(()) => format!("menu du jeu affiché : map {nom} envoyée (-hijack +map {nom})"),
-                    Err(e) => format!("envoi de la map au jeu impossible : {e}"),
+                    Ok(()) => hm_langue::tr!("menu du jeu affiché : map {nom} envoyée (-hijack +map {nom})", "game menu shown: map {nom} sent (-hijack +map {nom})"),
+                    Err(e) => hm_langue::tr!("envoi de la map au jeu impossible : {e}", "cannot send the map to the game: {e}"),
                 };
             }
         }
-        format!("menu du jeu pas vu en 5 minutes dans {} : map non envoyée", journal.display())
+        hm_langue::tr!("menu du jeu pas vu en 5 minutes dans {} : map non envoyée", "game menu not seen within 5 minutes in {}: map not sent", journal.display())
     }
 
     /// Le jeu a une fenêtre ouverte (les aides Chromium du même exécutable n'ont pas de titre : « N/A »).
@@ -297,7 +297,7 @@ impl Mode {
 
     pub fn nom(self) -> &'static str {
         match self {
-            Mode::Geometrie => "géométrie seule (vbsp)",
+            Mode::Geometrie => hm_langue::t("géométrie seule (vbsp)"),
             Mode::Rapide => "rapide",
             Mode::Normal => "normale",
             Mode::Final => "finale",
@@ -417,12 +417,12 @@ fn executer(exe: &Path, args: &[String], dossier: &Path, tx: &Sender<Message>, a
     let _ = lecteur_err.join();
     let statut = enfant.lock().unwrap().take().map(|mut c| c.wait());
     if arret.load(Ordering::SeqCst) {
-        return Err("arrêtée".into());
+        return Err(hm_langue::t("arrêtée").into());
     }
     match statut {
         Some(Ok(s)) => Ok(s.success()),
         Some(Err(e)) => Err(e.to_string()),
-        None => Err("outil perdu".into()),
+        None => Err(hm_langue::t("outil perdu").into()),
     }
 }
 
@@ -449,7 +449,7 @@ pub fn empaqueter(bsp: &Path, fichiers: &[(String, Vec<u8>)], outils: &Outils) -
     let st = Command::new(&exe).arg("-addorupdatelist").arg(bsp).arg(&l).arg(&neuf).current_dir(bsp.parent().unwrap_or(Path::new("."))).stdout(Stdio::null()).stderr(Stdio::null()).status().map_err(|e| format!("{} : {e}", exe.display()))?;
     let _ = std::fs::remove_dir_all(&dossier);
     if !st.success() || !neuf.is_file() {
-        return Err(format!("bspzip a échoué ({st})"));
+        return Err(hm_langue::tr!("bspzip a échoué ({st})", "bspzip failed ({st})"));
     }
     std::fs::rename(&neuf, bsp).map_err(|e| e.to_string())
 }
@@ -482,10 +482,10 @@ pub fn lancer_avec(vmf: Vec<u8>, nom: &str, dossier: &Path, outils: &Outils, mod
         let jeu = outils.dossier_jeu.display().to_string();
         let mut etapes: Vec<(&str, &PathBuf, Vec<String>)> = vec![("vbsp", &outils.vbsp, vec!["-game".into(), jeu.clone(), nom.clone()])];
         let _ = tx.send(Message::Ligne(match portee {
-            Portee::Tout => "compilation complète".to_string(),
-            Portee::Rien => "rien n'a changé depuis la compilation précédente : son BSP est repris".to_string(),
-            Portee::Entites => "seulement des entités ont changé : vbsp -onlyents sur le BSP précédent, visibilité et lumière gardées".to_string(),
-            Portee::Lumieres => "des lumières ont changé : vbsp -onlyents puis vrad sur le BSP précédent, visibilité gardée".to_string(),
+            Portee::Tout => hm_langue::t("compilation complète").to_string(),
+            Portee::Rien => hm_langue::t("rien n'a changé depuis la compilation précédente : son BSP est repris").to_string(),
+            Portee::Entites => hm_langue::t("seulement des entités ont changé : vbsp -onlyents sur le BSP précédent, visibilité et lumière gardées").to_string(),
+            Portee::Lumieres => hm_langue::t("des lumières ont changé : vbsp -onlyents puis vrad sur le BSP précédent, visibilité gardée").to_string(),
         }));
         let (vis, rad): (Vec<&str>, Vec<&str>) = match mode {
             Mode::Geometrie => (vec![], vec![]),
@@ -523,12 +523,12 @@ pub fn lancer_avec(vmf: Vec<u8>, nom: &str, dossier: &Path, outils: &Outils, mod
                     if *etape == "vbsp" {
                         if let Some(p) = lire_fuite(&dossier.join(format!("{nom}.lin"))) {
                             let _ = tx.send(Message::Fuite(p));
-                            let _ = tx.send(fin(false, None, Some("la map fuit : elle n'est pas fermée (chemin de la fuite affiché dans les vues)".into())));
+                            let _ = tx.send(fin(false, None, Some(hm_langue::t("la map fuit : elle n'est pas fermée (chemin de la fuite affiché dans les vues)").into())));
                             return;
                         }
                     }
                     if !ok || !dossier.join(format!("{nom}.bsp")).is_file() {
-                        let _ = tx.send(fin(false, None, Some(format!("{etape} a échoué : lire le journal"))));
+                        let _ = tx.send(fin(false, None, Some(hm_langue::tr!("{etape} a échoué : lire le journal", "{etape} failed: see the log"))));
                         return;
                     }
                 }
@@ -543,10 +543,10 @@ pub fn lancer_avec(vmf: Vec<u8>, nom: &str, dossier: &Path, outils: &Outils, mod
             let _ = tx.send(Message::Etape("bspzip".into()));
             match empaqueter(&bsp, &embarquer, &outils) {
                 Ok(()) => {
-                    let _ = tx.send(Message::Ligne(format!("{} fichier(s) embarqué(s) dans le .bsp", embarquer.len())));
+                    let _ = tx.send(Message::Ligne(hm_langue::tr!("{} fichier(s) embarqué(s) dans le .bsp", "{} file(s) embedded in the .bsp", embarquer.len())));
                 }
                 Err(err) => {
-                    let _ = tx.send(fin(false, Some(bsp), Some(format!("empaquetage : {err}"))));
+                    let _ = tx.send(fin(false, Some(bsp), Some(hm_langue::tr!("empaquetage : {err}", "packing: {err}"))));
                     return;
                 }
             }
@@ -556,10 +556,10 @@ pub fn lancer_avec(vmf: Vec<u8>, nom: &str, dossier: &Path, outils: &Outils, mod
             let dest = outils.dossier_maps.join(format!("{nom}.bsp"));
             match std::fs::create_dir_all(&outils.dossier_maps).and_then(|_| std::fs::copy(&bsp, &dest)) {
                 Ok(_) => {
-                    let _ = tx.send(Message::Ligne(format!("copiée dans {}", dest.display())));
+                    let _ = tx.send(Message::Ligne(hm_langue::tr!("copiée dans {}", "copied to {}", dest.display())));
                 }
                 Err(err) => {
-                    let _ = tx.send(fin(false, Some(bsp), Some(format!("copie vers {} : {err}", dest.display()))));
+                    let _ = tx.send(fin(false, Some(bsp), Some(hm_langue::tr!("copie vers {} : {err}", "copy to {}: {err}", dest.display()))));
                     return;
                 }
             }

@@ -53,8 +53,7 @@ pub struct Bilan {
 }
 
 pub fn resume(b: &Bilan) -> String {
-    format!(
-        "joueur simulé : {} point(s) d'apparition ; {:.0} % de la surface praticable est accessible ({:.2} sur {:.2} millions d'unités carrées) ; liaisons : {} échelle(s), {} téléporteur(s), {} plateforme(s) ou ascenseur(s), {} déclarée(s) ; {} pièce(s) sur {} inaccessible(s), {} piège(s) ; non jugés : {} gaine(s) d'ascenseur, {} bassin(s) d'eau, {} creux du relief, {} pièce(s) sur le relief{} ; {:.1} s",
+    hm_langue::tr!("joueur simulé : {} point(s) d'apparition ; {:.0} % de la surface praticable est accessible ({:.2} sur {:.2} millions d'unités carrées) ; liaisons : {} échelle(s), {} téléporteur(s), {} plateforme(s) ou ascenseur(s), {} déclarée(s) ; {} pièce(s) sur {} inaccessible(s), {} piège(s) ; non jugés : {} gaine(s) d'ascenseur, {} bassin(s) d'eau, {} creux du relief, {} pièce(s) sur le relief{} ; {:.1} s", "simulated player: {} spawn point(s); {:.0} % of the walkable surface is reachable ({:.2} of {:.2} million square units); links: {} ladder(s), {} teleporter(s), {} platform(s) or elevator(s), {} declared; {} room(s) of {} unreachable, {} trap(s); not judged: {} elevator shaft(s), {} water pool(s), {} terrain hollow(s), {} room(s) on terrain{}; {:.1} s",
         b.apparitions,
         if b.surface_praticable > 0.0 { b.surface_accessible / b.surface_praticable * 100.0 } else { 0.0 },
         b.surface_accessible / 1e6,
@@ -70,7 +69,7 @@ pub fn resume(b: &Bilan) -> String {
         b.non_juges.1,
         b.non_juges.2,
         b.pieces_sur_relief,
-        if b.liaisons_sans_sol.is_empty() { String::new() } else { format!(" ; {} liaison(s) déclarée(s) sans sol à un bout : {}", b.liaisons_sans_sol.len(), b.liaisons_sans_sol.iter().take(6).cloned().collect::<Vec<_>>().join(", ")) },
+        if b.liaisons_sans_sol.is_empty() { String::new() } else { hm_langue::tr!(" ; {} liaison(s) déclarée(s) sans sol à un bout : {}", "; {} declared link(s) without floor at one end: {}", b.liaisons_sans_sol.len(), b.liaisons_sans_sol.iter().take(6).cloned().collect::<Vec<_>>().join(", ")) },
         b.duree
     )
 }
@@ -308,7 +307,7 @@ pub fn simuler(scene: &Scene, config: &Config, modele: Option<&hm_model::Modele>
     let departs: Vec<u32> = scene.points.iter().filter(|p| p.class.starts_with("info_player_")).filter_map(|p| noeud_pres(&f, p.pos, 96.0)).collect();
     bilan.apparitions = departs.len();
     if departs.is_empty() {
-        out.push(Constat::lieu("joueur.sans_apparition", scene.min, scene.max, "aucun point d'apparition (info_player_*) posé dans l'espace libre".to_string()));
+        out.push(Constat::lieu("joueur.sans_apparition", scene.min, scene.max, hm_langue::t("aucun point d'apparition (info_player_*) posé dans l'espace libre").to_string()));
         bilan.duree = t.elapsed().as_secs_f32();
         return (bilan, out, None);
     }
@@ -340,13 +339,13 @@ pub fn simuler(scene: &Scene, config: &Config, modele: Option<&hm_model::Modele>
             }
             bilan.pieces += 1;
             let (lo, hi) = (Vec3::new(e[0], e[1], piece.sol), Vec3::new(e[2], e[3], piece.sol + piece.hauteur.unwrap_or(128.0)));
-            let quoi = format!("pièce « {} » ({}, {:.0} × {:.0}, sol à {:.0})", piece.id, piece.role, piece.largeur(), piece.profondeur(), piece.sol);
+            let quoi = hm_langue::tr!("pièce « {} » ({}, {:.0} × {:.0}, sol à {:.0})", "room \"{}\" ({}, {:.0} × {:.0}, floor at {:.0})", piece.id, piece.role, piece.largeur(), piece.profondeur(), piece.sol);
             if cellules == 0 {
                 bilan.pieces_sans_sol += 1;
-                out.push(Constat::lieu("sem.piece_sans_sol", lo, hi, format!("{quoi} : aucun sol libre trouvé à cette altitude — la pièce est pleine, ou le modèle ne dit pas la bonne boîte")));
+                out.push(Constat::lieu("sem.piece_sans_sol", lo, hi, hm_langue::tr!("{quoi} : aucun sol libre trouvé à cette altitude — la pièce est pleine, ou le modèle ne dit pas la bonne boîte", "{quoi}: no free floor found at this height — the room is full, or the model gives the wrong box")));
             } else if atteintes == 0 {
                 bilan.pieces_inaccessibles += 1;
-                out.push(Constat::lieu("sem.piece_inaccessible", lo, hi, format!("{quoi} : aucun chemin depuis un point d'apparition")).mesure(piece.surface()));
+                out.push(Constat::lieu("sem.piece_inaccessible", lo, hi, hm_langue::tr!("{quoi} : aucun chemin depuis un point d'apparition", "{quoi}: no path from a spawn point")).mesure(piece.surface()));
             }
         }
     }
@@ -378,7 +377,7 @@ pub fn simuler(scene: &Scene, config: &Config, modele: Option<&hm_model::Modele>
             }
             bilan.pieces_inaccessibles += 1;
             out.push(
-                Constat::lieu("joueur.inaccessible", r.min, Vec3::new(r.max.x, r.max.y, r.floor + 96.0), format!("pièce n° {} ({:.0} × {:.0}, sol à {:.0}) : aucun chemin depuis un point d'apparition — à vérifier", r.id, r.max.x - r.min.x, r.max.y - r.min.y, r.floor))
+                Constat::lieu("joueur.inaccessible", r.min, Vec3::new(r.max.x, r.max.y, r.floor + 96.0), hm_langue::tr!("pièce n° {} ({:.0} × {:.0}, sol à {:.0}) : aucun chemin depuis un point d'apparition — à vérifier", "room #{} ({:.0} × {:.0}, floor at {:.0}): no path from a spawn point — to check", r.id, r.max.x - r.min.x, r.max.y - r.min.y, r.floor))
                     .mesure(r.area()),
             );
         }
@@ -428,7 +427,7 @@ pub fn simuler(scene: &Scene, config: &Config, modele: Option<&hm_model::Modele>
         }
         bilan.pieges += 1;
         out.push(
-            Constat::lieu("joueur.piege", lo - Vec3::splat(8.0), hi + Vec3::new(8.0, 8.0, 96.0), format!("on peut tomber ici ({:.0} × {:.0}, sol vers {:.0}) et aucun chemin n'en revient — à vérifier", hi.x - lo.x + 16.0, hi.y - lo.y + 16.0, lo.z))
+            Constat::lieu("joueur.piege", lo - Vec3::splat(8.0), hi + Vec3::new(8.0, 8.0, 96.0), hm_langue::tr!("on peut tomber ici ({:.0} × {:.0}, sol vers {:.0}) et aucun chemin n'en revient — à vérifier", "you can fall here ({:.0} × {:.0}, floor near {:.0}) and no path leads back — to check", hi.x - lo.x + 16.0, hi.y - lo.y + 16.0, lo.z))
                 .mesure(groupe.len() as f32 * CELL * CELL),
         );
     }
@@ -451,7 +450,7 @@ pub fn lire_nav(octets: &[u8]) -> anyhow::Result<Vec<AireNav>> {
     struct L<'a>(&'a [u8], usize);
     impl L<'_> {
         fn n(&mut self, k: usize) -> anyhow::Result<&[u8]> {
-            anyhow::ensure!(self.1 + k <= self.0.len(), "fichier .nav trop court à l'octet {}", self.1);
+            anyhow::ensure!(self.1 + k <= self.0.len(), hm_langue::tr!("fichier .nav trop court à l'octet {}", ".nav file too short at byte {}", self.1));
             self.1 += k;
             Ok(&self.0[self.1 - k..self.1])
         }
@@ -469,9 +468,9 @@ pub fn lire_nav(octets: &[u8]) -> anyhow::Result<Vec<AireNav>> {
         }
     }
     let mut l = L(octets, 0);
-    anyhow::ensure!(l.u32()? == 0xFEED_FACE, "ce n'est pas un fichier .nav");
+    anyhow::ensure!(l.u32()? == 0xFEED_FACE, hm_langue::tr!("ce n'est pas un fichier .nav", "this is not a .nav file"));
     let version = l.u32()?;
-    anyhow::ensure!((9..=16).contains(&version), "version {version} du .nav non prise en charge");
+    anyhow::ensure!((9..=16).contains(&version), hm_langue::tr!("version {version} du .nav non prise en charge", ".nav version {version} not supported"));
     if version >= 10 {
         l.u32()?; // sous-version
     }
@@ -487,7 +486,7 @@ pub fn lire_nav(octets: &[u8]) -> anyhow::Result<Vec<AireNav>> {
         l.u8()?; // aires sans nom de lieu
     }
     let n = l.u32()? as usize;
-    anyhow::ensure!(n < 2_000_000, "nombre d'aires invraisemblable : {n}");
+    anyhow::ensure!(n < 2_000_000, hm_langue::tr!("nombre d'aires invraisemblable : {n}", "implausible number of areas: {n}"));
     let mut aires = Vec::with_capacity(n);
     for _ in 0..n {
         let id = l.u32()?;
@@ -502,7 +501,7 @@ pub fn lire_nav(octets: &[u8]) -> anyhow::Result<Vec<AireNav>> {
         let se = Vec3::new(l.f32()?, l.f32()?, l.f32()?);
         l.f32()?; // z du coin nord-est
         l.f32()?; // z du coin sud-ouest
-        anyhow::ensure!(nw.abs().max_element() <= 17000.0 && se.abs().max_element() <= 17000.0, "aire {id} hors de la map : la disposition lue n'est pas la bonne");
+        anyhow::ensure!(nw.abs().max_element() <= 17000.0 && se.abs().max_element() <= 17000.0, hm_langue::tr!("aire {id} hors de la map : la disposition lue n'est pas la bonne", "area {id} outside the map: the layout read is wrong"));
         for _ in 0..4 {
             let k = l.u32()? as usize;
             l.n(k * 4)?;
@@ -624,7 +623,7 @@ pub fn nodraw_visible(scene: &Scene, monde: &crate::Monde, sim: &Simulation, out
                     let lo = f.poly.iter().fold(f.poly[0], |a, p| a.min(*p)).as_vec3();
                     let hi = f.poly.iter().fold(f.poly[0], |a, p| a.max(*p)).as_vec3();
                     v.push(
-                        Constat::objet(scene, "geo.nodraw_visible", b.object, format!("{} : sa face {} est en nodraw et un joueur debout la voit ({:.0} unités carrées)", monde.nommer(b.object), f.side + 1, hm_geom::aire(&f.poly)))
+                        Constat::objet(scene, "geo.nodraw_visible", b.object, hm_langue::tr!("{} : sa face {} est en nodraw et un joueur debout la voit ({:.0} unités carrées)", "{}: its face {} is nodraw and a standing player sees it ({:.0} square units)", monde.nommer(b.object), f.side + 1, hm_geom::aire(&f.poly)))
                             .boite(lo - Vec3::splat(24.0), hi + Vec3::splat(24.0))
                             .mesure(hm_geom::aire(&f.poly) as f32),
                     );

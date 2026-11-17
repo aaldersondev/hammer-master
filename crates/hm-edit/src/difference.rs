@@ -52,10 +52,9 @@ impl Difference {
 
     pub fn resume(&self) -> String {
         if self.vide() {
-            return "aucune différence (aux numéros près)".to_string();
+            return hm_langue::t("aucune différence (aux numéros près)").to_string();
         }
-        format!(
-            "entités : {} ajoutée(s), {} retirée(s), {} déplacée(s), {} modifiée(s) ; solides du monde et du détail : {} ajouté(s), {} retiré(s)",
+        hm_langue::tr!("entités : {} ajoutée(s), {} retirée(s), {} déplacée(s), {} modifiée(s) ; solides du monde et du détail : {} ajouté(s), {} retiré(s)", "entities: {} added, {} removed, {} moved, {} modified; world and detail solids: {} added, {} removed",
             self.ajoutes.len(),
             self.retires.len(),
             self.deplaces.len(),
@@ -85,10 +84,10 @@ impl Difference {
             let q = [p[0] as f32, p[1] as f32, p[2] as f32];
             let piece = sem.and_then(|m| m.pieces.iter().find(|x| x.contient(q, 8.0)));
             let (nom, min, max) = match piece {
-                Some(x) => (format!("pièce « {} » ({})", x.id, x.role), [x.emprise[0], x.emprise[1], x.sol], [x.emprise[2], x.emprise[3], x.sol + x.hauteur.unwrap_or(128.0)]),
+                Some(x) => (hm_langue::tr!("pièce « {} » ({})", "room \"{}\" ({})", x.id, x.role), [x.emprise[0], x.emprise[1], x.sol], [x.emprise[2], x.emprise[3], x.sol + x.hauteur.unwrap_or(128.0)]),
                 None => {
                     let (cx, cy) = ((q[0] / 512.0).floor() * 512.0, (q[1] / 512.0).floor() * 512.0);
-                    (format!("carré ({cx:.0} {cy:.0})"), [cx, cy, q[2] - 16.0], [cx + 512.0, cy + 512.0, q[2] + 128.0])
+                    (hm_langue::tr!("carré ({cx:.0} {cy:.0})", "square ({cx:.0} {cy:.0})"), [cx, cy, q[2] - 16.0], [cx + 512.0, cy + 512.0, q[2] + 128.0])
                 }
             };
             match zones.iter_mut().find(|z| z.nom == nom) {
@@ -221,8 +220,8 @@ fn propres<'a>(a: Vec<&'a Node>, b: Vec<&'a Node>) -> (Vec<&'a Node>, Vec<&'a No
 }
 
 pub fn comparer(avant: &[u8], apres: &[u8]) -> Result<Difference> {
-    let a = Vmf::parse(avant.to_vec()).map_err(|e| anyhow!("avant : {e}"))?;
-    let b = Vmf::parse(apres.to_vec()).map_err(|e| anyhow!("après : {e}"))?;
+    let a = Vmf::parse(avant.to_vec()).map_err(|e| anyhow!(hm_langue::tr!("avant : {e}", "before: {e}")))?;
+    let b = Vmf::parse(apres.to_vec()).map_err(|e| anyhow!(hm_langue::tr!("après : {e}", "after: {e}")))?;
     // l'entité qui porte la révision change à chaque version : elle ne compte pas
     // … et un func_detail n'est qu'un sac de solides que le compilateur verse dans le monde : la façon dont un
     // générateur les regroupe ne change pas la map. Ses solides sont comparés avec ceux du monde.

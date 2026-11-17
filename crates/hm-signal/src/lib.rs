@@ -102,10 +102,10 @@ fn angles(v: &Value) -> Option<[f32; 3]> {
 impl Signalement {
     /// Lit une ligne JSON de l'un ou l'autre format. `dossier` sert à retrouver la capture.
     pub fn de_json(ligne: &str, dossier: &Path) -> Result<Signalement> {
-        let v: Value = serde_json::from_str(ligne).context("ligne JSON illisible")?;
-        let champ = |k: &str| v.get(k).ok_or_else(|| anyhow!("champ `{k}` manquant"));
+        let v: Value = serde_json::from_str(ligne).context(hm_langue::t("ligne JSON illisible"))?;
+        let champ = |k: &str| v.get(k).ok_or_else(|| anyhow!(hm_langue::tr!("champ `{k}` manquant", "missing field `{k}`")));
         let format = v.get("format").and_then(|f| f.as_u64()).unwrap_or(1) as u8;
-        let n = champ("n")?.as_u64().ok_or_else(|| anyhow!("`n` n'est pas un entier"))? as u32;
+        let n = champ("n")?.as_u64().ok_or_else(|| anyhow!(hm_langue::tr!("`n` n'est pas un entier", "`n` is not an integer")))? as u32;
         let s = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or("").to_string();
         let vue = v.get("vue").and_then(|u| {
             let ecran = u.get("ecran")?.as_array()?;
@@ -132,11 +132,11 @@ impl Signalement {
             quand: s("quand"),
             carte: s("carte"),
             texte: s("texte"),
-            pos: v3(champ("pos")?).ok_or_else(|| anyhow!("`pos` mal formé"))?,
-            oeil: v3(champ("oeil")?).ok_or_else(|| anyhow!("`oeil` mal formé"))?,
-            angles: angles(champ("angles")?).ok_or_else(|| anyhow!("`angles` mal formé"))?,
+            pos: v3(champ("pos")?).ok_or_else(|| anyhow!(hm_langue::tr!("`pos` mal formé", "malformed `pos`")))?,
+            oeil: v3(champ("oeil")?).ok_or_else(|| anyhow!(hm_langue::tr!("`oeil` mal formé", "malformed `oeil`")))?,
+            angles: angles(champ("angles")?).ok_or_else(|| anyhow!(hm_langue::tr!("`angles` mal formé", "malformed `angles`")))?,
             vue,
-            vise: v3(champ("vise")?).ok_or_else(|| anyhow!("`vise` mal formé"))?,
+            vise: v3(champ("vise")?).ok_or_else(|| anyhow!(hm_langue::tr!("`vise` mal formé", "malformed `vise`")))?,
             normale: v.get("normale").and_then(v3).unwrap_or([0.0; 3]),
             texture: s("texture"),
             monde: v.get("monde").and_then(|m| m.as_bool()).unwrap_or(false),
@@ -173,7 +173,7 @@ pub fn lire_dossier(dossier: &Path) -> Result<Vec<Signalement>> {
         let p = dossier.join(fichier);
         let Ok(texte) = std::fs::read_to_string(&p) else { continue };
         for (i, ligne) in texte.lines().enumerate().filter(|(_, l)| !l.trim().is_empty()) {
-            out.push(Signalement::de_json(ligne, dossier).with_context(|| format!("{} ligne {}", p.display(), i + 1))?);
+            out.push(Signalement::de_json(ligne, dossier).with_context(|| hm_langue::tr!("{} ligne {}", "{} line {}", p.display(), i + 1))?);
         }
     }
     Ok(out)
@@ -245,7 +245,7 @@ impl Etats {
 
     pub fn fixer(&mut self, s: &Signalement, etat: &str, note: &str, quand: &str) -> Result<()> {
         if !ETATS.contains(&etat) {
-            return Err(anyhow!("état inconnu « {etat} » (attendu : {})", ETATS.join(", ")));
+            return Err(anyhow!(hm_langue::tr!("état inconnu « {etat} » (attendu : {})", "unknown state \"{etat}\" (expected: {})", ETATS.join(", "))));
         }
         self.etats.insert(Self::cle(s), Etat { etat: etat.to_string(), note: note.to_string(), quand: quand.to_string() });
         Ok(())
@@ -257,13 +257,13 @@ impl Etats {
 /// Ce que l'on peut dire de la map sur laquelle le signalement a été fait, face à la révision ouverte.
 pub fn jugement_revision(s: &Signalement, revision_ouverte: &str) -> String {
     if s.revision.is_empty() {
-        let bsp = s.bsp.as_ref().map(|b| format!(" ; .bsp de {} octets", b.taille)).unwrap_or_default();
-        return format!("révision inconnue (map compilée sans estampille{}{bsp}) : rien ne dit que c'est la version ouverte ({revision_ouverte})", if s.format < 2 { ", ancien format" } else { "" });
+        let bsp = s.bsp.as_ref().map(|b| hm_langue::tr!(" ; .bsp de {} octets", "; .bsp of {} bytes", b.taille)).unwrap_or_default();
+        return hm_langue::tr!("révision inconnue (map compilée sans estampille{}{bsp}) : rien ne dit que c'est la version ouverte ({revision_ouverte})", "unknown revision (map compiled without a stamp{}{bsp}): nothing says it is the open version ({revision_ouverte})", if s.format < 2 { hm_langue::t(", ancien format") } else { "" });
     }
     if s.revision == revision_ouverte {
-        format!("fait sur la révision ouverte ({revision_ouverte})")
+        hm_langue::tr!("fait sur la révision ouverte ({revision_ouverte})", "made on the open revision ({revision_ouverte})")
     } else {
-        format!("ATTENTION : fait sur la révision {}, pas sur celle qui est ouverte ({revision_ouverte}) — la map a changé depuis, ou le jeu avait chargé une ancienne map", s.revision)
+        hm_langue::tr!("ATTENTION : fait sur la révision {}, pas sur celle qui est ouverte ({revision_ouverte}) — la map a changé depuis, ou le jeu avait chargé une ancienne map", "WARNING: made on revision {}, not on the open one ({revision_ouverte}) — the map changed since, or the game had loaded an old map", s.revision)
     }
 }
 
@@ -317,7 +317,7 @@ pub fn comparer(renderer: &Renderer, gs: &GpuScene, scene: &Scene, s: &Signaleme
         }
         None => {
             img.fill_rect(0, bandeau as i32, w as i32, h as i32, [60, 60, 64], 1.0);
-            police.ecrire(&mut img, 24.0, bandeau as f32 + 24.0, 22.0, "pas de capture du jeu", [220, 220, 220]);
+            police.ecrire(&mut img, 24.0, bandeau as f32 + 24.0, 22.0, hm_langue::t("pas de capture du jeu"), [220, 220, 220]);
         }
     }
     img.blit(&Image::from_rgb(w, h, frame.rgb()), w + 4, bandeau);
@@ -338,9 +338,9 @@ pub fn comparer(renderer: &Renderer, gs: &GpuScene, scene: &Scene, s: &Signaleme
 /// Une ligne qui dit quel objet de la map est sous le centre de la vue.
 pub fn decrire_objet(scene: &Scene, rang: u32) -> String {
     match scene.objects.get(rang as usize).filter(|_| rang != 0) {
-        None => "rien sous le centre de la vue (ciel ou vide)".to_string(),
+        None => hm_langue::t("rien sous le centre de la vue (ciel ou vide)").to_string(),
         Some(o) => {
-            let quoi = if !o.model.is_empty() { format!("modèle {}", o.model) } else { format!("matériau {}", o.material) };
+            let quoi = if !o.model.is_empty() { hm_langue::tr!("modèle {}", "model {}", o.model) } else { hm_langue::tr!("matériau {}", "material {}", o.material) };
             let nom = if o.name.is_empty() { String::new() } else { format!(" « {} »", o.name) };
             let c = (o.min + o.max) / 2.0;
             format!("objet {rang} · {}{nom} · {quoi} · id VMF {} · centre ({:.0} {:.0} {:.0})", o.class, o.vmf_id, c.x, c.y, c.z)

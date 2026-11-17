@@ -77,7 +77,7 @@ impl Vfs {
             }
         }
         if !p.is_file() {
-            return Err(anyhow!("archive introuvable : {}", p.display()));
+            return Err(anyhow!(hm_langue::tr!("archive introuvable : {}", "archive not found: {}", p.display())));
         }
         let vpk = source_vpk::Vpk::open(&p).map_err(|e| anyhow!("{} : {e}", p.display()))?;
         self.mounts.push(Mount { label: p.display().to_string(), kind: Kind::Vpk(vpk) });
@@ -90,10 +90,10 @@ impl Vfs {
     /// Le fichier reste en mémoire jusqu'à la fin du processus.
     pub fn add_bsp_pak(&mut self, path: impl AsRef<Path>) -> Result<()> {
         let path = path.as_ref();
-        let bytes: &'static [u8] = Box::leak(std::fs::read(path).with_context(|| format!("lecture de {}", path.display()))?.into_boxed_slice());
+        let bytes: &'static [u8] = Box::leak(std::fs::read(path).with_context(|| hm_langue::tr!("lecture de {}", "reading {}", path.display()))?.into_boxed_slice());
         let limits = Limits { max_input_bytes: 4 << 30, ..Limits::default() };
         let bsp = vformats::bsp::parse(bytes, &limits).map_err(|e| anyhow!("{} : {e}", path.display()))?;
-        let zip = bsp.pakfile().map_err(|e| anyhow!("{} : contenu embarqué illisible : {e}", path.display()))?;
+        let zip = bsp.pakfile().map_err(|e| anyhow!(hm_langue::tr!("{} : contenu embarqué illisible : {e}", "{}: unreadable embedded content: {e}", path.display())))?;
         let index = zip.entries().iter().enumerate().map(|(i, e)| (norm(&e.path), i)).collect();
         self.mounts.push(Mount { label: format!("{} (contenu embarqué)", path.display()), kind: Kind::Pak { zip, index } });
         Ok(())
@@ -102,7 +102,7 @@ impl Vfs {
     /// Monte les `SearchPaths` d'un `gameinfo.txt`, dans l'ordre du fichier.
     pub fn add_gameinfo(&mut self, gameinfo: impl AsRef<Path>) -> Result<()> {
         let gameinfo = gameinfo.as_ref();
-        let text = std::fs::read(gameinfo).with_context(|| format!("lecture de {}", gameinfo.display()))?;
+        let text = std::fs::read(gameinfo).with_context(|| hm_langue::tr!("lecture de {}", "reading {}", gameinfo.display()))?;
         let text = String::from_utf8_lossy(&text);
         let doc = vformats::keyvalues::parse(&text, &Limits::default()).map_err(|e| anyhow!("{} : {e}", gameinfo.display()))?;
         let paths = doc
@@ -112,7 +112,7 @@ impl Vfs {
             .and_then(|v| v.as_block())
             .and_then(|b| b.get("SearchPaths"))
             .and_then(|v| v.as_block())
-            .ok_or_else(|| anyhow!("{} : pas de bloc GameInfo/FileSystem/SearchPaths", gameinfo.display()))?;
+            .ok_or_else(|| anyhow!(hm_langue::tr!("{} : pas de bloc GameInfo/FileSystem/SearchPaths", "{}: no GameInfo/FileSystem/SearchPaths block", gameinfo.display())))?;
         let here = gameinfo.parent().unwrap_or(Path::new("."));
         let root = here.parent().unwrap_or(here);
         for pair in &paths.pairs {
