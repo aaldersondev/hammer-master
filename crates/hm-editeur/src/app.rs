@@ -319,6 +319,8 @@ impl Editeur {
         let gameinfo = hm_assets::jeu::gameinfo_gmod().unwrap_or_default();
         // un script n'écrit jamais dans le dossier du jeu et ne lance pas le jeu
         let en_script = script.is_some();
+        // la langue d'abord : les champs suivants ont déjà du texte affiché (source des raccourcis…)
+        let options = crate::options::Options::charger().appliquer();
         let mut e = Editeur {
             session: Session::nouvelle(),
             vfs: Vfs::new(),
@@ -383,7 +385,7 @@ impl Editeur {
             sous_onglet_vg: 0,
             aretes_modeles: Default::default(),
             dialogues: Default::default(),
-            options: crate::options::Options::charger().appliquer(),
+            options,
             options_ouvertes: false,
             options_a_enregistrer: false,
             revision_monde: 0,
